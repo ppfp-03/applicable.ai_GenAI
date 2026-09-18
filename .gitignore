@@ -17,3 +17,6 @@ htmlcov/
 
 # Operating system files
 .DS_Store
+
+# Editor settings
+.vscode/

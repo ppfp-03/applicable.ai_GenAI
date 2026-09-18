@@ -3,19 +3,19 @@
   "factors": {
     "profile_fit": {
       "status": "development/provisional",
-      "value": null
+      "weight": 0.25
     },
     "preference_fit": {
       "status": "development/provisional",
-      "value": null
+      "weight": 0.25
     },
     "deadline_urgency": {
       "status": "development/provisional",
-      "value": null
+      "weight": 0.25
     },
     "freshness": {
       "status": "development/provisional",
-      "value": null
+      "weight": 0.25
     }
   }
 }

@@ -1,7 +1,7 @@
 # Applicable.ai
 
-Applicable.ai is an AI-powered career and application assistant for university
-students and recent graduates. The planned product will help users understand
+Applicable.ai is an AI-powered application prioritization assistant for students
+and recent graduates. The planned product will help users understand
 and prioritise career opportunities.
 
 ## Current status
@@ -78,8 +78,9 @@ tests collected and return exit code 5 until tests are added.
 - `src/oi/ui/`: reserved for reusable interface components.
 - `tests/`: reserved for future tests.
 
-All configuration entries are marked `development/provisional`, with values
-set to `null`. They do not establish active rules or ranking weights.
+All configuration entries are marked `development/provisional`. Hard constraint
+values remain `null`; the four ranking factors each have a provisional weight
+of `0.25`. No eligibility rules or ranking algorithms consume this configuration yet.
 
 ## Team
 
