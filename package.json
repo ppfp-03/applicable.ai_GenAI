@@ -1,0 +1,9 @@
+{
+  "name": "applicable-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Applicable.ai Streamlit development launcher",
+  "scripts": {
+    "dev": "node scripts/dev.cjs"
+  }
+}

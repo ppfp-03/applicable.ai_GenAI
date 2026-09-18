@@ -1,21 +1,15 @@
 {
-  "status": "development/provisional",
-  "factors": {
-    "profile_fit": {
-      "status": "development/provisional",
-      "weight": 0.25
-    },
-    "preference_fit": {
-      "status": "development/provisional",
-      "weight": 0.25
-    },
-    "deadline_urgency": {
-      "status": "development/provisional",
-      "weight": 0.25
-    },
-    "freshness": {
-      "status": "development/provisional",
-      "weight": 0.25
-    }
+  "version": "development-0.1",
+  "factors": [
+    "profile_fit",
+    "preference_fit",
+    "deadline_urgency",
+    "freshness"
+  ],
+  "weights": {
+    "profile_fit": 0.25,
+    "preference_fit": 0.25,
+    "deadline_urgency": 0.25,
+    "freshness": 0.25
   }
 }

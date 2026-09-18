@@ -1,4 +1,3 @@
-# Candidate extraction
-
-Development placeholder for future candidate extraction prompt instructions.
-No extraction prompt or AI behavior is implemented yet.
+"""
+Future prompt for extracting structured candidate information from CV documents.
+"""

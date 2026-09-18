@@ -10,7 +10,7 @@ st.warning("Development mode - foundation stage")
 
 with st.sidebar:
     st.header("Candidate Profile")
-    st.info("Your candidate profile will appear here once this feature is implemented.")
+    st.info("CV upload and candidate information will appear here.")
 
 st.header("Top Opportunities")
-st.info("Opportunities will appear here once this feature is implemented.")
+st.info("Job prioritization pipeline under development.")

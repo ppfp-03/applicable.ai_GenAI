@@ -1,22 +1,7 @@
-# Local environment files and secrets
 .env
-.env.*
-!.env.example
-.streamlit/secrets.toml
-
-# Virtual environments
-.venv/
 venv/
-
-# Python and test artifacts
+.venv/
 __pycache__/
-*.py[cod]
 .pytest_cache/
-.coverage
-htmlcov/
-
-# Operating system files
-.DS_Store
-
-# Editor settings
 .vscode/
+.DS_Store

@@ -1,17 +1,17 @@
 {
-  "status": "development/provisional",
-  "constraints": {
-    "HC_LOCATION": {
-      "status": "development/provisional",
-      "value": null
+  "version": "development-0.1",
+  "constraints": [
+    {
+      "id": "HC_LOCATION",
+      "status": "development"
     },
-    "HC_WORK_AUTH": {
-      "status": "development/provisional",
-      "value": null
+    {
+      "id": "HC_WORK_AUTH",
+      "status": "development"
     },
-    "HC_GRAD_WINDOW": {
-      "status": "development/provisional",
-      "value": null
+    {
+      "id": "HC_GRAD_WINDOW",
+      "status": "development"
     }
-  }
+  ]
 }
