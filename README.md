@@ -74,9 +74,10 @@ cp .env.example .env
 ```
 
 On Windows PowerShell, use `Copy-Item .env.example .env`.
-The template contains only `GEMINI_API_KEY=`. No API key is needed to run this
-foundation, and the application does not load or use it yet. Keep real secrets
-out of version control; `.env` files are ignored.
+The template contains `KIMI_API_KEY=` and `KIMI_MODEL=`. Candidate extraction
+calls the Kimi API and requires a valid `KIMI_API_KEY`; the rest of the
+application (PDF and OCR ingestion) runs without one. Keep real secrets out of
+version control; `.env` files are ignored.
 
 ## Run the application
 
@@ -121,7 +122,8 @@ tests collected and return exit code 5 until tests are added.
 - `prompts/`: candidate and job extraction prompt placeholders.
 - `src/oi/contracts.py`: reserved for shared data contracts.
 - `src/oi/io/`: reserved for document input utilities.
-- `src/oi/providers/`: reserved for provider integration.
+- `src/oi/providers/`: LLM provider integration — `model_client.py` defines the
+  generic interface, `kimi.py` implements it for the Kimi API.
 - `src/oi/intelligence/`: reserved for future intelligence modules.
 - `src/oi/ui/`: reserved for reusable interface components.
 - `tests/`: reserved for future tests.

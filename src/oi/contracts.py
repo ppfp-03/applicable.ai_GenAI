@@ -1,6 +1,6 @@
 """Shared data contracts for the candidate intelligence pipeline.
 
-These models are the common vocabulary between PDF extraction, Gemini
+These models are the common vocabulary between PDF extraction, model-based
 extraction, the candidate profile, and the UI layer. They carry data only:
 no validation rules, no business logic.
 """

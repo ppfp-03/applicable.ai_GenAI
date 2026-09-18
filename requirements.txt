@@ -5,5 +5,5 @@ pytesseract
 pdf2image
 Pillow
 python-dotenv
-google-genai
+openai
 pytest

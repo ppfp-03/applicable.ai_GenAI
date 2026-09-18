@@ -13,12 +13,12 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from oi.contracts import CandidateProfile, ExtractionReceipt, SourceDocument
-from oi.providers.gemini import GeminiClient
+from oi.providers.model_client import ModelClient
 
 
 def extract_candidate(
     document: SourceDocument,
-    model_client: GeminiClient,
+    model_client: ModelClient,
 ) -> CandidateProfile:
     """Extract a candidate profile from an ingested document.
 
@@ -38,8 +38,8 @@ def extract_candidate(
 
     Raises:
         ValueError: If the document carries no text.
-        GeminiExtractionError: Propagated from the provider when the request
-            fails or the response cannot be parsed. Never swallowed -- a failed
+        ExtractionError: Propagated from the provider when the request fails
+            or the response cannot be parsed. Never swallowed -- a failed
             extraction must not look like an empty profile.
     """
     if not document.text.strip():
@@ -52,7 +52,7 @@ def extract_candidate(
     profile.candidate_id = document.document_id
     profile.extraction = ExtractionReceipt(
         mode="live",
-        provider="gemini",
+        provider=getattr(model_client, "provider_name", "unknown"),
         model_id=getattr(model_client, "model_id", None),
         produced_at=datetime.now(timezone.utc).isoformat(),
     )
