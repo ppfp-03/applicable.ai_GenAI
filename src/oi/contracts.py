@@ -13,13 +13,25 @@ from pydantic import BaseModel
 
 
 class SourceDocument(BaseModel):
-    """A raw input document (e.g. a CV) and its extracted text."""
+    """A raw input document (e.g. a CV) and its extracted text.
+
+    Provenance is recorded in two independent fields:
+
+    source_ref
+        Where the document came from -- its origin (e.g. "uploaded_pdf").
+    extraction_method
+        How the text was obtained from it (e.g. "native_pdf", "ocr").
+
+    Keeping these separate lets the same origin be read by different means:
+    an uploaded PDF may be parsed natively or, when it is a scan, via OCR.
+    """
 
     document_id: str
     kind: str
     text: str
     content_hash: Optional[str] = None
     source_ref: Optional[str] = None
+    extraction_method: str
 
 
 class EvidenceRef(BaseModel):

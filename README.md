@@ -39,6 +39,34 @@ Install the initial dependencies:
 pip install -r requirements.txt
 ```
 
+### System dependencies for OCR
+
+Scanned, image-based PDFs are read with OCR. That path needs two programs
+installed on the system itself, alongside the Python packages above:
+
+- **Tesseract** — the OCR engine.
+- **Poppler** — provides `pdftoppm`, used to render PDF pages as images.
+
+On macOS with Homebrew:
+
+```bash
+brew install tesseract poppler
+```
+
+On Debian or Ubuntu:
+
+```bash
+sudo apt-get install tesseract-ocr poppler-utils
+```
+
+On Windows, install the
+[Tesseract installer](https://github.com/UB-Mannheim/tesseract/wiki) and the
+[Poppler binaries](https://github.com/oschwartz10612/poppler-windows/releases),
+then add both `bin` directories to `PATH`.
+
+Text-based PDFs work without these; only the OCR fallback requires them.
+Verify an installation with `tesseract --version` and `pdftoppm -v`.
+
 Optionally copy the environment template for future development:
 
 ```bash

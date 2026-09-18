@@ -22,8 +22,10 @@ def extract_pdf_text(pdf_bytes: bytes, document_id: str) -> SourceDocument:
         document_id: Identifier assigned to the resulting document.
 
     Returns:
-        A SourceDocument of kind "cv" holding the extracted text, the
-        SHA-256 hash of the original bytes, and a "uploaded_pdf" source ref.
+        A SourceDocument of kind "cv" holding the extracted text and the
+        SHA-256 hash of the original bytes. Provenance is recorded as
+        source_ref="uploaded_pdf" (where it came from) and
+        extraction_method="native_pdf" (how the text was read).
 
     Raises:
         ValueError: If the PDF yields no text. This typically means the file
@@ -46,4 +48,5 @@ def extract_pdf_text(pdf_bytes: bytes, document_id: str) -> SourceDocument:
         text=text,
         content_hash=hashlib.sha256(pdf_bytes).hexdigest(),
         source_ref="uploaded_pdf",
+        extraction_method="native_pdf",
     )
