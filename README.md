@@ -1,139 +1,88 @@
-[README.md](https://github.com/user-attachments/files/32371177/README.md)
-# applicable.ai_GenAI
+# Applicable.ai
 
-## AI-powered assistant for prioritising job applications
+Applicable.ai is an AI-powered career and application assistant for university
+students and recent graduates. The planned product will help users understand
+and prioritise career opportunities.
 
-Opportunity Intelligence helps university students and recent graduates
-decide which job opportunities deserve their application time first.
+## Current status
 
-The system combines: - explicit eligibility checks; - candidate-job fit
-analysis; - user preferences; - posting freshness; - evidence-backed
-explanations.
+This repository contains only the initial application foundation: a Streamlit
+shell with Candidate Profile and Top Opportunities placeholders, empty Python
+modules, provisional configuration, and prompt placeholders.
 
-## Problem
+No AI pipeline, LLM calls, eligibility checks, ranking logic, or generated AI
+outputs are implemented. There is no database, authentication, Docker setup,
+vector database, or ATS integration.
 
-Students and recent graduates often face many possible internships and
-graduate roles across different platforms. The challenge is deciding:
+## Setup
 
-> Which applications should I complete first?
+Run these commands from the existing repository directory with Python 3.10+
+installed.
 
-## Solution
+Create and activate a virtual environment on macOS or Linux:
 
-Opportunity Intelligence is a hybrid AI assistant.
-
-### Generative AI is used for:
-
--   CV and job description understanding;
--   structured information extraction;
--   skill and requirement analysis;
--   clarification question generation;
--   evidence-linked explanations.
-
-### Deterministic logic is used for:
-
--   hard eligibility rules;
--   uncertainty handling;
--   ranking calculations;
--   transparent decisions.
-
-## Key Features
-
-### CV Understanding
-
-Extracts: - education; - skills; - experience; - candidate information.
-
-### Job Analysis
-
-Extracts: - role information; - requirements; - locations; - evidence
-from postings.
-
-### Eligibility Checking
-
-Classifies opportunities as: - Eligible; - Ineligible; - Uncertain.
-
-### Clarification Loop
-
-When information is missing, the system asks targeted questions and
-updates the candidate profile.
-
-### Transparent Ranking
-
-Prioritises opportunities using: - profile fit; - preference fit; -
-deadline urgency; - freshness.
-
-## Technology Stack
-
-  Component    Technology
-  ------------ ----------------------
-  Language     Python
-  Interface    Streamlit
-  AI           OpenAI API
-  Similarity   Sentence embeddings
-  Data         JSON/JSONL snapshots
-  Testing      Pytest
-
-## Running the Project
-
-``` bash
-git clone <repository-url>
-cd Opportunity-Intelligence
-
-python -m venv .venv
+```bash
+python3 -m venv .venv
 source .venv/bin/activate
-
-pip install -r requirements.txt
-
-streamlit run app.py
 ```
 
-## Project Structure
+On Windows PowerShell:
 
-    Opportunity-Intelligence/
-    ├── app.py
-    ├── src/
-    ├── data/
-    ├── tests/
-    ├── prompts/
-    ├── requirements.txt
-    └── README.md
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
 
-## Evaluation
+Install the initial dependencies:
 
-The system is evaluated against: 1. Hybrid Opportunity Intelligence
-system 2. Embedding-only baseline 3. Generic LLM baseline
+```bash
+python -m pip install -r requirements.txt
+```
 
-Metrics include: - ranking agreement; - explicit constraint
-violations; - evidence support; - duplicate handling; - clarification
-quality.
+Optionally copy the environment template for future development:
 
-## Demo Flow
+```bash
+cp .env.example .env
+```
 
-1.  Upload synthetic CV
-2.  Extract profile
-3.  Review preferences
-4.  Analyse opportunities
-5.  Answer clarification questions
-6.  Recalculate ranking
-7.  Display prioritised applications
+On Windows PowerShell, use `Copy-Item .env.example .env`.
+The template contains only `GEMINI_API_KEY=`. No API key is needed to run this
+foundation, and the application does not load or use it yet. Keep real secrets
+out of version control; `.env` files are ignored.
 
-## Privacy & Safety
+## Run the application
 
-The project uses: - synthetic candidate data; - explicit declarations
-only; - evidence-based decisions; - protected API keys.
+```bash
+python -m streamlit run app.py
+```
+
+## Tests
+
+```bash
+python -m pytest
+```
+
+The `tests/` package is a placeholder with no tests yet. Pytest will report no
+tests collected and return exit code 5 until tests are added.
+
+## Structure
+
+- `app.py`: Streamlit application shell.
+- `config/`: development-only hard constraint and ranking factor definitions.
+- `data/synthetic/`: reserved for future synthetic data; currently empty.
+- `prompts/`: candidate and job extraction prompt placeholders.
+- `src/oi/contracts.py`: reserved for shared data contracts.
+- `src/oi/io/`: reserved for document input utilities.
+- `src/oi/providers/`: reserved for provider integration.
+- `src/oi/intelligence/`: reserved for future intelligence modules.
+- `src/oi/ui/`: reserved for reusable interface components.
+- `tests/`: reserved for future tests.
+
+All configuration entries are marked `development/provisional`, with values
+set to `null`. They do not establish active rules or ranking weights.
 
 ## Team
 
 **Pasta, Pretzel & Prompts**
 
-Members: - Marco - Pierpaolo - Giorgio M. - Giorgio G. - Tommaso -
-Nils - Anastasia - Madda
-
-## Status
-
-🚧 MVP under development
-
-## AI Usage Disclosure
-
-AI tools assisted with documentation drafting and writing refinement.
-Final technical decisions and implementation remain the responsibility
-of the team.
+Marco, Pierpaolo, Giorgio M., Giorgio G., Tommaso, Nils, Anastasia, and Madda.

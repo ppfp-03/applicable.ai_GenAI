@@ -1,0 +1,21 @@
+{
+  "status": "development/provisional",
+  "factors": {
+    "profile_fit": {
+      "status": "development/provisional",
+      "value": null
+    },
+    "preference_fit": {
+      "status": "development/provisional",
+      "value": null
+    },
+    "deadline_urgency": {
+      "status": "development/provisional",
+      "value": null
+    },
+    "freshness": {
+      "status": "development/provisional",
+      "value": null
+    }
+  }
+}
