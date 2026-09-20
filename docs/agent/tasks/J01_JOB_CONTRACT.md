@@ -5,12 +5,13 @@
 ## Metadata
 
 - **Task ID:** `J-01 / JobRecord implementation + tests`
-- **Status:** `ready`
+- **Status:** `done`
 - **Owner:** Marco / Group A, shared boundary with Pierpaolo
 - **Expected project-context version:** `0.4.1-draft`
 - **Expected contract version:** `0.2.0-draft`
 - **Approval relied on:** Marco + Pierpaolo; project decision `D-034`
 - **Final contract freeze:** not complete; `CandidateProfile`, `ClarificationRequest`, and shared sample-payload compatibility remain separate follow-up work
+- **Observed completion evidence:** Marco independently reran compileall/diff-check/pytest on 2026-09-20; `17 passed in 0.08s`. Implementation commits were published on `a/j01-contracts-a01-input`. Final whole-contract freeze remains a separate follow-up.
 
 ## Authority check
 
