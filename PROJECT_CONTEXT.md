@@ -4,14 +4,16 @@
 
 | Control | Value |
 |---|---|
-| Context version | 0.4.3-draft - shared contract 0.2.0-draft frozen after fixture/reference verification |
-| Contract version | 0.2.0-draft - frozen after joint schema sign-off and shared fixture compatibility, negative and reference verification |
+| Context version | 0.4.4-draft - contract freeze scope and documentation authority clarified |
+| Contract version | 0.2.0-draft - frozen for the verified core models listed in section 6; snapshot/result/config envelopes require separate freeze |
 | Created | 2026-09-17 |
 | Last updated | 2026-09-20 |
 | Project deadline | 2026-09-29; exact submission time/timezone still to confirm |
 | Current-state boundary | Planning/product decisions are recorded here; implementation and measured progress require repository/session evidence |
 
 For current roles, assignments, priorities, deadlines and handoffs use `TEAM_MEMBER_STARTER_GUIDES.md`. For chronological work evidence use `SESSION_LOGS.md`. For assistant behavior use the Project Operating Instructions. Project Guidelines remain authoritative for course requirements; the Project Proposal records the original project scope and rationale.
+
+**Canonical storage:** the repository-root `PROJECT_CONTEXT.md` is the single editable canonical copy of current project truth. The ChatGPT Project Source copy is a convenience mirror for project conversations and must be refreshed after approved context changes. If the two copies differ, the repository-root file governs until the mirror is synchronized. This storage rule does not change the source roles defined below.
 
 
 ## 1. Mission and evidence boundary
@@ -206,7 +208,24 @@ Normalize HTML safely; do not render untrusted source HTML with unsafe execution
 
 ## 6. Shared contracts - draft v0.2.0
 
-These are the frozen shared **interface contracts** for `0.2.0-draft`. The document/job/requirement structures and the candidate/clarification schema received the required joint Marco + Pierpaolo sign-off, and the representative shared fixtures passed the agreed load -> Pydantic -> serialize -> reload plus negative/reference validation checks on 2026-09-20. Any later cross-boundary change requires the approvals defined by project governance and an updated version/fixture.
+This section contains both the frozen core shared models for `0.2.0-draft` and downstream design signatures whose exact serialization is still open. The document/job/requirement and candidate/clarification core models received the required joint Marco + Pierpaolo sign-off, and the representative shared fixtures passed the agreed load -> Pydantic -> serialize -> reload plus negative/reference validation checks on 2026-09-20. Any later change to a frozen cross-boundary model requires the approvals defined by project governance and an updated version/fixture.
+
+### Freeze scope
+
+**Frozen and verified in `0.2.0-draft`:**
+
+- `SourceDocument`, `EvidenceRef`, `SupportedText`, `ExtractionReceipt` and the enums they directly use;
+- `RequirementFact`, `JobFacts`, `JobLocation`, `JobRecord` and their approved enums;
+- `CandidatePreferences`, `WorkAuthorizationDeclaration`, `UserDeclarations`, `EligibilityAnswer`, `CandidateProvenance`, `CandidateProfile`;
+- `CandidateFieldPath`, `ClarificationRequest` and their approved answer/priority enums.
+
+**Not frozen by D-034/D-035:**
+
+- `JobSnapshot` and its exact source-manifest/quarantine envelope;
+- result/ranking envelopes in section E, including `RuleOutcome`, `RankingItem`, `RankingResponse`, and related component/error/count structures;
+- `SourceConfig`, `RuleCatalogue`, `EligibilityResult`, `RankingConfig`, provider/embedding configuration types and other adapter/config envelopes named only in design signatures.
+
+Their presence below records intended boundaries and minimum behavior only. It is **not** approval of their exact serialization. Freeze each material shared envelope separately before independent implementation.
 
 ### Conventions
 
@@ -317,7 +336,7 @@ tests/fixtures/contracts/v0.2.0-draft/
 
 The fixture gate is not only syntactic. On 2026-09-20, all three fixtures passed load -> Pydantic validation -> serialize -> reload, and the full contract suite passed the agreed negative/reference checks (`121 passed`) at implementation commit `03a208a`. The `0.2.0-draft` shared contract is therefore frozen at that verified boundary.
 
-### E. Results - intelligence returns; UI renders
+### E. Design-only result envelopes - intelligence returns; UI renders
 
 `RuleOutcome`: `rule_id`, `status` (`met`, `conflict`, `unknown`, `not_applicable`), `candidate_evidence_ids`, `job_evidence_ids`, `reason`.
 
@@ -329,7 +348,7 @@ Each score component contains `name`, nullable `value`, `effective_weight` and `
 
 `excluded_items` retain the job ID and exclusion reason, including explicit incompatibility, closed/expired posting or unusable data. Never silently lose rows. Data-quality failure is not a finding of candidate ineligibility.
 
-### F. Public boundaries and ownership
+### F. Design-only public boundaries and ownership
 
 ```python
 # Design signatures only. Exact types/fields must be frozen jointly before independent implementation.
@@ -577,7 +596,8 @@ These decisions were provided in the kick-off discussion and are integrated into
 | D-032 | `SESSION_LOGS.md` is the chronological evidence record for work actually performed and does not override current project truth or the current operating plan. | Approved by Marco, 2026-09-18 |
 | D-033 | Execution is role-appropriate: repository/Git workflow is used only where relevant and authorized; chat-only/non-coding contributors deliver verifiable artifacts and handoffs without being forced into software-development mechanics. | Approved by Marco, 2026-09-18 |
 | D-034 | Contract `0.2.0-draft` uses one shared strict Pydantic contract with forbidden extra fields; approved document kinds (`cv`, `job`, `questionnaire`, `ats_metadata`); extraction modes (`live`, `cache`, `fixture`); `JobRecord` namespaced IDs (`<source>:<source_job_id>`), primary `description` plus additional `source_documents`, quarantine for incomplete records; and the approved `RequirementFact`/`JobFacts` structure. `RequirementFact` is intelligence output only; deterministic rule outcomes remain separate. Final contract freeze is still pending CandidateProfile compatibility, final ClarificationRequest fields, and shared sample payloads. | Approved by Marco + Pierpaolo, 2026-09-18 |
-| D-035 | The remaining `0.2.0-draft` candidate/clarification schema is jointly approved: `CandidateProfile` uses evidence-backed semantic fields, explicit preferences/declarations, `dict[constraint_id, list[EligibilityAnswer]]`, and resolvable candidate provenance; country/work-authorization semantics are explicit; `ClarificationRequest` uses closed answer/priority enums and validated `CandidateFieldPath` families. `answer_key` membership for a specific constraint remains a `RuleCatalogue` responsibility, not a shared-contract rule. Shared fixtures are fixed at `tests/fixtures/contracts/v0.2.0-draft/{candidate_profile,clarification_request,job_record}.json`. The Q-08 schema decision is closed; the fixture verification condition was satisfied on 2026-09-20 by commit `03a208a`, with `121 passed` and 3/3 fixture round-trips, completing the `0.2.0-draft` contract freeze. | Approved by Marco + Pierpaolo, 2026-09-20; verification condition satisfied 2026-09-20 by commit `03a208a`, `121 passed`, and 3/3 fixture round-trips |
+| D-035 | The remaining `0.2.0-draft` candidate/clarification schema is jointly approved: `CandidateProfile` uses evidence-backed semantic fields, explicit preferences/declarations, `dict[constraint_id, list[EligibilityAnswer]]`, and resolvable candidate provenance; country/work-authorization semantics are explicit; `ClarificationRequest` uses closed answer/priority enums and validated `CandidateFieldPath` families. `answer_key` membership for a specific constraint remains a `RuleCatalogue` responsibility, not a shared-contract rule. Shared fixtures are fixed at `tests/fixtures/contracts/v0.2.0-draft/{candidate_profile,clarification_request,job_record}.json`. The Q-08 candidate/clarification schema decision is closed; its fixture verification condition was satisfied on 2026-09-20 by commit `03a208a`, with `121 passed` and 3/3 fixture round-trips. This decision freezes the models explicitly covered by D-034/D-035; it does not freeze `JobSnapshot` or downstream result/config envelopes. | Approved by Marco + Pierpaolo, 2026-09-20; verification condition satisfied 2026-09-20 |
+| D-036 | The repository-root `PROJECT_CONTEXT.md` is the single editable canonical copy of current project truth. The ChatGPT Project Source copy is a convenience mirror and must be refreshed after approved changes; when versions differ, the repository-root copy governs until synchronization. This changes storage authority only and does not change the source-role separation established by D-029 to D-033. | Approved by Marco, 2026-09-20 |
 
 ### Proposed implementation defaults - review/freeze before independent implementation
 
@@ -585,7 +605,7 @@ These decisions were provided in the kick-off discussion and are integrated into
 |---|---|---|
 | R-001 | Local Streamlit execution; public hosting not on the first-week critical path | Proposed |
 | R-002 | Python 3.12 compatibility baseline, small verified dependency set and JSON/JSONL snapshots | Proposed; verify actual environments |
-| R-003 | Contract structures in section 6 implemented once in the shared contracts module | Implemented and frozen for `0.2.0-draft` on 2026-09-20 after shared fixture compatibility, negative and reference verification; implementation evidence at commit `03a208a` |
+| R-003 | Core shared contract structures in section 6 implemented once in the shared contracts module | Frozen core models in sections A-D are implemented and verified for `0.2.0-draft`; design-only snapshot/result/config envelopes remain separately unfrozen until their exact serialization is approved |
 | R-004 | Local sentence embeddings/direct cosine similarity; no vector DB | Proposed; exact model/version TO VALIDATE |
 | R-005 | Closed taxonomy initial candidates listed in section 7 | Proposed set; test and freeze before evaluation |
 | R-006 | Missing ranking factors remain null and are normalized/disclosed rather than silently scored zero | Proposed; exact normalization TO VALIDATE |
@@ -604,9 +624,10 @@ Accepting a baseline does not mean the corresponding behavior is implemented or 
 | Q-05 | What are the ranking weights and missing-factor normalization? | Tune only on development examples; freeze before held-out evaluation |
 | Q-06 | Which exact embedding model/version and dependency versions? | Select a small English model, verify license/download/performance, pin tested versions |
 | Q-07 | Can the assigned independent team raters complete the frozen-set ratings? | Confirm availability in `TEAM_MEMBER_STARTER_GUIDES.md`; each rates before discussing disagreements |
-| Q-08 | What exact serializable fields define candidate eligibility answers and `ClarificationRequest`, and do shared sample payloads prove A/B compatibility? | **Closed 2026-09-20.** Joint schema sign-off was followed by successful verification: all three shared fixtures passed load -> Pydantic -> serialize -> reload, and the full contract suite passed the agreed negative/reference checks (`121 passed`) at commit `03a208a`. `0.2.0-draft` is frozen at this boundary. |
+| Q-08 | What exact serializable fields define candidate eligibility answers and `ClarificationRequest`, and do shared sample payloads prove A/B compatibility? | **Closed 2026-09-20 for the candidate/clarification core boundary.** Joint schema sign-off was followed by successful fixture and negative/reference verification (`121 passed`, commit `03a208a`). This closure does not approve `JobSnapshot` or downstream result/config envelope serialization. |
 | Q-09 | What is the exact submission time and timezone? | Verify the official course platform; do not infer from this planning document |
 | Q-10 | How will repository/video be accessible to the grader? | Ensure grader access, working links and redistribution permission for stored source text |
+| Q-11 | What exact serializable fields define `JobSnapshot`, its source manifest and quarantine summary? | Jointly freeze the minimum A/B snapshot envelope before implementing the A-01 snapshot loader; do not treat the conceptual section-6 description as exact schema approval |
 
 ### Record a new decision
 
@@ -659,4 +680,4 @@ The public sources below support technical assumptions, not claims about the pro
 
 No runtime provider login, billing, endpoint dataset collection, application execution, browser demo or academic evaluation is established merely by this document. Current implementation/progress claims require evidence in the repository and/or `SESSION_LOGS.md`.
 
-**END OF PROJECT CONTEXT - v0.4.1-draft.**
+**END OF PROJECT CONTEXT - v0.4.4-draft.**
