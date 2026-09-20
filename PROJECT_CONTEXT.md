@@ -4,8 +4,8 @@
 
 | Control | Value |
 |---|---|
-| Context version | 0.4.4-draft - contract freeze scope and documentation authority clarified |
-| Contract version | 0.2.0-draft - frozen for the verified core models listed in section 6; snapshot/result/config envelopes require separate freeze |
+| Context version | 0.4.5-draft - JobSnapshot 0.2.1-draft jointly approved for A-01 |
+| Contract version | 0.2.0-draft core frozen; JobSnapshot 0.2.1-draft jointly approved; result/config envelopes remain separately unfrozen |
 | Created | 2026-09-17 |
 | Last updated | 2026-09-20 |
 | Project deadline | 2026-09-29; exact submission time/timezone still to confirm |
@@ -79,7 +79,7 @@ The report needs team contributions, a one-page executive summary, business prob
 
 - Python + Streamlit, one process, local-first execution for the demo; UI ownership is maintained in `TEAM_MEMBER_STARTER_GUIDES.md`.
 - Greenhouse first. Add Ashby and/or Lever only if the coverage test shows Greenhouse is insufficient for the agreed market/domain.
-- JSON/JSONL snapshots rather than a database for the first version. Add SQLite only for a documented need.
+- Persisted `JobSnapshot` artifacts use one UTF-8 JSON object under the jointly approved `0.2.1-draft` envelope. JSONL remains optional only for unrelated development artifacts that define their own shape; no database is required for the first version. Add SQLite only for a documented need.
 - Local sentence embeddings and direct cosine similarity; no vector database.
 - Explicit refresh during preparation, not a background polling service.
 - One chosen cloud runtime-model provider behind a very small adapter; exact provider/model TO VALIDATE.
@@ -206,9 +206,9 @@ Preserve source identifiers, URL, description, timestamps and provenance. Use bo
 
 Normalize HTML safely; do not render untrusted source HTML with unsafe execution. Deduplicate by source ID/URL first, then a conservative content signature. Do not merge distinct vacancies merely because titles match. Store a reproducible snapshot and manifest; record whether text can be redistributed before publishing source snapshots.
 
-## 6. Shared contracts - draft v0.2.0
+## 6. Shared contracts - core v0.2.0 + snapshot v0.2.1
 
-This section contains both the frozen core shared models for `0.2.0-draft` and downstream design signatures whose exact serialization is still open. The document/job/requirement and candidate/clarification core models received the required joint Marco + Pierpaolo sign-off, and the representative shared fixtures passed the agreed load -> Pydantic -> serialize -> reload plus negative/reference validation checks on 2026-09-20. Any later change to a frozen cross-boundary model requires the approvals defined by project governance and an updated version/fixture.
+This section contains the frozen core shared models for `0.2.0-draft`, the jointly approved `JobSnapshot 0.2.1-draft` extension, and downstream result/config design signatures whose exact serialization is still open. The document/job/requirement and candidate/clarification core models received the required joint Marco + Pierpaolo sign-off and verification on 2026-09-20. `JobSnapshot 0.2.1-draft` received joint Marco + Pierpaolo sign-off on 2026-09-20 under D-006/D-037. Any later change to a frozen cross-boundary model requires the approvals defined by project governance and an updated version/fixture.
 
 ### Freeze scope
 
@@ -219,13 +219,16 @@ This section contains both the frozen core shared models for `0.2.0-draft` and d
 - `CandidatePreferences`, `WorkAuthorizationDeclaration`, `UserDeclarations`, `EligibilityAnswer`, `CandidateProvenance`, `CandidateProfile`;
 - `CandidateFieldPath`, `ClarificationRequest` and their approved answer/priority enums.
 
-**Not frozen by D-034/D-035:**
+**Jointly approved shared extension in `0.2.1-draft`:**
 
-- `JobSnapshot` and its exact source-manifest/quarantine envelope;
-- result/ranking envelopes in section E, including `RuleOutcome`, `RankingItem`, `RankingResponse`, and related component/error/count structures;
+- `SourceManifestEntry`, `QuarantineSummary` and `JobSnapshot`, with exact serialization and reference-integrity rules defined below. Existing embedded `JobRecord` payloads remain `0.2.0-draft` and unchanged.
+
+**Still not frozen:**
+
+- result/ranking envelopes in section F, including `RuleOutcome`, `RankingItem`, `RankingResponse`, and related component/error/count structures;
 - `SourceConfig`, `RuleCatalogue`, `EligibilityResult`, `RankingConfig`, provider/embedding configuration types and other adapter/config envelopes named only in design signatures.
 
-Their presence below records intended boundaries and minimum behavior only. It is **not** approval of their exact serialization. Freeze each material shared envelope separately before independent implementation.
+Their presence below records intended boundaries and minimum behavior only. It is **not** approval of their exact serialization. Freeze each remaining material shared envelope separately before independent implementation.
 
 ### Conventions
 
@@ -336,7 +339,39 @@ tests/fixtures/contracts/v0.2.0-draft/
 
 The fixture gate is not only syntactic. On 2026-09-20, all three fixtures passed load -> Pydantic validation -> serialize -> reload, and the full contract suite passed the agreed negative/reference checks (`121 passed`) at implementation commit `03a208a`. The `0.2.0-draft` shared contract is therefore frozen at that verified boundary.
 
-### E. Design-only result envelopes - intelligence returns; UI renders
+### E. `JobSnapshot` - data/input persists; intelligence consumes
+
+The jointly approved `0.2.1-draft` snapshot envelope is a backward-compatible extension around frozen `0.2.0-draft` `JobRecord` payloads. Persist each snapshot atomically as one UTF-8 JSON object, not JSONL.
+
+| Object | Required fields / rules |
+|---|---|
+| `SourceManifestEntry` | `source`, `source_ref`, `retrieved_at`, `record_count`, `redistribution_allowed` |
+| `QuarantineSummary` | `reason`, `count` |
+| `JobSnapshot` | `schema_version`, `snapshot_id`, `created_at`, `jobs`, `documents`, `source_manifest`, `quarantine` |
+
+`JobSnapshot.schema_version` is exactly `0.2.1-draft`. Existing `JobRecord` objects embedded in `jobs` retain their frozen `0.2.0-draft` schema and semantics. New shared models use the existing strict-extra contract behavior. `snapshot_id`, manifest source/source-ref values and quarantine reasons are non-empty. `created_at` and `SourceManifestEntry.retrieved_at` are timezone-aware and normalize to UTC. `SourceManifestEntry.record_count >= 0`; `redistribution_allowed` is `true`, `false` or `null`; `QuarantineSummary.count > 0`.
+
+`documents` is the canonical snapshot document registry. Every registry key must equal the contained `SourceDocument.document_id`. Every job `description` and each item in `source_documents` must resolve under the same ID and match the canonical `SourceDocument` value. Every top-level `JobRecord.evidence[].document_id` must resolve in `documents`; a dangling reference makes the snapshot invalid. A-01 does not add a new rule mapping every field-level `evidence_id` to `JobRecord.evidence`, does not require uniqueness of job IDs/manifest entries/quarantine reasons, and does not reconcile manifest counts against job/quarantine totals.
+
+`quarantine` stores summary metadata only; raw quarantined payloads are outside the shared snapshot. This extension does not change `RuleCatalogue`, ranking semantics or any frozen `0.2.0-draft` record behavior.
+
+The A-owned loader signature is exact for A-01:
+
+```python
+def load_snapshot(path: Path) -> JobSnapshot: ...
+```
+
+The A-owned PDF boundary remains text-only and does not add OCR:
+
+```python
+class PdfExtractionError(ValueError): ...
+
+def extract_pdf_text(pdf_bytes: bytes, document_id: str) -> SourceDocument: ...
+```
+
+Malformed/unreadable PDFs, unusable encrypted PDFs and PDFs with no extractable text surface as `PdfExtractionError`. No OCR, external process, network call or new dependency is part of this boundary.
+
+### F. Design-only result envelopes - intelligence returns; UI renders
 
 `RuleOutcome`: `rule_id`, `status` (`met`, `conflict`, `unknown`, `not_applicable`), `candidate_evidence_ids`, `job_evidence_ids`, `reason`.
 
@@ -348,16 +383,18 @@ Each score component contains `name`, nullable `value`, `effective_weight` and `
 
 `excluded_items` retain the job ID and exclusion reason, including explicit incompatibility, closed/expired posting or unusable data. Never silently lose rows. Data-quality failure is not a finding of candidate ineligibility.
 
-### F. Design-only public boundaries and ownership
+### G. Public boundaries and ownership
 
 ```python
-# Design signatures only. Exact types/fields must be frozen jointly before independent implementation.
-# I/O and dependencies are passed explicitly; business logic does not import Streamlit.
+# A-01 load/PDF signatures below are approved and exact. Other named result/config
+# signatures remain design-only until separately frozen. I/O and dependencies are
+# passed explicitly; business logic does not import Streamlit.
 
 # Data/input layer
-def fetch_jobs(source_config: SourceConfig) -> list[JobRecord]: ...
-def load_snapshot(path: Path) -> JobSnapshot: ...
-def extract_pdf_text(pdf_bytes: bytes) -> SourceDocument: ...
+def fetch_jobs(source_config: SourceConfig) -> list[JobRecord]: ...  # design-only
+def load_snapshot(path: Path) -> JobSnapshot: ...                   # approved D-037
+class PdfExtractionError(ValueError): ...                            # A-owned
+def extract_pdf_text(pdf_bytes: bytes, document_id: str) -> SourceDocument: ...  # approved
 
 # Intelligence + UI caller
 def extract_candidate(cv: SourceDocument, declarations: UserDeclarations,
@@ -374,7 +411,7 @@ def rank_opportunities(candidate: CandidateProfile, snapshot: JobSnapshot,
                        now: datetime) -> RankingResponse: ...
 ```
 
-`JobSnapshot` contains `snapshot_id`, `schema_version`, `created_at`, `jobs`, a `documents` registry keyed by document ID, source manifest and quarantined-record counts/reasons. Build the registry from each job description and its additional source documents. Unresolved evidence references fail validation.
+`JobSnapshot` exact serialization and reference-integrity rules are frozen in section E under D-037. Result/config types in this section remain design-only unless separately approved.
 
 `UserDeclarations` contains structured candidate preferences and explicit questionnaire/clarification values. `apply_declarations` is deterministic and does not call an LLM. Source, ranking, clarification and adapter configuration types must be fixed jointly rather than independently invented.
 
@@ -598,14 +635,15 @@ These decisions were provided in the kick-off discussion and are integrated into
 | D-034 | Contract `0.2.0-draft` uses one shared strict Pydantic contract with forbidden extra fields; approved document kinds (`cv`, `job`, `questionnaire`, `ats_metadata`); extraction modes (`live`, `cache`, `fixture`); `JobRecord` namespaced IDs (`<source>:<source_job_id>`), primary `description` plus additional `source_documents`, quarantine for incomplete records; and the approved `RequirementFact`/`JobFacts` structure. `RequirementFact` is intelligence output only; deterministic rule outcomes remain separate. Final contract freeze is still pending CandidateProfile compatibility, final ClarificationRequest fields, and shared sample payloads. | Approved by Marco + Pierpaolo, 2026-09-18 |
 | D-035 | The remaining `0.2.0-draft` candidate/clarification schema is jointly approved: `CandidateProfile` uses evidence-backed semantic fields, explicit preferences/declarations, `dict[constraint_id, list[EligibilityAnswer]]`, and resolvable candidate provenance; country/work-authorization semantics are explicit; `ClarificationRequest` uses closed answer/priority enums and validated `CandidateFieldPath` families. `answer_key` membership for a specific constraint remains a `RuleCatalogue` responsibility, not a shared-contract rule. Shared fixtures are fixed at `tests/fixtures/contracts/v0.2.0-draft/{candidate_profile,clarification_request,job_record}.json`. The Q-08 candidate/clarification schema decision is closed; its fixture verification condition was satisfied on 2026-09-20 by commit `03a208a`, with `121 passed` and 3/3 fixture round-trips. This decision freezes the models explicitly covered by D-034/D-035; it does not freeze `JobSnapshot` or downstream result/config envelopes. | Approved by Marco + Pierpaolo, 2026-09-20; verification condition satisfied 2026-09-20 |
 | D-036 | The repository-root `PROJECT_CONTEXT.md` is the single editable canonical copy of current project truth. The ChatGPT Project Source copy is a convenience mirror and must be refreshed after approved changes; when versions differ, the repository-root copy governs until synchronization. This changes storage authority only and does not change the source-role separation established by D-029 to D-033. | Approved by Marco, 2026-09-20 |
+| D-037 | `JobSnapshot 0.2.1-draft` is the jointly approved backward-compatible A/B snapshot envelope. It adds exact `SourceManifestEntry`, `QuarantineSummary` and `JobSnapshot` serialization around unchanged frozen `0.2.0-draft` `JobRecord` payloads; uses one UTF-8 JSON object; makes `documents` the canonical registry for every embedded job description/source document and top-level job evidence document reference; stores quarantine summary metadata only; and leaves RuleCatalogue/ranking semantics unchanged. A owns `load_snapshot(Path) -> JobSnapshot` and the text-only `PdfExtractionError`/`extract_pdf_text(pdf_bytes, document_id)` boundary; malformed, unusable encrypted and no-text PDFs raise `PdfExtractionError`, with no OCR. | Approved by Marco + Pierpaolo, 2026-09-20 |
 
 ### Proposed implementation defaults - review/freeze before independent implementation
 
 | ID | Proposal | Status |
 |---|---|---|
 | R-001 | Local Streamlit execution; public hosting not on the first-week critical path | Proposed |
-| R-002 | Python 3.12 compatibility baseline, small verified dependency set and JSON/JSONL snapshots | Proposed; verify actual environments |
-| R-003 | Core shared contract structures in section 6 implemented once in the shared contracts module | Frozen core models in sections A-D are implemented and verified for `0.2.0-draft`; design-only snapshot/result/config envelopes remain separately unfrozen until their exact serialization is approved |
+| R-002 | Python 3.12 compatibility baseline, small verified dependency set and JSON-based local artifacts | Proposed environment baseline; `JobSnapshot` persistence is frozen separately as one UTF-8 JSON object by D-037 |
+| R-003 | Core shared contract structures in section 6 implemented once in the shared contracts module | Core sections A-D are implemented and verified for `0.2.0-draft`; `JobSnapshot 0.2.1-draft` is jointly approved for A-01 implementation; result/config envelopes remain separately unfrozen |
 | R-004 | Local sentence embeddings/direct cosine similarity; no vector DB | Proposed; exact model/version TO VALIDATE |
 | R-005 | Closed taxonomy initial candidates listed in section 7 | Proposed set; test and freeze before evaluation |
 | R-006 | Missing ranking factors remain null and are normalized/disclosed rather than silently scored zero | Proposed; exact normalization TO VALIDATE |
@@ -627,7 +665,7 @@ Accepting a baseline does not mean the corresponding behavior is implemented or 
 | Q-08 | What exact serializable fields define candidate eligibility answers and `ClarificationRequest`, and do shared sample payloads prove A/B compatibility? | **Closed 2026-09-20 for the candidate/clarification core boundary.** Joint schema sign-off was followed by successful fixture and negative/reference verification (`121 passed`, commit `03a208a`). This closure does not approve `JobSnapshot` or downstream result/config envelope serialization. |
 | Q-09 | What is the exact submission time and timezone? | Verify the official course platform; do not infer from this planning document |
 | Q-10 | How will repository/video be accessible to the grader? | Ensure grader access, working links and redistribution permission for stored source text |
-| Q-11 | What exact serializable fields define `JobSnapshot`, its source manifest and quarantine summary? | Jointly freeze the minimum A/B snapshot envelope before implementing the A-01 snapshot loader; do not treat the conceptual section-6 description as exact schema approval |
+| Q-11 | What exact serializable fields define `JobSnapshot`, its source manifest and quarantine summary? | **Closed 2026-09-20.** Marco + Pierpaolo jointly approved `JobSnapshot 0.2.1-draft` under D-006/D-037, including the exact manifest/quarantine fields, canonical document-registry invariants, single-JSON persistence, A-owned loader, and text-only PDF error boundary. |
 
 ### Record a new decision
 
@@ -662,6 +700,9 @@ This register records sources that support project requirements, product/technic
 **[P3] Team decisions in the project conversation, 17 September 2026.**
 Confirmed earlier team decisions plus the 17 September kick-off discussion on product direction, market, broader eligibility taxonomy, cloud-first runtime strategy, clarification loop, ranking factors, source strategy and UI ownership. See the decision register above for current status and remaining validation items.
 
+**[P4] Joint A-01 shared-contract sign-off in the project conversation, 20 September 2026.**
+Marco approved A-01 Q1-Q5, including the `0.2.1-draft` version boundary. Pierpaolo then explicitly approved the same `JobSnapshot 0.2.1-draft` envelope and its normative registry, manifest/quarantine, loader and text-only PDF constraints under D-006.
+
 The public sources below support technical assumptions, not claims about the project's implementation or measured results.
 
 ### Technical reference catalogue - recheck when used
@@ -680,4 +721,4 @@ The public sources below support technical assumptions, not claims about the pro
 
 No runtime provider login, billing, endpoint dataset collection, application execution, browser demo or academic evaluation is established merely by this document. Current implementation/progress claims require evidence in the repository and/or `SESSION_LOGS.md`.
 
-**END OF PROJECT CONTEXT - v0.4.4-draft.**
+**END OF PROJECT CONTEXT - v0.4.5-draft.**
