@@ -5,18 +5,27 @@
 ## Metadata
 
 - **Task ID:** `A-01 / JobSnapshot loader + PDF text input`
-- **Status:** `ready`
+- **Status:** `done`
 - **Owner:** Marco / Group A; shared `JobSnapshot` boundary consumed by Pierpaolo / Group B
 - **Expected project-context version:** `0.4.5-draft`
 - **Current frozen core contract version:** `0.2.0-draft`
 - **Approved shared extension:** `JobSnapshot.schema_version = "0.2.1-draft"`, backward-compatible with embedded `0.2.0-draft` `JobRecord` payloads
 - **Approved decision IDs / human approvals:** `D-006`, `D-026`, `D-036`, `D-037`; Marco + Pierpaolo joint sign-off, 2026-09-20
 
-## Activation condition
+## Completion status
 
-This task is ready because `PROJECT_CONTEXT.md` records the joint Marco + Pierpaolo approval of the shared `JobSnapshot 0.2.1-draft` extension under D-006/D-037.
+A-01 is complete. The approved `JobSnapshot 0.2.1-draft` boundary was implemented and independently reviewed without changing the frozen `0.2.0-draft` core payload semantics.
 
-Do not redesign the approved schema during implementation. If the authority check does not match, stop and report the mismatch.
+Implementation commit: `1dbffc6` (`Implement A-01 snapshot and PDF input path`). The preceding authority/freeze commit is `f20239c` (`Freeze JobSnapshot 0.2.1 contract for A-01`). Both are on `origin/a/j01-contracts-a01-input`.
+
+Observed final verification on 2026-09-20:
+
+- `PYTHONPATH=src .venv/bin/python -m pytest -q` -> `179 passed in 0.29s`;
+- snapshot load -> serialize -> reload -> equality -> `snapshot round-trip ok`;
+- `git status --short` -> empty after the pushed implementation commit;
+- GitHub remote branch verified at `1dbffc6`; compare `f20239c..1dbffc6` showed exactly the six A-01 implementation/test files and no out-of-scope files.
+
+No GitHub commit-status checks were reported for `1dbffc6`; the recorded verification evidence is the observed local test/round-trip run plus remote commit inspection.
 
 ## Authority check
 
