@@ -51,9 +51,19 @@ Unless the task brief explicitly overrides these rules:
 - do not commit;
 - do not push;
 - do not merge, rebase, cherry-pick, reset, or rewrite history;
-- do not switch branches;
 - do not discard or overwrite unrelated user changes;
 - do not modify files outside the task's allowed-file list.
+
+### Task branches
+
+For repository coding work, use a new branch for each new independently reviewable task or implementation phase.
+
+- Create the new branch only at a task boundary, after the previous task is committed or otherwise explicitly preserved and the working tree is clean.
+- Create the branch from the branch or commit that contains the dependencies required by the new task. Do not assume every task must branch from `main`.
+- Small fixes, verification changes, or follow-ups that remain within the same task may stay on the current task branch.
+- Do not stack a materially different task on an existing task branch merely for convenience.
+- Branch creation and switching are permitted for this task-boundary workflow. Do not switch branches mid-task when local changes are unresolved unless the user explicitly directs it.
+- Creating a branch does not authorize staging, committing, pushing, merging, rebasing, cherry-picking, resetting, or rewriting history. Those actions still require the permissions stated above or an explicit task instruction.
 
 Before editing, run `git status --short` and interpret both columns, not only the filenames.
 If unexpected changes exist outside allowed files, stop.
