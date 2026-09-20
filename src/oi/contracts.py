@@ -750,3 +750,99 @@ class ClarificationRequest(ContractModel):
                 )
 
         return self
+
+
+SNAPSHOT_CONTRACT_VERSION = "0.2.1-draft"
+"""Version of the snapshot envelope wrapped around frozen 0.2.0-draft payloads."""
+
+
+class SourceManifestEntry(ContractModel):
+    """Provenance of one source contributing to a snapshot."""
+
+    source: NonEmptyStr
+    source_ref: NonEmptyStr
+    retrieved_at: AwareDatetime
+    record_count: StrictInt = Field(ge=0)
+    redistribution_allowed: StrictBool | None = None
+
+    @field_validator("retrieved_at")
+    @classmethod
+    def normalize_retrieved_at_to_utc(cls, value: datetime) -> datetime:
+        """Serialize retrieval timestamps consistently in UTC."""
+
+        return value.astimezone(timezone.utc)
+
+
+class QuarantineSummary(ContractModel):
+    """How many records one source-quality reason removed from a snapshot.
+
+    Summary metadata only: the quarantined payloads themselves stay out of
+    the shared snapshot.
+    """
+
+    reason: NonEmptyStr
+    count: StrictInt = Field(gt=0)
+
+
+class JobSnapshot(ContractModel):
+    """One reproducible job snapshot shared between data/input and intelligence.
+
+    `documents` is the canonical registry: every document a job embeds or
+    references by evidence must also appear here under its own ID.
+    """
+
+    schema_version: str = Field(pattern=r"^0\.2\.1-draft$")
+    snapshot_id: NonEmptyStr
+    created_at: AwareDatetime
+
+    jobs: list[JobRecord]
+    documents: dict[NonEmptyStr, SourceDocument]
+    source_manifest: list[SourceManifestEntry]
+    quarantine: list[QuarantineSummary]
+
+    @field_validator("created_at")
+    @classmethod
+    def normalize_created_at_to_utc(cls, value: datetime) -> datetime:
+        """Serialize snapshot creation timestamps consistently in UTC."""
+
+        return value.astimezone(timezone.utc)
+
+    @model_validator(mode="after")
+    def validate_snapshot_references(self) -> "JobSnapshot":
+        """Registry keys and every job-side document reference must resolve."""
+
+        for document_id, document in self.documents.items():
+            if document.document_id != document_id:
+                raise ValueError(
+                    f"document registry key '{document_id}' does not match "
+                    f"document_id '{document.document_id}'"
+                )
+
+        for job in self.jobs:
+            embedded = [("description", job.description)]
+            embedded.extend(
+                (f"source_documents[{index}]", document)
+                for index, document in enumerate(job.source_documents)
+            )
+
+            for location, document in embedded:
+                registered = self.documents.get(document.document_id)
+                if registered is None:
+                    raise ValueError(
+                        f"job '{job.job_id}' {location} document "
+                        f"'{document.document_id}' is not registered in documents"
+                    )
+                if registered != document:
+                    raise ValueError(
+                        f"job '{job.job_id}' {location} document "
+                        f"'{document.document_id}' differs from the registered copy"
+                    )
+
+            for reference in job.evidence:
+                if reference.document_id not in self.documents:
+                    raise ValueError(
+                        f"job '{job.job_id}' evidence '{reference.evidence_id}' "
+                        f"references unknown document '{reference.document_id}'"
+                    )
+
+        return self
