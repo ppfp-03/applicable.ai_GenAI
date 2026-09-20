@@ -5,12 +5,13 @@
 ## Metadata
 
 - **Task ID:** `J-01 / CandidateProfile + ClarificationRequest + shared fixtures`
-- **Status:** `ready`
+- **Status:** `done`
 - **Owner:** Marco / Group A, shared boundary with Pierpaolo / Group B
 - **Expected project-context version:** `0.4.2-draft`
 - **Expected contract version:** `0.2.0-draft`
 - **Approved decision IDs / human approvals:** `D-034`, `D-035`; Marco + Pierpaolo joint sign-off, 2026-09-20
-- **Final contract freeze:** not yet complete; this task supplies the required implementation and fixture-test evidence
+- **Final contract freeze:** complete for `0.2.0-draft` after observed implementation and fixture/reference verification on 2026-09-20
+- **Observed completion evidence:** implementation commit `03a208a`; `121 passed`; 3/3 shared fixtures passed load -> Pydantic -> serialize -> reload; agreed negative/reference tests passed; post-push branch `a/j01-contracts-a01-input` clean with local and remote pointers aligned at `03a208a`.
 
 ## Authority check
 

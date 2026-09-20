@@ -4,8 +4,8 @@
 
 | Control | Value |
 |---|---|
-| Context version | 0.4.2-draft - candidate/clarification schema jointly approved; fixture verification pending |
-| Contract version | 0.2.0-draft - shared schema jointly approved; final freeze pending shared fixture compatibility, negative and reference tests |
+| Context version | 0.4.3-draft - shared contract 0.2.0-draft frozen after fixture/reference verification |
+| Contract version | 0.2.0-draft - frozen after joint schema sign-off and shared fixture compatibility, negative and reference verification |
 | Created | 2026-09-17 |
 | Last updated | 2026-09-20 |
 | Project deadline | 2026-09-29; exact submission time/timezone still to confirm |
@@ -206,7 +206,7 @@ Normalize HTML safely; do not render untrusted source HTML with unsafe execution
 
 ## 6. Shared contracts - draft v0.2.0
 
-These are the shared **interface contracts** for `0.2.0-draft`. The document/job/requirement structures and the candidate/clarification schema have now received the required joint Marco + Pierpaolo sign-off. The contract is not yet treated as finally frozen: the representative shared fixtures must still pass the agreed load -> Pydantic -> serialize -> reload plus negative/reference validation checks. Any later cross-boundary change requires the approvals defined by project governance and an updated version/fixture.
+These are the frozen shared **interface contracts** for `0.2.0-draft`. The document/job/requirement structures and the candidate/clarification schema received the required joint Marco + Pierpaolo sign-off, and the representative shared fixtures passed the agreed load -> Pydantic -> serialize -> reload plus negative/reference validation checks on 2026-09-20. Any later cross-boundary change requires the approvals defined by project governance and an updated version/fixture.
 
 ### Conventions
 
@@ -270,7 +270,7 @@ Candidate country-code values use valid ISO 3166-1 alpha-2 codes normalized to u
 
 Specialized facts remain canonical in their specialized objects. In particular, work authorization and sponsorship live in `UserDeclarations.work_authorizations` and are not duplicated in `eligibility_answers`.
 
-Candidate provenance is internally resolvable. `cv_document_id` must resolve to `provenance.documents` and reference `kind="cv"`. Questionnaire and clarification document IDs must resolve to registry documents using the already-approved `kind="questionnaire"`; clarification is distinguished by its logical ID list rather than a new document kind. Evidence IDs referenced by candidate fields must resolve in `provenance.evidence`; every `EvidenceRef.document_id` must resolve in `provenance.documents`. `EligibilityAnswer.source_document_id` must resolve in the document registry, and any evidence IDs on that answer must belong to the same source document.
+Candidate provenance is internally resolvable. `cv_document_id` must resolve to `provenance.documents` and reference `kind="cv"`. Questionnaire and clarification document IDs must resolve to registry documents using the already-approved `kind="questionnaire"`; clarification is distinguished by its logical ID list rather than a new document kind. `evidence_id` values are unique within `provenance.evidence`. Evidence IDs referenced by candidate fields must resolve in `provenance.evidence`; every `EvidenceRef.document_id` must resolve in `provenance.documents`. `EligibilityAnswer.source_document_id` must resolve in the document registry, and any evidence IDs on that answer must belong to the same source document.
 
 Citizenships, work authorization, sponsorship needs and protected/sensitive attributes are never inferred from names, universities or proxies. Additional citizenships are collected explicitly. Citizenship is not automatically treated as proof of work authorization unless a separately approved country-specific rule explicitly supports that inference.
 
@@ -306,7 +306,7 @@ For the eligibility-answer family, the shared contract validates only the approv
 
 The LLM may phrase the question, but it cannot create a new destination field or rule. The answer must become structured session data before recomputation. Persistent facts that are broadly useful should be requested in the initial questionnaire rather than repeatedly as job-specific clarification.
 
-Shared compatibility fixtures for this schema are required at:
+Shared compatibility fixtures for this schema are frozen at:
 
 ```text
 tests/fixtures/contracts/v0.2.0-draft/
@@ -315,7 +315,7 @@ tests/fixtures/contracts/v0.2.0-draft/
 └── job_record.json
 ```
 
-The fixture gate is not only syntactic. The three fixtures must pass load -> Pydantic validation -> serialize -> reload plus the agreed negative/reference checks before `0.2.0-draft` is treated as finally frozen.
+The fixture gate is not only syntactic. On 2026-09-20, all three fixtures passed load -> Pydantic validation -> serialize -> reload, and the full contract suite passed the agreed negative/reference checks (`121 passed`) at implementation commit `03a208a`. The `0.2.0-draft` shared contract is therefore frozen at that verified boundary.
 
 ### E. Results - intelligence returns; UI renders
 
@@ -577,7 +577,7 @@ These decisions were provided in the kick-off discussion and are integrated into
 | D-032 | `SESSION_LOGS.md` is the chronological evidence record for work actually performed and does not override current project truth or the current operating plan. | Approved by Marco, 2026-09-18 |
 | D-033 | Execution is role-appropriate: repository/Git workflow is used only where relevant and authorized; chat-only/non-coding contributors deliver verifiable artifacts and handoffs without being forced into software-development mechanics. | Approved by Marco, 2026-09-18 |
 | D-034 | Contract `0.2.0-draft` uses one shared strict Pydantic contract with forbidden extra fields; approved document kinds (`cv`, `job`, `questionnaire`, `ats_metadata`); extraction modes (`live`, `cache`, `fixture`); `JobRecord` namespaced IDs (`<source>:<source_job_id>`), primary `description` plus additional `source_documents`, quarantine for incomplete records; and the approved `RequirementFact`/`JobFacts` structure. `RequirementFact` is intelligence output only; deterministic rule outcomes remain separate. Final contract freeze is still pending CandidateProfile compatibility, final ClarificationRequest fields, and shared sample payloads. | Approved by Marco + Pierpaolo, 2026-09-18 |
-| D-035 | The remaining `0.2.0-draft` candidate/clarification schema is jointly approved: `CandidateProfile` uses evidence-backed semantic fields, explicit preferences/declarations, `dict[constraint_id, list[EligibilityAnswer]]`, and resolvable candidate provenance; country/work-authorization semantics are explicit; `ClarificationRequest` uses closed answer/priority enums and validated `CandidateFieldPath` families. `answer_key` membership for a specific constraint remains a `RuleCatalogue` responsibility, not a shared-contract rule. Shared fixtures are fixed at `tests/fixtures/contracts/v0.2.0-draft/{candidate_profile,clarification_request,job_record}.json`. The Q-08 schema decision is closed; final contract freeze remains contingent on those fixtures passing the agreed round-trip, negative and reference tests. | Approved by Marco + Pierpaolo, 2026-09-20 |
+| D-035 | The remaining `0.2.0-draft` candidate/clarification schema is jointly approved: `CandidateProfile` uses evidence-backed semantic fields, explicit preferences/declarations, `dict[constraint_id, list[EligibilityAnswer]]`, and resolvable candidate provenance; country/work-authorization semantics are explicit; `ClarificationRequest` uses closed answer/priority enums and validated `CandidateFieldPath` families. `answer_key` membership for a specific constraint remains a `RuleCatalogue` responsibility, not a shared-contract rule. Shared fixtures are fixed at `tests/fixtures/contracts/v0.2.0-draft/{candidate_profile,clarification_request,job_record}.json`. The Q-08 schema decision is closed; the fixture verification condition was satisfied on 2026-09-20 by commit `03a208a`, with `121 passed` and 3/3 fixture round-trips, completing the `0.2.0-draft` contract freeze. | Approved by Marco + Pierpaolo, 2026-09-20; verification condition satisfied 2026-09-20 by commit `03a208a`, `121 passed`, and 3/3 fixture round-trips |
 
 ### Proposed implementation defaults - review/freeze before independent implementation
 
@@ -585,7 +585,7 @@ These decisions were provided in the kick-off discussion and are integrated into
 |---|---|---|
 | R-001 | Local Streamlit execution; public hosting not on the first-week critical path | Proposed |
 | R-002 | Python 3.12 compatibility baseline, small verified dependency set and JSON/JSONL snapshots | Proposed; verify actual environments |
-| R-003 | Contract structures in section 6 implemented once in the shared contracts module | `0.2.0-draft` schema jointly approved across document/job/requirement/candidate/clarification structures; final freeze pending shared fixture compatibility, negative and reference tests |
+| R-003 | Contract structures in section 6 implemented once in the shared contracts module | Implemented and frozen for `0.2.0-draft` on 2026-09-20 after shared fixture compatibility, negative and reference verification; implementation evidence at commit `03a208a` |
 | R-004 | Local sentence embeddings/direct cosine similarity; no vector DB | Proposed; exact model/version TO VALIDATE |
 | R-005 | Closed taxonomy initial candidates listed in section 7 | Proposed set; test and freeze before evaluation |
 | R-006 | Missing ranking factors remain null and are normalized/disclosed rather than silently scored zero | Proposed; exact normalization TO VALIDATE |
@@ -604,7 +604,7 @@ Accepting a baseline does not mean the corresponding behavior is implemented or 
 | Q-05 | What are the ranking weights and missing-factor normalization? | Tune only on development examples; freeze before held-out evaluation |
 | Q-06 | Which exact embedding model/version and dependency versions? | Select a small English model, verify license/download/performance, pin tested versions |
 | Q-07 | Can the assigned independent team raters complete the frozen-set ratings? | Confirm availability in `TEAM_MEMBER_STARTER_GUIDES.md`; each rates before discussing disagreements |
-| Q-08 | What exact serializable fields define candidate eligibility answers and `ClarificationRequest`, and do shared sample payloads prove A/B compatibility? | Schema decision closed by joint Marco + Pierpaolo sign-off on 2026-09-20. Verification remains open until the three shared fixtures pass load -> Pydantic -> serialize -> reload plus the agreed negative/reference tests; only then treat `0.2.0-draft` as finally frozen. |
+| Q-08 | What exact serializable fields define candidate eligibility answers and `ClarificationRequest`, and do shared sample payloads prove A/B compatibility? | **Closed 2026-09-20.** Joint schema sign-off was followed by successful verification: all three shared fixtures passed load -> Pydantic -> serialize -> reload, and the full contract suite passed the agreed negative/reference checks (`121 passed`) at commit `03a208a`. `0.2.0-draft` is frozen at this boundary. |
 | Q-09 | What is the exact submission time and timezone? | Verify the official course platform; do not infer from this planning document |
 | Q-10 | How will repository/video be accessible to the grader? | Ensure grader access, working links and redistribution permission for stored source text |
 
