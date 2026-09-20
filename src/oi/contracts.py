@@ -6,10 +6,24 @@ Business rules such as eligibility and ranking live elsewhere.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import re
+from datetime import date, datetime, timezone
 from enum import Enum
+from typing import Annotated, Any
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    AfterValidator,
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    Strict,
+    StrictBool,
+    StrictInt,
+    StrictStr,
+    field_validator,
+    model_validator,
+)
 
 
 CONTRACT_VERSION = "0.2.0-draft"
@@ -235,5 +249,504 @@ class JobRecord(ContractModel):
 
         if self.last_seen_at < self.first_seen_at:
             raise ValueError("last_seen_at cannot be before first_seen_at")
+
+        return self
+
+
+ISO_3166_1_ALPHA_2: frozenset[str] = frozenset(
+    """
+    AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ
+    BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ
+    CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ
+    DE DJ DK DM DO DZ
+    EC EE EG EH ER ES ET
+    FI FJ FK FM FO FR
+    GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY
+    HK HM HN HR HT HU
+    ID IE IL IM IN IO IQ IR IS IT
+    JE JM JO JP
+    KE KG KH KI KM KN KP KR KW KY KZ
+    LA LB LC LI LK LR LS LT LU LV LY
+    MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ
+    NA NC NE NF NG NI NL NO NP NR NU NZ
+    OM
+    PA PE PF PG PH PK PL PM PN PR PS PT PW PY
+    QA
+    RE RO RS RU RW
+    SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ
+    TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ
+    UA UG UM US UY UZ
+    VA VC VE VG VI VN VU
+    WF WS
+    YE YT
+    ZA ZM ZW
+    """.split()
+)
+"""Officially assigned ISO 3166-1 alpha-2 codes, kept local to avoid a new dependency."""
+
+
+def validate_country_code(value: str) -> str:
+    """Accept only uppercase officially assigned ISO 3166-1 alpha-2 codes."""
+
+    if value not in ISO_3166_1_ALPHA_2:
+        raise ValueError(
+            f"'{value}' is not an uppercase ISO 3166-1 alpha-2 country code"
+        )
+    return value
+
+
+def reject_duplicate_country_codes(values: list[str]) -> list[str]:
+    """Country-code collections describe a set, so duplicates are a defect."""
+
+    if len(set(values)) != len(values):
+        raise ValueError("duplicate country codes are not allowed")
+    return values
+
+
+NonEmptyStr = Annotated[str, Field(min_length=1)]
+CountryCode = Annotated[str, AfterValidator(validate_country_code)]
+UniqueCountryCodes = Annotated[
+    list[CountryCode], AfterValidator(reject_duplicate_country_codes)
+]
+
+
+class AnswerState(str, Enum):
+    """Whether a candidate answer carries a value."""
+
+    KNOWN = "known"
+    UNKNOWN = "unknown"
+
+
+class AnswerType(str, Enum):
+    """Logical value type of a candidate answer."""
+
+    BOOLEAN = "boolean"
+    SINGLE_CHOICE = "single_choice"
+    MULTI_CHOICE = "multi_choice"
+    TEXT = "text"
+    DATE = "date"
+    INTEGER = "integer"
+
+
+class ClarificationPriority(str, Enum):
+    """How urgently a clarification should be asked."""
+
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
+
+CHOICE_ANSWER_TYPES = frozenset({AnswerType.SINGLE_CHOICE, AnswerType.MULTI_CHOICE})
+
+
+def _is_exact_str_list(value: Any) -> bool:
+    return type(value) is list and all(type(item) is str for item in value)
+
+
+StrictDate = Annotated[date, Strict()]
+StrictStrList = Annotated[list[StrictStr], Strict()]
+
+EligibilityAnswerValue = (
+    StrictBool | StrictInt | StrictStr | StrictDate | StrictStrList | None
+)
+"""Closed value union for candidate answers.
+
+Every member is strict, so Pydantic coerces across no boundary here: not
+boolean/integer, not string/date, and not tuple or set into list. A `date`
+value therefore has to arrive as a real `date`, which only
+`parse_iso_date_value` produces, and only for a `date` answer.
+"""
+
+
+ANSWER_VALUE_CHECKS = {
+    # `type(...) is` keeps bool out of int and datetime out of date.
+    AnswerType.BOOLEAN: lambda value: type(value) is bool,
+    AnswerType.SINGLE_CHOICE: lambda value: type(value) is str,
+    AnswerType.MULTI_CHOICE: _is_exact_str_list,
+    AnswerType.TEXT: lambda value: type(value) is str,
+    AnswerType.DATE: lambda value: type(value) is date,
+    AnswerType.INTEGER: lambda value: type(value) is int,
+}
+
+
+class CandidatePreferences(ContractModel):
+    """Declared candidate preferences and the optional country perimeter."""
+
+    allowed_country_codes: UniqueCountryCodes | None = None
+    preferred_country_codes: UniqueCountryCodes
+    preferred_role_families: list[NonEmptyStr]
+    preferred_industries: list[NonEmptyStr]
+
+    @model_validator(mode="after")
+    def validate_country_perimeter(self) -> "CandidatePreferences":
+        """A declared perimeter must be usable and must contain the preferences."""
+
+        if self.allowed_country_codes is None:
+            return self
+
+        if not self.allowed_country_codes:
+            raise ValueError(
+                "allowed_country_codes must be non-empty when declared; "
+                "use null for no declared restriction"
+            )
+
+        allowed = set(self.allowed_country_codes)
+        outside = sorted(
+            code for code in self.preferred_country_codes if code not in allowed
+        )
+        if outside:
+            raise ValueError(
+                f"preferred countries outside allowed_country_codes: {outside}"
+            )
+
+        return self
+
+
+class WorkAuthorizationDeclaration(ContractModel):
+    """Candidate-declared work-authorization facts for one country."""
+
+    country_code: CountryCode
+    authorized_to_work: bool | None = None
+    requires_sponsorship: bool | None = None
+    evidence_ids: list[NonEmptyStr]
+
+
+class UserDeclarations(ContractModel):
+    """Candidate-declared citizenship and work-authorization facts."""
+
+    additional_citizenships: UniqueCountryCodes
+    work_authorizations: list[WorkAuthorizationDeclaration]
+
+    @model_validator(mode="after")
+    def validate_one_declaration_per_country(self) -> "UserDeclarations":
+        """Two declarations for one country would make the fact ambiguous."""
+
+        codes = [
+            declaration.country_code for declaration in self.work_authorizations
+        ]
+        if len(set(codes)) != len(codes):
+            raise ValueError(
+                "work_authorizations must hold at most one declaration per country"
+            )
+
+        return self
+
+
+ISO_CALENDAR_DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+"""JSON dates are exactly YYYY-MM-DD; ordinal and week forms are not accepted."""
+
+
+class EligibilityAnswer(ContractModel):
+    """One structured candidate answer feeding the deterministic rule engine."""
+
+    constraint_id: NonEmptyStr
+    answer_key: NonEmptyStr
+    state: AnswerState
+    answer_type: AnswerType
+    value: EligibilityAnswerValue = Field(default=None, union_mode="left_to_right")
+    evidence_ids: list[NonEmptyStr]
+    source_document_id: NonEmptyStr
+
+    @model_validator(mode="before")
+    @classmethod
+    def parse_iso_date_value(cls, data: Any) -> Any:
+        """JSON carries dates as ISO strings; the model holds `date`."""
+
+        if not isinstance(data, dict):
+            return data
+
+        answer_type = data.get("answer_type")
+        if isinstance(answer_type, AnswerType):
+            answer_type = answer_type.value
+        if answer_type != AnswerType.DATE.value:
+            return data
+
+        value = data.get("value")
+        if not isinstance(value, str):
+            return data
+
+        # `date.fromisoformat` alone would also accept ordinal ("20270715")
+        # and week ("2027-W28-4") forms, so the shape is pinned first and the
+        # calendar itself is validated second.
+        if not ISO_CALENDAR_DATE_PATTERN.match(value):
+            raise ValueError("date answers use ISO 'YYYY-MM-DD' values")
+
+        try:
+            parsed = date.fromisoformat(value)
+        except ValueError as error:
+            raise ValueError(
+                "date answers use ISO 'YYYY-MM-DD' values"
+            ) from error
+
+        return {**data, "value": parsed}
+
+    @model_validator(mode="after")
+    def validate_answer_value(self) -> "EligibilityAnswer":
+        """State and answer type together close the accepted value shape."""
+
+        if self.state is AnswerState.UNKNOWN:
+            if self.value is not None:
+                raise ValueError("unknown answers must not carry a value")
+            return self
+
+        if self.value is None:
+            raise ValueError("known answers must carry a non-null value")
+
+        if not ANSWER_VALUE_CHECKS[self.answer_type](self.value):
+            raise ValueError(
+                f"{self.answer_type.value} answers reject value "
+                f"of type '{type(self.value).__name__}'"
+            )
+
+        return self
+
+
+class CandidateProvenance(ContractModel):
+    """Document, evidence and extraction registries backing a candidate profile."""
+
+    questionnaire_document_ids: list[NonEmptyStr]
+    clarification_document_ids: list[NonEmptyStr]
+    documents: dict[NonEmptyStr, SourceDocument]
+    evidence: list[EvidenceRef]
+    extraction: ExtractionReceipt
+
+    @model_validator(mode="after")
+    def validate_registries(self) -> "CandidateProvenance":
+        """Registry keys and every internal reference must resolve."""
+
+        for document_id, document in self.documents.items():
+            if document.document_id != document_id:
+                raise ValueError(
+                    f"document registry key '{document_id}' does not match "
+                    f"document_id '{document.document_id}'"
+                )
+
+        # The registry is keyed by evidence_id downstream, so a repeated ID
+        # would make reference resolution depend on list order.
+        evidence_ids = [reference.evidence_id for reference in self.evidence]
+        if len(set(evidence_ids)) != len(evidence_ids):
+            duplicates = sorted(
+                {
+                    evidence_id
+                    for evidence_id in evidence_ids
+                    if evidence_ids.count(evidence_id) > 1
+                }
+            )
+            raise ValueError(
+                f"evidence_id must be unique in provenance.evidence: {duplicates}"
+            )
+
+        for reference in self.evidence:
+            if reference.document_id not in self.documents:
+                raise ValueError(
+                    f"evidence '{reference.evidence_id}' references unknown "
+                    f"document '{reference.document_id}'"
+                )
+
+        sourced_ids = (
+            ("questionnaire", self.questionnaire_document_ids),
+            ("clarification", self.clarification_document_ids),
+        )
+        for label, document_ids in sourced_ids:
+            for document_id in document_ids:
+                document = self.documents.get(document_id)
+                if document is None:
+                    raise ValueError(
+                        f"{label} document '{document_id}' is not registered "
+                        "in documents"
+                    )
+                if document.kind is not DocumentKind.QUESTIONNAIRE:
+                    raise ValueError(
+                        f"{label} document '{document_id}' must have "
+                        "kind='questionnaire'"
+                    )
+
+        return self
+
+
+class CandidateProfile(ContractModel):
+    """Normalized candidate shared between data/input and intelligence layers."""
+
+    schema_version: str = Field(pattern=r"^0\.2\.0-draft$")
+    candidate_id: NonEmptyStr
+    cv_document_id: NonEmptyStr
+
+    skills: list[SupportedText]
+    education: list[SupportedText]
+    experience: list[SupportedText]
+
+    preferences: CandidatePreferences
+    declarations: UserDeclarations
+    eligibility_answers: dict[NonEmptyStr, list[EligibilityAnswer]]
+    provenance: CandidateProvenance
+
+    @model_validator(mode="after")
+    def validate_candidate_references(self) -> "CandidateProfile":
+        """Every candidate-side reference must resolve inside provenance."""
+
+        documents = self.provenance.documents
+        evidence_by_id = {
+            reference.evidence_id: reference for reference in self.provenance.evidence
+        }
+
+        cv_document = documents.get(self.cv_document_id)
+        if cv_document is None:
+            raise ValueError(
+                f"cv_document_id '{self.cv_document_id}' is not registered "
+                "in provenance.documents"
+            )
+        if cv_document.kind is not DocumentKind.CV:
+            raise ValueError(
+                f"cv_document_id '{self.cv_document_id}' must have kind='cv'"
+            )
+
+        def require_evidence(evidence_ids: list[str], location: str) -> None:
+            for evidence_id in evidence_ids:
+                if evidence_id not in evidence_by_id:
+                    raise ValueError(
+                        f"{location} references unknown evidence '{evidence_id}'"
+                    )
+
+        for field_name in ("skills", "education", "experience"):
+            for index, supported in enumerate(getattr(self, field_name)):
+                require_evidence(supported.evidence_ids, f"{field_name}[{index}]")
+
+        for declaration in self.declarations.work_authorizations:
+            require_evidence(
+                declaration.evidence_ids,
+                f"declarations.work_authorizations.{declaration.country_code}",
+            )
+
+        for constraint_id, answers in self.eligibility_answers.items():
+            for answer in answers:
+                if answer.constraint_id != constraint_id:
+                    raise ValueError(
+                        f"eligibility_answers key '{constraint_id}' does not match "
+                        f"contained constraint_id '{answer.constraint_id}'"
+                    )
+
+                location = f"eligibility_answers.{constraint_id}.{answer.answer_key}"
+                require_evidence(answer.evidence_ids, location)
+
+                if answer.source_document_id not in documents:
+                    raise ValueError(
+                        f"{location} references unknown source document "
+                        f"'{answer.source_document_id}'"
+                    )
+
+                for evidence_id in answer.evidence_ids:
+                    if (
+                        evidence_by_id[evidence_id].document_id
+                        != answer.source_document_id
+                    ):
+                        raise ValueError(
+                            f"{location} evidence '{evidence_id}' must belong to "
+                            f"source document '{answer.source_document_id}'"
+                        )
+
+        return self
+
+
+SIMPLE_CANDIDATE_FIELD_PATHS = frozenset(
+    {
+        "preferences.allowed_country_codes",
+        "preferences.preferred_country_codes",
+        "preferences.preferred_role_families",
+        "preferences.preferred_industries",
+        "declarations.additional_citizenships",
+    }
+)
+
+WORK_AUTHORIZATION_FIELD_PATH_LEAVES = frozenset(
+    {"authorized_to_work", "requires_sponsorship"}
+)
+
+
+def eligibility_field_path_constraint_id(field_path: str) -> str | None:
+    """Return the constraint component of an eligibility path, else None."""
+
+    tokens = field_path.split(".")
+    if len(tokens) == 3 and tokens[0] == "eligibility_answers":
+        return tokens[1]
+    return None
+
+
+def validate_candidate_field_path(value: str) -> str:
+    """Accept only the approved candidate destination families.
+
+    Eligibility paths are checked for structure only. Whether an answer key
+    belongs to a constraint is RuleCatalogue business, not contract shape.
+    """
+
+    if value in SIMPLE_CANDIDATE_FIELD_PATHS:
+        return value
+
+    tokens = value.split(".")
+
+    if (
+        len(tokens) == 4
+        and tokens[0] == "declarations"
+        and tokens[1] == "work_authorizations"
+        and tokens[3] in WORK_AUTHORIZATION_FIELD_PATH_LEAVES
+    ):
+        validate_country_code(tokens[2])
+        return value
+
+    if len(tokens) == 3 and tokens[0] == "eligibility_answers":
+        if not tokens[1] or not tokens[2]:
+            raise ValueError(
+                f"'{value}' needs non-empty constraint and answer-key tokens"
+            )
+        return value
+
+    raise ValueError(f"'{value}' is not an approved candidate field path")
+
+
+CandidateFieldPath = Annotated[str, AfterValidator(validate_candidate_field_path)]
+
+
+class ClarificationRequest(ContractModel):
+    """A targeted question asked when a candidate fact is missing."""
+
+    question_id: NonEmptyStr
+    field_path: CandidateFieldPath | None = None
+    constraint_id: NonEmptyStr | None = None
+    question: NonEmptyStr
+    answer_type: AnswerType
+    allowed_choices: list[NonEmptyStr] | None = None
+    reason: NonEmptyStr
+    job_ids: list[NonEmptyStr]
+    evidence_ids: list[NonEmptyStr]
+    priority: ClarificationPriority
+
+    @model_validator(mode="after")
+    def validate_clarification(self) -> "ClarificationRequest":
+        """A clarification needs a destination and a coherent answer shape."""
+
+        if self.field_path is None and self.constraint_id is None:
+            raise ValueError(
+                "clarification needs at least one of field_path or constraint_id"
+            )
+
+        if self.answer_type in CHOICE_ANSWER_TYPES:
+            if not self.allowed_choices:
+                raise ValueError(
+                    f"{self.answer_type.value} answers need non-empty allowed_choices"
+                )
+        elif self.allowed_choices is not None:
+            raise ValueError(
+                "allowed_choices is only valid for single_choice and multi_choice"
+            )
+
+        if self.field_path is not None and self.constraint_id is not None:
+            path_constraint_id = eligibility_field_path_constraint_id(self.field_path)
+            if (
+                path_constraint_id is not None
+                and path_constraint_id != self.constraint_id
+            ):
+                raise ValueError(
+                    f"field_path constraint '{path_constraint_id}' conflicts with "
+                    f"constraint_id '{self.constraint_id}'"
+                )
 
         return self
