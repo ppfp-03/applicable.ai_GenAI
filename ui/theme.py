@@ -2,8 +2,9 @@
 
 The design system ships two files -- `tokens.css` (custom properties) and
 `bundle.css` (the `aa-` component classes). Both are copied verbatim from
-`design-system/` and must not be hand-edited here; this module only decides
-how they reach the page.
+`design-system/` and must not be hand-edited here. A third file,
+`redesign.css`, is ours: it is loaded last and carries every change the
+redesign makes, so the two copies stay refreshable.
 
 Two wrinkles are worth explaining.
 
@@ -37,9 +38,32 @@ _STATIC_DIR = _UI_DIR.parent / "static"
 _DARK_SELECTOR = '[data-theme="dark"]'
 
 
+def _promote_dark(css: str) -> str:
+    """Rewrite a file's dark block so it applies at `:root`.
+
+    Only the selector changes; the declarations inside are left exactly as
+    they were written. The light block keeps its own `:root` rule, but the
+    dark one comes later in the file and therefore wins.
+
+    Args:
+        css: The stylesheet text.
+
+    Returns:
+        The same text with the dark scope promoted and any remaining
+        attribute-scoped rules (e.g. `[data-theme=dark] .x`) unscoped, since
+        those selectors could never match once Streamlit owns `<html>`.
+    """
+    css = css.replace(_DARK_SELECTOR + " {", ":root {")
+    return re.sub(re.escape(_DARK_SELECTOR) + r"\s+", "", css)
+
+
 @lru_cache(maxsize=2)
 def _stylesheet(dark: bool) -> str:
     """Build the stylesheet for one theme, read from disk once per theme.
+
+    Three files, in cascade order: `tokens.css` and `bundle.css` are copies
+    from the design system and are never hand-edited, so everything the
+    redesign changes lives in `redesign.css` and is loaded last.
 
     Args:
         dark: Whether to promote the dark palette to `:root`.
@@ -49,6 +73,7 @@ def _stylesheet(dark: bool) -> str:
     """
     tokens = (_UI_DIR / "tokens.css").read_text(encoding="utf-8")
     bundle = (_UI_DIR / "bundle.css").read_text(encoding="utf-8")
+    redesign = (_UI_DIR / "redesign.css").read_text(encoding="utf-8")
 
     # The stylesheet is served from static/, so font URLs resolve relative to
     # that directory: the "app/static/" prefix the file carries would look for
@@ -56,16 +81,10 @@ def _stylesheet(dark: bool) -> str:
     tokens = tokens.replace("url('app/static/", "url('")
 
     if dark:
-        # Promote the dark block to :root. Only the selector changes; the
-        # declarations inside it are left exactly as the design system wrote
-        # them. The light block keeps its own :root rule, but the dark one
-        # comes later in the file and therefore wins.
-        tokens = tokens.replace(_DARK_SELECTOR + " {", ":root {")
-        # Any remaining attribute-scoped rules (e.g. "[data-theme=dark] .x")
-        # would never match, so drop the now-dead scope from them too.
-        tokens = re.sub(re.escape(_DARK_SELECTOR) + r"\s+", "", tokens)
+        tokens = _promote_dark(tokens)
+        redesign = _promote_dark(redesign)
 
-    return tokens + "\n" + bundle
+    return "\n".join((tokens, bundle, redesign))
 
 
 def is_dark() -> bool:

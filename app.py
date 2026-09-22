@@ -1,8 +1,9 @@
 """Applicable.ai — entry point.
 
 Sets up the page, injects the design system's stylesheet once, and hands over
-to `st.navigation`. Pages live in `pages/` and are declared here so the sidebar
-order is explicit rather than alphabetical.
+to `st.navigation`. Pages are declared here, grouped the way the information
+architecture groups them: decide, track, you. The order is explicit rather
+than alphabetical, because it is the order of the work.
 """
 
 from __future__ import annotations
@@ -15,12 +16,16 @@ import streamlit as st
 # The ingestion packages (oi.*) live under src/.
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
-from ui.theme import inject, is_dark  # noqa: E402  (after sys.path setup)
+from core import demo, state  # noqa: E402  (after sys.path setup)
+from ui.components import set_monograms  # noqa: E402
+from ui.theme import inject, is_dark  # noqa: E402
 
 st.set_page_config(
     page_title="Applicable.ai",
     page_icon="static/applicable-mark.svg",
-    layout="centered",
+    # The opportunities list and its detail pane need the width; every page
+    # caps its own content, so wide here does not mean sprawling there.
+    layout="wide",
     initial_sidebar_state="expanded",
 )
 
@@ -33,13 +38,28 @@ st.logo(
     size="large",
 )
 
-pages = [
-    st.Page("pages/your_week.py", title="Your week", default=True),
-    st.Page("pages/explore.py", title="Explore"),
-    st.Page("pages/tracker.py", title="Tracker"),
-    st.Page("pages/compare.py", title="Compare"),
-    st.Page("pages/profile.py", title="My profile"),
-]
+data = demo.load()
+set_monograms(data.company_monograms)
+state.init(data)
+
+pages = {
+    "Decide": [
+        st.Page("views/today.py", title="Today", icon=":material/today:", default=True),
+        st.Page(
+            "views/opportunities.py",
+            title="Opportunities",
+            icon=":material/explore:",
+        ),
+    ],
+    "Track": [
+        st.Page("views/tracker.py", title="Tracker", icon=":material/view_kanban:"),
+    ],
+    "You": [
+        st.Page("views/profile.py", title="Profile", icon=":material/person:"),
+        st.Page("views/preferences.py", title="Preferences", icon=":material/tune:"),
+        st.Page("views/onboarding.py", title="Set up", icon=":material/upload_file:"),
+    ],
+}
 
 page = st.navigation(pages, position="sidebar")
 
