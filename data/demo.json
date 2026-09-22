@@ -1,0 +1,616 @@
+{
+  "_comment": "Demo data for Giulia Rossi, matching design-system/screenshots/ScreenYourWeek.png. Companies are fictional by design (see design-system/README.md, Naming). Dates assume 22 Sep 2026.",
+  "today": "2026-09-22",
+  "profile": {
+    "candidate_id": "giulia-rossi",
+    "name": "Giulia Rossi",
+    "citizenship": "IT",
+    "education": [
+      "MSc Finance, Bocconi, 2025–2027"
+    ],
+    "experience": [
+      "Summer Intern, IB — Mediobanco"
+    ],
+    "languages": [
+      "Italian native",
+      "English C1, IELTS 7.5"
+    ],
+    "skills": [
+      "DCF modelling",
+      "LBO",
+      "Variance analysis",
+      "PowerPoint",
+      "Excel"
+    ]
+  },
+  "week": {
+    "hours_budget": 5.0,
+    "hours_planned": 3.5
+  },
+  "changes": {
+    "text": "UniCreda invited you to interview on Tue 29 Sep · 2 new postings"
+  },
+  "opportunities": [
+    {
+      "id": "lazarde-ma",
+      "title": "Summer Analyst · M&A",
+      "company": "Lazarde & Co.",
+      "city": "Milan",
+      "contract": "Internship",
+      "contract_months": 3,
+      "country": "IT",
+      "deadline_days": 6,
+      "verdict": "apply",
+      "priority": 92,
+      "provisional": false,
+      "why": {
+        "text": "Your DCF model for a €40M target is exactly the valuation work they ask for.",
+        "highlight": [
+          5,
+          32
+        ],
+        "source": {
+          "kind": "CV",
+          "where": "p.1 · Experience"
+        }
+      },
+      "factors": {
+        "cv_fit": 34.0,
+        "pref_fit": 27.0,
+        "deadline": 16.4,
+        "freshness": 9.5,
+        "penalty": -2.0
+      },
+      "before_you_apply": [
+        [
+          "Tailor CV bullet 3 toward LBO",
+          1.0
+        ],
+        [
+          "Short cover note, 200 words",
+          0.5
+        ]
+      ],
+      "requirements": [
+        {
+          "ask": "PowerPoint, professional standard",
+          "kind": "must",
+          "status": "confirm",
+          "evidence": null,
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.4"
+          },
+          "question_id": "q-powerpoint"
+        },
+        {
+          "ask": "Master's, graduating 2027–28",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "MSc Finance, Bocconi, 2025–2027",
+            "highlight": [
+              0,
+              31
+            ],
+            "source": {
+              "kind": "CV",
+              "where": "p.1 · Education"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.1"
+          }
+        },
+        {
+          "ask": "Right to work in Italy",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "Italian citizen (EU)",
+            "highlight": null,
+            "source": {
+              "kind": "RULE",
+              "where": "IT · EU/EFTA citizen"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.2"
+          }
+        },
+        {
+          "ask": "Fluent English and Italian",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "Italian native · English C1, IELTS 7.5",
+            "highlight": [
+              17,
+              38
+            ],
+            "source": {
+              "kind": "CV",
+              "where": "p.2 · Languages"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.3"
+          }
+        },
+        {
+          "ask": "Available Jun–Aug 2027",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "Free from Jun 2027",
+            "highlight": null,
+            "source": {
+              "kind": "YOU",
+              "where": "Availability · 22 Sep 2026"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Dates"
+          }
+        },
+        {
+          "ask": "Prior finance internship",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "Summer Intern, IB — Mediobanco",
+            "highlight": [
+              0,
+              30
+            ],
+            "source": {
+              "kind": "CV",
+              "where": "p.1 · Experience"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.5"
+          }
+        }
+      ]
+    },
+    {
+      "id": "bolton-restructuring",
+      "title": "Associate Intern · Restructuring",
+      "company": "Bolton Consulting Group",
+      "city": "Milan",
+      "contract": "Internship",
+      "contract_months": 3,
+      "country": "IT",
+      "deadline_days": 19,
+      "verdict": "apply",
+      "priority": 81,
+      "provisional": false,
+      "why": {
+        "text": "Your variance analysis at Replai covers their numbers test.",
+        "highlight": [
+          5,
+          32
+        ],
+        "source": {
+          "kind": "CV",
+          "where": "p.1 · Experience"
+        }
+      },
+      "factors": {
+        "cv_fit": 30.0,
+        "pref_fit": 24.0,
+        "deadline": 14.0,
+        "freshness": 13.0
+      },
+      "before_you_apply": [
+        [
+          "Prepare the numbers test",
+          1.5
+        ]
+      ],
+      "requirements": [
+        {
+          "ask": "Quantitative coursework",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "MSc Finance, Bocconi, 2025–2027",
+            "highlight": [
+              0,
+              31
+            ],
+            "source": {
+              "kind": "CV",
+              "where": "p.1 · Education"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.1"
+          }
+        },
+        {
+          "ask": "Right to work in Italy",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "Italian citizen (EU)",
+            "highlight": null,
+            "source": {
+              "kind": "RULE",
+              "where": "IT · EU/EFTA citizen"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.2"
+          }
+        },
+        {
+          "ask": "Fluent English",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "English C1, IELTS 7.5",
+            "highlight": [
+              0,
+              21
+            ],
+            "source": {
+              "kind": "CV",
+              "where": "p.2 · Languages"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.3"
+          }
+        },
+        {
+          "ask": "Available summer 2027",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "Free from Jun 2027",
+            "highlight": null,
+            "source": {
+              "kind": "YOU",
+              "where": "Availability · 22 Sep 2026"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Dates"
+          }
+        },
+        {
+          "ask": "Consulting exposure",
+          "kind": "nice",
+          "status": "confirm",
+          "evidence": null,
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Nice to have"
+          }
+        }
+      ]
+    },
+    {
+      "id": "deutsch-credit",
+      "title": "Graduate Analyst · Credit",
+      "company": "Deutsch Bank",
+      "city": "Milan",
+      "contract": "Graduate",
+      "contract_months": 24,
+      "country": "IT",
+      "deadline_days": 24,
+      "verdict": "apply",
+      "priority": 71,
+      "provisional": false,
+      "why": {
+        "text": "Your SME credit scoring thesis is the core of what this team does.",
+        "highlight": [
+          5,
+          30
+        ],
+        "source": {
+          "kind": "CV",
+          "where": "p.1 · Education"
+        }
+      },
+      "factors": {
+        "cv_fit": 28.0,
+        "pref_fit": 20.0,
+        "deadline": 12.0,
+        "freshness": 11.0
+      },
+      "before_you_apply": [
+        [
+          "Summarise the thesis in 150 words",
+          1.0
+        ]
+      ],
+      "requirements": [
+        {
+          "ask": "Master's in a quantitative field",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "MSc Finance, Bocconi, 2025–2027",
+            "highlight": [
+              0,
+              31
+            ],
+            "source": {
+              "kind": "CV",
+              "where": "p.1 · Education"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.1"
+          }
+        },
+        {
+          "ask": "Right to work in Italy",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "Italian citizen (EU)",
+            "highlight": null,
+            "source": {
+              "kind": "RULE",
+              "where": "IT · EU/EFTA citizen"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.2"
+          }
+        },
+        {
+          "ask": "Credit risk knowledge",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "SME credit scoring thesis",
+            "highlight": [
+              0,
+              25
+            ],
+            "source": {
+              "kind": "CV",
+              "where": "p.1 · Education"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.3"
+          }
+        },
+        {
+          "ask": "Graduating by 2027",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "MSc Finance, Bocconi, 2025–2027",
+            "highlight": [
+              27,
+              31
+            ],
+            "source": {
+              "kind": "CV",
+              "where": "p.1 · Education"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Dates"
+          }
+        }
+      ]
+    },
+    {
+      "id": "nestella-graduate",
+      "title": "Graduate Programme · Finance",
+      "company": "Nestella",
+      "city": "Zurich",
+      "contract": "Graduate",
+      "contract_months": 18,
+      "country": "CH",
+      "deadline_days": 30,
+      "verdict": "clarify",
+      "priority": 68,
+      "provisional": true,
+      "why": {
+        "text": "Your valuation coursework fits, but they ask for German B2.",
+        "highlight": [
+          5,
+          25
+        ],
+        "source": {
+          "kind": "JOB",
+          "where": "§Requirements, l.4"
+        }
+      },
+      "factors": {
+        "cv_fit": 26.0,
+        "pref_fit": 18.0,
+        "deadline": 13.0,
+        "freshness": 11.0
+      },
+      "before_you_apply": [],
+      "requirements": [
+        {
+          "ask": "German B2",
+          "kind": "must",
+          "status": "confirm",
+          "evidence": null,
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.4"
+          },
+          "question_id": "q-german"
+        },
+        {
+          "ask": "Right to work in Switzerland",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "B permit (EU/EFTA), valid 5 years",
+            "highlight": null,
+            "source": {
+              "kind": "RULE",
+              "where": "CH · EU/EFTA · contract ≥ 12 months"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.2"
+          }
+        },
+        {
+          "ask": "Master's in finance or economics",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "MSc Finance, Bocconi, 2025–2027",
+            "highlight": [
+              0,
+              31
+            ],
+            "source": {
+              "kind": "CV",
+              "where": "p.1 · Education"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "roshe-analyst",
+      "title": "Analyst · Corporate Finance",
+      "company": "Roshe",
+      "city": "Basel",
+      "contract": "Graduate",
+      "contract_months": 12,
+      "country": "CH",
+      "deadline_days": 40,
+      "verdict": "clarify",
+      "priority": 64,
+      "provisional": true,
+      "why": {
+        "text": "Strong fit on modelling, but the role states German B2 as a requirement.",
+        "highlight": [
+          45,
+          54
+        ],
+        "source": {
+          "kind": "JOB",
+          "where": "§Requirements, l.3"
+        }
+      },
+      "factors": {
+        "cv_fit": 24.0,
+        "pref_fit": 17.0,
+        "deadline": 12.0,
+        "freshness": 11.0
+      },
+      "before_you_apply": [],
+      "requirements": [
+        {
+          "ask": "German B2",
+          "kind": "must",
+          "status": "confirm",
+          "evidence": null,
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.3"
+          },
+          "question_id": "q-german"
+        },
+        {
+          "ask": "Right to work in Switzerland",
+          "kind": "must",
+          "status": "met",
+          "evidence": {
+            "text": "B permit (EU/EFTA), valid 5 years",
+            "highlight": null,
+            "source": {
+              "kind": "RULE",
+              "where": "CH · EU/EFTA · contract ≥ 12 months"
+            }
+          },
+          "job_source": {
+            "kind": "JOB",
+            "where": "§Requirements, l.1"
+          }
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-german",
+      "text": "What's your German level?",
+      "reason": {
+        "text": "Nestella and Roshe require German B2.",
+        "highlight": [
+          27,
+          36
+        ],
+        "source": {
+          "kind": "JOB",
+          "where": "§Requirements"
+        }
+      },
+      "options": [
+        "A1–A2",
+        "B1",
+        "B2+",
+        "Not sure"
+      ],
+      "unlocks": [
+        "nestella-graduate",
+        "roshe-analyst"
+      ],
+      "impact": "could add a 4th"
+    },
+    {
+      "id": "q-powerpoint",
+      "text": "How would you rate your PowerPoint?",
+      "reason": {
+        "text": "Lazarde asks for PowerPoint at a professional standard.",
+        "highlight": [
+          17,
+          54
+        ],
+        "source": {
+          "kind": "JOB",
+          "where": "§Requirements, l.4"
+        }
+      },
+      "options": [
+        "Basic",
+        "Confident",
+        "Professional",
+        "Not sure"
+      ],
+      "unlocks": [
+        "lazarde-ma"
+      ],
+      "impact": "confirms #1"
+    }
+  ],
+  "not_for_now_count": 9
+}
