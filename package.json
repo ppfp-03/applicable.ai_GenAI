@@ -4,6 +4,8 @@
   "private": true,
   "description": "Applicable.ai Streamlit development launcher",
   "scripts": {
-    "dev": "node scripts/dev.cjs"
+    "dev": "node scripts/dev.cjs",
+    "setup": "python3 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt",
+    "test": "node scripts/test.cjs"
   }
 }
