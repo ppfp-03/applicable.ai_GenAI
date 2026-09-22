@@ -54,6 +54,17 @@ Unless the task brief explicitly overrides these rules:
 - do not discard or overwrite unrelated user changes;
 - do not modify files outside the task's allowed-file list.
 
+### Agent-first file editing
+
+When a task authorizes file modification and the agent has working-tree access, the agent makes the allowed edits itself and runs the required verification.
+
+- Do not hand the human shell heredocs, `cat > file`, manual editor steps, or equivalent as a substitute for an edit the agent can make itself.
+- Limit human-facing terminal instructions to control-plane Git actions, environment/access/credential steps, or genuine tool limitations.
+- Editing authorization is not Git authorization. It does not permit `git add`, commit, push, merge, rebase, reset, or history rewriting; the restrictions above still apply.
+- If a task explicitly authorizes named Git actions, perform only those named actions and report exact results.
+- For merge/conflict tasks, edit the allowed conflict files and run verification. Staging or continuing the merge still requires explicit authorization unless the task says otherwise.
+- If the required tool or repository access is unavailable, report that limitation first, then give the minimum safe manual fallback.
+
 ### Task branches
 
 For repository coding work, use a new branch for each new independently reviewable task or implementation phase.
