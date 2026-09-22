@@ -1,10 +1,11 @@
 {
   "name": "applicable-ai",
+  "version": "0.1.0",
   "private": true,
-  "description": "npm script wrappers for the Python/Streamlit application",
+  "description": "Applicable.ai Streamlit development launcher",
   "scripts": {
-    "dev": ".venv/bin/python -m streamlit run app.py",
+    "dev": "node scripts/dev.cjs",
     "setup": "python3 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt",
-    "test": ".venv/bin/python -m pytest"
+    "test": "node scripts/test.cjs"
   }
 }
