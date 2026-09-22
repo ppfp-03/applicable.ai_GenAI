@@ -15,5 +15,9 @@ __pycache__/
 .coverage
 htmlcov/
 
+# Node artifacts (npm scripts here only wrap Python commands)
+node_modules/
+package-lock.json
+
 # Operating system files
 .DS_Store
