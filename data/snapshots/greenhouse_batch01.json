@@ -1,0 +1,684 @@
+{
+  "schema_version": "0.2.1-draft",
+  "snapshot_id": "greenhouse-batch01",
+  "created_at": "2026-09-23T15:20:58Z",
+  "jobs": [
+    {
+      "schema_version": "0.2.0-draft",
+      "job_id": "greenhouse:5174914",
+      "source": "greenhouse",
+      "source_job_id": "5174914",
+      "company": "Charles River Associates",
+      "title": "Intern (European Competition practice) - m/f/d",
+      "url": "https://job-boards.greenhouse.io/charlesriverassociates/jobs/5174914",
+      "description": {
+        "document_id": "greenhouse:5174914:description",
+        "kind": "job",
+        "text": "About Charles River Associates\nCharles River Associates is a leading global consulting firm that provides economic, financial, and business management expertise to major law firms, corporations and governments around the world. CRA advises clients on economic and financial matters pertaining to litigation and regulatory proceedings, and guides corporations through critical business strategy and performance-related issues. Since 1965, clients have engaged CRA for its combination of industry experience and rigorous, fact-based analysis that provide clients with clear, implementable solutions to complex business concerns.\nPosition Overview\nCRA's European Competition practice specialises in providing economic advice on matters of competition policy and regulation. We provide advice in relation to all types of competition matters, including mergers and acquisitions, abuse of dominance, cartels, market investigations, intellectual property, and state aid. We have played a key role in many cases that have shaped European competition policy in recent years: from aerospace to software, and manufacturing to transportation. More recently, we have been at the forefront of economic thinking in antitrust investigations and regulation in the tech sector.\nInterns work closely with senior staff on projects across a variety of industries and will gain a good understanding of what it is like to work as an economist at CRA. An intern would typically:\n- Conduct analyses and collect evidence from data and research that support our expert opinions and business recommendations\n- Perform regression analyses in statistical analysis programs (such as Stata, Python, R), including large data projects requiring the use of cloud computing\n- Build economic models tailored to the issues at hand and supporting our expert opinions and business recommendations\n- Assist in the development and presentation of client deliverables, including expert reports and white papers\n- Communicate complicated economic concepts and arguments to internal teams in an understandable, accessible manner\n- Ensure the integrity and accuracy of analyses and opinions.\nDesired Qualifications\n- Master's or PhD candidates studying economics with a strong foundation in microeconomics, preferably with a specialisation in industrial economics and/or econometrics\n- Fluency in English, other language skills are considered an asset\n- High degree of numeracy, ability to analyse data, familiarity with econometric techniques\n- Exceptional written and oral communication skills\n- Strong teamwork and collaboration capabilities\n- Excellent time management and task prioritisation skills\nTo Apply\nTo be considered for this position, please submit the following:\n- Curriculum Vitae– please include current contact information\n- Cover letter– please describe your interest in CRA’s European Competition practice and state when you would be available\n- Academic results– from all relevant degrees\n- Writing sample (optional)– a sole-authored project (class paper, thesis, research paper, or similar)\nApplications will be reviewed on a rolling basis. The internship duration is usually three to six months, with flexible start dates throughout the year. The internship is paid, and we welcome candidates who are available to start from January 2027 onwards.\nWork Location Flexibility\nCharles River Associates creates a work environment that enables our colleagues to benefit from being together in the office to best deliver on our promise of career growth, mentorship and inclusivity. At the same time, we recognise that individuals realise a range of benefits when working from home periodically. We currently ask that individuals spend 3 to 4 days a week on average working in the office (which may include traveling to another Charles River Associates office or to a client's location), with specific days determined in coordination with your practice or team. At certain times of the year (e.g. holiday periods), additional remote work options are offered to those whose work commitments permit it, although our offices remain open for those who choose or need to be there.\nInternship Benefits\nAs an intern in our Munich office, you will have access to a monthly mobility allowance, which can be used towards your commute or other eligible travel expenses. You will also enjoy weekly team lunches and be invited to regular social events, providing great opportunities to connect with colleagues and build your network within the firm.\nOur Commitment to Diversity\nCharles River Associates is an equal opportunity employer. As part of our focus on equity and inclusion, we work to ensure a fair and consistent hiring process. We celebrate diversity and we are committed to an inclusive work environment.",
+        "content_hash": "9d462664cb281854c6fbfb0e53baa42539f84c06d2e86d549fa12b8d4dd71810",
+        "source_ref": "https://boards-api.greenhouse.io/v1/boards/charlesriverassociates/jobs/5174914"
+      },
+      "source_documents": [
+        {
+          "document_id": "greenhouse:5174914:ats_metadata",
+          "kind": "ats_metadata",
+          "text": "{\"absolute_url\":\"https://job-boards.greenhouse.io/charlesriverassociates/jobs/5174914\",\"application_deadline\":null,\"company_name\":\"Charles River Associates\",\"first_published\":\"2023-07-13T09:30:41-04:00\",\"id\":5174914,\"internal_job_id\":2584890,\"language\":\"en\",\"location\":{\"name\":\"Dusseldorf, Germany; Munich, Germany\"},\"title\":\"Intern (European Competition practice) - m/f/d\",\"updated_at\":\"2026-09-01T00:09:19-04:00\"}",
+          "content_hash": "db7495353602771de9168cb1c0b2ea82db506f64e08ca5d877d6430f660b2bb1",
+          "source_ref": "https://boards-api.greenhouse.io/v1/boards/charlesriverassociates/jobs/5174914"
+        }
+      ],
+      "locations": [
+        {
+          "country_code": null,
+          "city": "Dusseldorf, Germany; Munich, Germany",
+          "evidence_ids": [
+            "greenhouse:5174914:location"
+          ]
+        }
+      ],
+      "source_published_at": "2023-07-13T13:30:41Z",
+      "source_updated_at": "2026-09-01T04:09:19Z",
+      "deadline_at": null,
+      "first_seen_at": "2026-09-23T15:20:58Z",
+      "last_seen_at": "2026-09-23T15:20:58Z",
+      "active_state": "unknown",
+      "discovery_kind": "initial_snapshot",
+      "facts": null,
+      "evidence": [
+        {
+          "evidence_id": "greenhouse:5174914:location",
+          "document_id": "greenhouse:5174914:ats_metadata",
+          "quote": "Dusseldorf, Germany; Munich, Germany",
+          "field_path": "locations"
+        },
+        {
+          "evidence_id": "greenhouse:5174914:published",
+          "document_id": "greenhouse:5174914:ats_metadata",
+          "quote": "2023-07-13T09:30:41-04:00",
+          "field_path": "source_published_at"
+        },
+        {
+          "evidence_id": "greenhouse:5174914:updated",
+          "document_id": "greenhouse:5174914:ats_metadata",
+          "quote": "2026-09-01T00:09:19-04:00",
+          "field_path": "source_updated_at"
+        }
+      ],
+      "extraction": null
+    },
+    {
+      "schema_version": "0.2.0-draft",
+      "job_id": "greenhouse:5390013008",
+      "source": "greenhouse",
+      "source_job_id": "5390013008",
+      "company": "Temus",
+      "title": "Consulting Intern (Jan - May 2027)",
+      "url": "https://job-boards.greenhouse.io/temus/jobs/5390013008",
+      "description": {
+        "document_id": "greenhouse:5390013008:description",
+        "kind": "job",
+        "text": "Temus is a Temasek-backed consulting firm providing digital transformation solutions for the private and public sectors. We aspire to be a strategic partner in realising the Singapore Government’s Smart Nation vision. We are headquartered in Singapore and have more than 400 employees across a wide range of disciplines in strategy, design, architecture, technology, data & AI.\nRole purpose\nAn Intern works in project teams, which may be led by a Manager or Director. The expectation is for the Intern to play an active role in supporting the consulting team in defining, preparing, and delivering services and deliverables to clients. The role will provide a learning opportunity for the intern and valuable support to the organization.\nKey accountabilities\n- Work creatively and analytically to support problem-solving of business requirements\n- Gathering and analyzing data from secondary and primary research\n- Synthesize complex information and produce clear written outcomes\n- Help develop highly engaging presentations to make the case for change\n- Effectively communicate (written and oral) within the team and if needed, with project stakeholders\n- Actively contribute within a team-oriented environment\nProfessional skills\n- Good numerical and analytical skills\n- Attention to detail\n- Teamworking skills\n- Good oral and written communication skills\n- IT skills (e.g. Microsoft Office)\n- Self-motivation\n- Creative and innovative mindset\nPersonality and Interpersonal Skills\n- Ability to handle intensive workloads in a fast-paced setting\n- An effective team player, dedicated to contributing towards the outcome desired by the team\n- Deeply curious about business and technology, highly motivated to have an impact on clients, and interested in a variety of client issues\nQualifications\n- Pursuing an undergraduate or graduate degree\n- All-round achiever and outstanding academic record\n- Demonstrated leadership in extracurricular activities\n- Experience in project work\n- Fluent in English and preferably in another regional language\nTemus is an equal opportunities employer. We welcome applications from all. We do not discriminate by race, religion, belief, ethnicity, origin, disability, age, partnership status, sexual orientation, or gender identity.\nWe see the diversity of our team as a strategic advantage, and we work actively to maintain it.\nBy applying for this role, you have read and acknowledge the data privacy statement via this link - temus.com/job-applicant-data-protection/",
+        "content_hash": "fc6c1658527d172e5b94fac46199560cf9ae3503ab2cab710c325d2362cde733",
+        "source_ref": "https://boards-api.greenhouse.io/v1/boards/temus/jobs/5390013008"
+      },
+      "source_documents": [
+        {
+          "document_id": "greenhouse:5390013008:ats_metadata",
+          "kind": "ats_metadata",
+          "text": "{\"absolute_url\":\"https://job-boards.greenhouse.io/temus/jobs/5390013008\",\"application_deadline\":null,\"company_name\":\"Temus\",\"first_published\":\"2026-08-13T22:34:19-04:00\",\"id\":5390013008,\"internal_job_id\":4532413008,\"language\":\"en\",\"location\":{\"name\":\"Singapore\"},\"title\":\"Consulting Intern (Jan - May 2027)\",\"updated_at\":\"2026-08-13T22:34:19-04:00\"}",
+          "content_hash": "09a444090e7dbcc31f419640bfc5c439d83120d10a557cd120f189213c2fb706",
+          "source_ref": "https://boards-api.greenhouse.io/v1/boards/temus/jobs/5390013008"
+        }
+      ],
+      "locations": [
+        {
+          "country_code": null,
+          "city": "Singapore",
+          "evidence_ids": [
+            "greenhouse:5390013008:location"
+          ]
+        }
+      ],
+      "source_published_at": "2026-08-14T02:34:19Z",
+      "source_updated_at": "2026-08-14T02:34:19Z",
+      "deadline_at": null,
+      "first_seen_at": "2026-09-23T15:20:58Z",
+      "last_seen_at": "2026-09-23T15:20:58Z",
+      "active_state": "unknown",
+      "discovery_kind": "initial_snapshot",
+      "facts": null,
+      "evidence": [
+        {
+          "evidence_id": "greenhouse:5390013008:location",
+          "document_id": "greenhouse:5390013008:ats_metadata",
+          "quote": "Singapore",
+          "field_path": "locations"
+        },
+        {
+          "evidence_id": "greenhouse:5390013008:published",
+          "document_id": "greenhouse:5390013008:ats_metadata",
+          "quote": "2026-08-13T22:34:19-04:00",
+          "field_path": "source_published_at"
+        },
+        {
+          "evidence_id": "greenhouse:5390013008:updated",
+          "document_id": "greenhouse:5390013008:ats_metadata",
+          "quote": "2026-08-13T22:34:19-04:00",
+          "field_path": "source_updated_at"
+        }
+      ],
+      "extraction": null
+    },
+    {
+      "schema_version": "0.2.0-draft",
+      "job_id": "greenhouse:8784142002",
+      "source": "greenhouse",
+      "source_job_id": "8784142002",
+      "company": "Rothesay Graduates",
+      "title": "2027 Summer Internship Programme - Trading and Asset Origination",
+      "url": "https://job-boards.greenhouse.io/rothesaygraduates/jobs/8784142002",
+      "description": {
+        "document_id": "greenhouse:8784142002:description",
+        "kind": "job",
+        "text": "Application deadline: 8th November 2026\nProgramme start date: June 2027\nEligibility: Penultimate year students graduating in Summer 2028\nWho we are:\nRothesay is the UK’s largest pensions insurance specialist, purpose-built to protect pension schemes and their members’ pensions. With over £74 billion of assets under management, we secure the pensions of nearly one million people and pay out, on average, approximately £355 million in pension payments each month.\nRothesay is dedicated to providing excellence in customer service alongside prudent underwriting, a conservative investment strategy and the careful management of risk. We are trusted by the pension schemes of some of the UK’s best known companies to provide pension solutions, including British Airways, Cadbury’s, the Civil Aviation Authority, the Co-Operative Group, National Grid, NatWest, Morrisons and Telent.\nAt Rothesay, we are striving to transform our industry. We believe deeply in creating real security for the future and our leadership in finding new and better ways to do that is the key to our success. To do that, we need the very brightest original thinkers to bring creativity as well as rigour. Rothesay is a rewarding place to work, where quality people can thrive and prosper. We pride ourselves on the connections our people build, many of whom have been with us for over ten years.\nInternship Programme:\nOur internship programme is designed to provide hands on work experience within a fast-pace financial services environment, allowing you to develop the key skills to jump-start your career.\nThe 8-week structured programme will start with a fundamentals week offering insight into Rothesay, your team and the financial services industry. Throughout the programme there will be both on-desk and off-desk technical and business skills training, providing career building exposure to accelerate your future after you graduate. You will gain visibility and experience in a flat structure, with the opportunity to network and socialise across different levels and teams throughout the firm.\nWhat you’ll do:\nWe are currently looking to hire interns to join our Trading and Asset Origination functions. We have roles across asset origination, trading and quantitative risk trading. Your application will be considered across all these business areas.\nOur trading and asset origination functions are key in managing our balance sheet and ensuring the origination, evaluation and execution of key assets. The teams work in a fast-paced environment, and you will be joining a high calibre multi-disciplined department. We are looking for driven individuals with strong numerical and analytical capabilities.\nThe teams:\nTrading:\nThe trading team is responsible for the analysis, risk management and trade execution of liquid financial instruments relevant to Rothesay. The team particularly focuses on relative values and deployment opportunities across our asset universe for alpha generation, as well as managing the firm’s macro risk positions. Another significant part of the role entails collaboration with our internal teams and interaction with external counterparties.\nAsset origination:\nThe asset origination team source potential deals and manage the deal execution process in less liquid markets. These deals are typically large and can involve complex transaction structures. Building out dynamic financial models you will have the opportunity to conduct detailed analysis and identify the potential risks of these deals. You’ll have the chance to build strong commercial skills and a solid project management toolkit, whilst assisting in the management of internal and external stakeholders during deal execution.\nQuantitative risk trading:\nThe quantitative risk trading team focuses on quantitative analysis of potential assets the firm have the opportunity to purchase, as well as taking a holistic approach to risk management and hedging strategy of the growing portfolio. The team specialises in valuing the most complex elements of the growing asset pool and managing the more exotic risks Rothesay faces, so offers a great growth opportunity for technically strong candidates.\nWhat we’re looking for:\n- Original, collaborative, dedicated and meticulous candidates who are keen to learn and contribute to Rothesay’s business.\n- Impeccable academic credentials; we recruit from all academic disciplines, although a high degree of numeracy is essential.\n- Excellent communication skills; fluency in English is a prerequisite.\n- A clear interest in a career in financial services and in particular trading and/or structured finance.\nDisclaimer This position description is intended to describe the duties most frequently performed by an individual in this position. It is not intended to be a complete list of assigned duties, but to describe a position level. The role shall be performed within a professional office environment. Rothesay has health and safety polices that are available for all workers upon request. There are no specific health risks associated with the role.\nInclusion Rothesay actively promotes diversity and inclusivity. We know that our success depends on our people and that by nurturing a culture that values difference, we create a stronger, more dynamic business. We welcome applications from all qualified candidates, regardless of race, colour, religion, gender, gender identity or expression, sexual orientation, national origin, genetics, disability or age.\nThe collection of applicant diversity data allows Rothesay to map and gain insights into the impact of our DEI strategy for talent attraction. This data is anonymised and is not analysed against individual applications. By requesting mapping our applicants’ demographic profiles, we can identify the under-represented groups. This enables us to identify any barriers to increasing our diversity and take action.",
+        "content_hash": "76c1ae32049b583ae0e683f020f9bfa66387e06bba013be0d3286a16ce5f1bdf",
+        "source_ref": "https://boards-api.greenhouse.io/v1/boards/rothesaygraduates/jobs/8784142002"
+      },
+      "source_documents": [
+        {
+          "document_id": "greenhouse:8784142002:ats_metadata",
+          "kind": "ats_metadata",
+          "text": "{\"absolute_url\":\"https://job-boards.greenhouse.io/rothesaygraduates/jobs/8784142002\",\"application_deadline\":null,\"company_name\":\"Rothesay Graduates\",\"first_published\":\"2026-09-04T12:30:21-04:00\",\"id\":8784142002,\"internal_job_id\":6514082002,\"language\":\"en\",\"location\":{\"name\":\"London\"},\"title\":\"2027 Summer Internship Programme - Trading and Asset Origination\",\"updated_at\":\"2026-09-16T07:08:45-04:00\"}",
+          "content_hash": "6b58d25e437e2c264954185ea73b5e0eb2fa14ec5d2a325bea6af9fadeab05ae",
+          "source_ref": "https://boards-api.greenhouse.io/v1/boards/rothesaygraduates/jobs/8784142002"
+        }
+      ],
+      "locations": [
+        {
+          "country_code": null,
+          "city": "London",
+          "evidence_ids": [
+            "greenhouse:8784142002:location"
+          ]
+        }
+      ],
+      "source_published_at": "2026-09-04T16:30:21Z",
+      "source_updated_at": "2026-09-16T11:08:45Z",
+      "deadline_at": null,
+      "first_seen_at": "2026-09-23T15:20:58Z",
+      "last_seen_at": "2026-09-23T15:20:58Z",
+      "active_state": "unknown",
+      "discovery_kind": "initial_snapshot",
+      "facts": null,
+      "evidence": [
+        {
+          "evidence_id": "greenhouse:8784142002:location",
+          "document_id": "greenhouse:8784142002:ats_metadata",
+          "quote": "London",
+          "field_path": "locations"
+        },
+        {
+          "evidence_id": "greenhouse:8784142002:published",
+          "document_id": "greenhouse:8784142002:ats_metadata",
+          "quote": "2026-09-04T12:30:21-04:00",
+          "field_path": "source_published_at"
+        },
+        {
+          "evidence_id": "greenhouse:8784142002:updated",
+          "document_id": "greenhouse:8784142002:ats_metadata",
+          "quote": "2026-09-16T07:08:45-04:00",
+          "field_path": "source_updated_at"
+        }
+      ],
+      "extraction": null
+    },
+    {
+      "schema_version": "0.2.0-draft",
+      "job_id": "greenhouse:5424219008",
+      "source": "greenhouse",
+      "source_job_id": "5424219008",
+      "company": "WPP Media",
+      "title": "WPP Media | 2027 Graduate Trainee Programme",
+      "url": "https://job-boards.greenhouse.io/wppmedia/jobs/5424219008",
+      "description": {
+        "document_id": "greenhouse:5424219008:description",
+        "kind": "job",
+        "text": "About WPP Media\nWPP is the trusted growth partner for the world’s leading brands. With exceptional talent, trusted data and intelligence, and world-class partnerships – all united by our pioneering agentic marketing platform, WPP Open – we help clients navigate change, capture opportunity, and deliver transformational growth.\nWPP Media is WPP's AI-driven media operating unit, bringing together media, data, and partnerships to deliver creative personalisation at scale. Connected through WPP Open and powered by Open Intelligence, clients see exactly where, how, and why their media investment is working.\nFor more information, visit wppmedia.com.\nReports To: Vice President, Media Delivery and Operations\nFunction: Media Management & Delivery\nLocation: Hong Kong\nRole Summary and Impact\nThis comprehensive 18-month rotational program is designed to build the next generation of industry leaders. As a Graduate Trainee, you will gain hands-on experience through concentrated rotations across key business functions. This program will provide a deep understanding of the biddable media ecosystem (including Ad-Operations, Programmatic, Search, Social, and SEO), Data & Technology, and Research. In addition to media expertise, you will gain valuable leadership exposure by helping to shape our company culture and leading company-wide events as a member of our Young Committee (Y-Co), preparing you for a fast-tracked career as a subject matter expert within WPP Media.\nCore Responsibilities:\nRotational Development: Actively participate in rotations across Biddable Media (Ad-Operations, Programmatic, Paid Search, Paid Social, SEO) and Data & Tech (Research) to build specialist expertise.\nCampaign Management & Execution: Drive the end-to-end management of advertising campaigns, including setup, execution on major biddable platforms, and performance analysis.\nPerformance Optimization: Analyze campaign data to identify trends and insights, providing actionable recommendations to improve campaign performance and achieve client objectives.\nData Storytelling & Application: Structure and visualize campaign data to build compelling client reports and performance dashboards, contributing to the development of data-driven media strategies.\nUncover Strategic Insights: Provide foundational research on competitor intelligence, market trends, and consumer behavior that directly informs client media strategy.\nStakeholder Collaboration: Work closely with internal teams and external partners to ensure seamless campaign execution and foster strong professional relationships.\nLeadership & Cultural Contribution: Gain leadership development experience by participating in the company's Young Committee (Y-Co), contributing to the planning and execution of key company-wide events and initiatives.\nSkills and Experience\nAt WPP Media, we believe in the power of our culture and our people. It’s what elevates us to deliver exceptional experiences for both our clients and each other. In this role it will be critical to embrace WPP & WPP Media’s shared core values:\n- Be Extraordinary by Leading Collectively to Inspire transformational Creativity.\n- Create an Open environment by Balancing People and Client Experiences by Cultivating Trust.\n- Lead Optimistically by Championing Growth and Development to Mobilize the Enterprise.\nRequired Skills & Experience:\n- Final year university student or recent graduate. Early career professionals with 1-2 years of relevant experience are also welcome.\n- A strong passion for the media, data, and technology landscape.\n- An appreciation for data and numbers, with the ability to translate findings into campaign insights.\n- Excellent communication skills and a collaborative, team-oriented mindset.\nDesired Skills & Experience:\n- Fluent in spoken and written English and Cantonese is a plus.\n- Bachelor’s degree in Marketing, Advertising, Communications, Business, or a related field.\n- Prior internship or work experience in a relevant field.\nLife at WPP Media & Benefits\nOur passion for shaping the next era of media includes investing in our employees to help them do their best work, and we’re just as committed to employee growth as we are to responsible media investment. WPP Media employees can tap into the global WPP Media & WPP networks to pursue their passions, grow their networks, and learn at the cutting edge of marketing and advertising. We have a variety of employee resource groups and host frequent in-office events showcasing team wins, sharing thought leadership, and celebrating holidays and milestone events. Our benefits include competitive medical, group retirement plans, vision, and dental insurance, significant paid time off, preferential partner discounts, and employee mental health awareness days.\nWPP Media is an equal opportunity employer and considers applicants for all positions without discrimination or regard to particular characteristics. We are committed to fostering a culture of respect in which everyone feels they belong and has the same opportunities to progress in their careers.\nWe believe the best work happens when we're together, fostering creativity, collaboration, and connection. That's why we’ve adopted a hybrid approach, with teams in the office around four days a week. If you require flexibility, please discuss this with the hiring team during the interview process.\nApplication Timeline\n- Application Deadline: April 30, 2027\n- Interview Period: TBC\n- Programme Starts: TBC\nPlease read our Privacy Notice for more information on how we process the information you provide.",
+        "content_hash": "b3708b0969e9d5d5e30fc7d012676a67fd330048161af4798cd6c96530273764",
+        "source_ref": "https://boards-api.greenhouse.io/v1/boards/wppmedia/jobs/5424219008"
+      },
+      "source_documents": [
+        {
+          "document_id": "greenhouse:5424219008:ats_metadata",
+          "kind": "ats_metadata",
+          "text": "{\"absolute_url\":\"https://job-boards.greenhouse.io/wppmedia/jobs/5424219008\",\"application_deadline\":null,\"company_name\":\"WPP Media\",\"first_published\":\"2026-09-15T00:50:26-04:00\",\"id\":5424219008,\"internal_job_id\":null,\"language\":\"en\",\"location\":{\"name\":\"Hong Kong, Hong Kong\"},\"title\":\"WPP Media | 2027 Graduate Trainee Programme\",\"updated_at\":\"2026-09-21T14:32:42-04:00\"}",
+          "content_hash": "f916f14f24648be914b22872c1f88e62bceec9d0b5d47ca3d20652f411b1dd48",
+          "source_ref": "https://boards-api.greenhouse.io/v1/boards/wppmedia/jobs/5424219008"
+        }
+      ],
+      "locations": [
+        {
+          "country_code": null,
+          "city": "Hong Kong, Hong Kong",
+          "evidence_ids": [
+            "greenhouse:5424219008:location"
+          ]
+        }
+      ],
+      "source_published_at": "2026-09-15T04:50:26Z",
+      "source_updated_at": "2026-09-21T18:32:42Z",
+      "deadline_at": null,
+      "first_seen_at": "2026-09-23T15:20:58Z",
+      "last_seen_at": "2026-09-23T15:20:58Z",
+      "active_state": "unknown",
+      "discovery_kind": "initial_snapshot",
+      "facts": null,
+      "evidence": [
+        {
+          "evidence_id": "greenhouse:5424219008:location",
+          "document_id": "greenhouse:5424219008:ats_metadata",
+          "quote": "Hong Kong, Hong Kong",
+          "field_path": "locations"
+        },
+        {
+          "evidence_id": "greenhouse:5424219008:published",
+          "document_id": "greenhouse:5424219008:ats_metadata",
+          "quote": "2026-09-15T00:50:26-04:00",
+          "field_path": "source_published_at"
+        },
+        {
+          "evidence_id": "greenhouse:5424219008:updated",
+          "document_id": "greenhouse:5424219008:ats_metadata",
+          "quote": "2026-09-21T14:32:42-04:00",
+          "field_path": "source_updated_at"
+        }
+      ],
+      "extraction": null
+    },
+    {
+      "schema_version": "0.2.0-draft",
+      "job_id": "greenhouse:4317640009",
+      "source": "greenhouse",
+      "source_job_id": "4317640009",
+      "company": "Aircall.io, Inc.",
+      "title": "Strategy & Operations Intern — Office of the General Manager, Small Business",
+      "url": "https://job-boards.greenhouse.io/aircallioinc/jobs/4317640009",
+      "description": {
+        "document_id": "greenhouse:4317640009:description",
+        "kind": "job",
+        "text": "Aircall is a unicorn, AI-powered customer communications platform used by 22,000+ companies worldwide to drive revenue, resolve issues faster, and scale customer-facing teams. We’re redefining customer communications by bringing voice, SMS, WhatsApp, and AI together into one seamless workspace.\nOur momentum comes from a simple idea: help teams work smarter, not harder. Aircall’s AI Voice Agent automates routine calls, AI Assist streamlines post-call work, and AI Assist Pro delivers real-time guidance so people can do their best work. The result is higher revenue, faster resolutions, and teams that scale with confidence.\nAircall is headquartered in Paris, our European HQ, with a strong North American presence anchored in Seattle, our North American HQ, and teams across Madrid, London, Berlin, San Francisco, New York City, Sydney, and Mexico City. We’ve built a product customers love and a business that’s scaling quickly, backed by world-class investors and driven by rapid AI innovation across multiple product lines.\nAt Aircall, you’ll join a company in motion. We’re ambitious, product-driven, and execution-focused, with visible impact, fast decisions, and real growth.\nHow we work at Aircall: We’re customer-obsessed, data-driven, and focused on delivering meaningful outcomes. We value ownership, continuous learning, and thoughtful speed. If you thrive in a collaborative, fast-moving environment where trust and impact matter, you’ll feel at home here.\nWe are looking for a talented and highly motivated Strategy & Operations intern to work directly with our General Manager, Small Business, acting as a true right hand in driving strategic initiatives and operational excellence across the business unit.\nThis is not a typical internship opportunity. You will step in the heart of a fast-moving, established global tech company where you’ll learn how a successful business is run end-to-end. If you're hungry for responsibility, eager to discover how high-stakes decisions are made, and excited by the idea of being the GM’s right hand in running and growing a business unit, this role offers an unparalleled experience.\nYou’ll get a front-row seat to leadership and you will work on the initiatives that matter most to the business—from shaping strategy to improving performance, launching new programs, and unblocking critical decisions. Your work will be visible, meaningful, and directly tied to outcomes that influence teams, customers, and the bottom line.\nThis internship will start from November 2026.\nThe internship duration will be 6 months.\nKey Responsibilities:\n-\nSupport the GM in defining quarterly and annual strategic priorities and OKRs\n-\nConduct market research, competitive benchmarking, and financial modeling to inform major decisions\n-\nBuild executive-ready written memos and recommendations related to hot topics\n-\nTrack key KPIs, surface performance insights, and maintain business dashboards\n-\nContribute to forecasting, workforce planning, and weekly business reviews\n-\nLead or co-own cross-functional projects from scoping to execution (e.g., cost savings, GTM experiments, AI pilots, operational excellence initiatives)\n-\nCoordinate stakeholders, drive timelines, and ensure high-quality delivery\n-\nPrepare materials for leadership meetings and follow up on leadership action items\n-\nAct as a problem-solver to the GM on diverse business topics\nQualifications:\n-\nCurrently pursuing a Master degree in Business, Engineering, Economics, Data/Analytics or similar within a top tier university, business school, engineering school or equivalent\n-\nStrong analytical abilities; comfortable with Google Sheets (SQL/BI tools are a plus)\n-\nExcellent written and verbal communication; able to distill complex ideas into clear insights, slides, or narratives\n-\nDemonstrated ability to take ownership, work independently, and thrive in a fast-paced or ambiguous environment\n-\nStrong project management instincts: structured, organized, and reliable with follow-through\n-\nEntrepreneurial mindset: proactive, resourceful, curious, and eager to take ownership and solve problems\n-\nPrevious internship experience in strategy consulting, finance, strategy, or high-growth startups is a plus (but not mandatory for outstanding candidates)\nWhy join us?\n🚀 Key moment to join Aircall in terms of growth and opportunities\n💆‍♀️ Our people matter, work-life balance is important at Aircall\n📚 Fast-learning environment, entrepreneurial and strong team spirit\n🌍 45+ Nationalities: cosmopolite & multi-cultural mindset\n💶 Competitive salary package & benefits\nDE&I Statement:\nAt Aircall, we believe diversity, equity and inclusion – irrespective of origins, identity, background and orientations – are core to our journey.\nWe pride ourselves on promoting active inclusion within our business to foster a strong sense of belonging for all. We’re working to create a place filled with diverse people who can enrich and learn from one another. We’re committed to ensuring that everyone not only has a seat at the table but is valued and respected at it by providing equal opportunities to develop and thrive.\nWe will constantly challenge ourselves to make sure that we live up to our ambitions around diversity, equity and inclusion, and keep this conversation open. Above all else, we understand and acknowledge that we have work to do and much to learn.\nWant to know more about candidate privacy? Find our Candidate Privacy Notice here.\nWe may use artificial intelligence (AI) tools to support parts of the hiring process, such as reviewing applications, analyzing resumes, or assessing responses. These tools assist our recruitment team but do not replace human judgment. Final hiring decisions are ultimately made by humans. If you would like more information about how your data is processed, please contact us.",
+        "content_hash": "b4e586c1897045883505bffa37d835411942b8882e4d63e682c249cd20ab1c87",
+        "source_ref": "https://boards-api.greenhouse.io/v1/boards/aircallioinc/jobs/4317640009"
+      },
+      "source_documents": [
+        {
+          "document_id": "greenhouse:4317640009:ats_metadata",
+          "kind": "ats_metadata",
+          "text": "{\"absolute_url\":\"https://job-boards.greenhouse.io/aircallioinc/jobs/4317640009\",\"application_deadline\":null,\"company_name\":\"Aircall.io, Inc.\",\"first_published\":\"2026-07-15T01:31:58-04:00\",\"id\":4317640009,\"internal_job_id\":4186198009,\"language\":\"en\",\"location\":{\"name\":\"Paris Office\"},\"title\":\"Strategy & Operations Intern — Office of the General Manager, Small Business\",\"updated_at\":\"2026-09-10T15:32:52-04:00\"}",
+          "content_hash": "0b06a23c01a79bbff16e418fb9f8b7a43734e805c14b6ebcf4f97c5f66f9567f",
+          "source_ref": "https://boards-api.greenhouse.io/v1/boards/aircallioinc/jobs/4317640009"
+        }
+      ],
+      "locations": [
+        {
+          "country_code": null,
+          "city": "Paris Office",
+          "evidence_ids": [
+            "greenhouse:4317640009:location"
+          ]
+        }
+      ],
+      "source_published_at": "2026-07-15T05:31:58Z",
+      "source_updated_at": "2026-09-10T19:32:52Z",
+      "deadline_at": null,
+      "first_seen_at": "2026-09-23T15:20:58Z",
+      "last_seen_at": "2026-09-23T15:20:58Z",
+      "active_state": "unknown",
+      "discovery_kind": "initial_snapshot",
+      "facts": null,
+      "evidence": [
+        {
+          "evidence_id": "greenhouse:4317640009:location",
+          "document_id": "greenhouse:4317640009:ats_metadata",
+          "quote": "Paris Office",
+          "field_path": "locations"
+        },
+        {
+          "evidence_id": "greenhouse:4317640009:published",
+          "document_id": "greenhouse:4317640009:ats_metadata",
+          "quote": "2026-07-15T01:31:58-04:00",
+          "field_path": "source_published_at"
+        },
+        {
+          "evidence_id": "greenhouse:4317640009:updated",
+          "document_id": "greenhouse:4317640009:ats_metadata",
+          "quote": "2026-09-10T15:32:52-04:00",
+          "field_path": "source_updated_at"
+        }
+      ],
+      "extraction": null
+    },
+    {
+      "schema_version": "0.2.0-draft",
+      "job_id": "greenhouse:8805758002",
+      "source": "greenhouse",
+      "source_job_id": "8805758002",
+      "company": "Solaris",
+      "title": "AFC Intern",
+      "url": "https://job-boards.greenhouse.io/solarisbank/jobs/8805758002",
+      "description": {
+        "document_id": "greenhouse:8805758002:description",
+        "kind": "job",
+        "text": "Solaris is Europe’s leading embedded finance platform, pioneering Banking-as-a-Service to bridge the gap between financial technology and licensed banking. Founded in 2016 and headquartered in Berlin, Solaris enables fintechs, digital ecosystems, and multinationals to embed accounts, cards, lending, and payments directly into their own products, creating seamless financial experiences for their users. As a fully licensed German bank, Solaris combines the highest standards of IT security and regulatory resilience with a modular, highly scalable infrastructure.\nToday, Solaris is driving the next evolution of financial services by transitioning into an AI-native banking platform, ensuring European businesses can deploy secure, adaptable financial products at scale.\nWhy join Solaris?\n- 🚀 We are fundamentally redesigning banking processes around AI orchestration, standardized modular building blocks, and embedded regulatory compliance.\n- 🎯 We combine tech and banking in dedicated hubs - driving the technology infrastructure out of Berlin and banking operations out of Frankfurt.\n- 💡 Through our internal mobility, growth opportunities, and the Solaris Academy, we offer continuous learning tracks, AI ambassador mentorship, and upskilling to keep your skills ahead of the curve.\n- ⚖️ We foster a workplace rooted in integrity, proactive risk management, and equality actively driving initiatives like DEI initiatives.\nYour Role\n- Daily processing of the hits from our IT-supported transaction monitoring system.\n- Processing of requests for information (Auskunftsersuchen).\n- Supporting correspondence with the authorities / public prosecutor's offices.\n- Supporting the analysis and investigation of anti-fraud and money laundering inquiries from other units, external parties or other.\n- Promote and actively use the AI to enhance AFC Investigations processes and improve operational efficiency.\nWe'd love to see\nDepending on your level of experience, your responsibilities and scope of role will range. We don’t care much about fancy titles, but rather about real personal and professional development, as laid out in our learning framework. Let’s figure together out how you can contribute to our team.\n- Completed university degree (in a relevant subject) (trainee)\n- Current university studies (in a relevant subject) (intern)\n- Alternatively: Training as a bank clerk and a job-specific further education or comparable qualification\n- Ideally experience in the area of AML compliance\n- Previous experience from customer service, the area of AML compliance or internal auditing is an advantage\n- Good understanding of the IT landscape\n- Knowledge of regulatory requirements (MLA, KWG etc.) are an advantage\n- Proficiency in English language. Knowledge of German, Spanish, Italian or French language is an advantage\n- Industry related certificates advantageous (e.g. CAMS, ICA)\n- Analytical, detail-oriented and strong business acumen.\n- Stakeholder management skills\n- Affinity for agile methodology\n- High level of integrity\n- Comfortable working with AI tools, thinking critically about AI outputs, and contributing to a culture of responsible AI use. We expect you to demonstrate comfort with AI-assisted workflows and a willingness to continuously develop their AI capabilities as the technology evolves.\nBenefits\n- Transparent framework to support your career goals\n- Lunch reimbursement\n- Mental health support via Thrive\n- Flexible working model\n- Deutschlandticket subsidy for voluntary internship model\nWhile job ads usually paint an ideal picture of a candidate, studies show that most applicants meet an average of 60% of the criteria. Unfortunately, many promising candidates tend to apply only if they meet all the criteria. So if you think you have what it takes, but don't necessarily meet every single item in the job description, please contact us anyway. We'd love to talk with you and find out if you might be a good fit for us.\nAt Solaris, we are committed to nurturing an inclusive environment, where all Solarians feel valued, respected and supported. We are dedicated to building a diverse workforce that reflects the diversity of our communities. We are committed to equal employment opportunity regardless of color, ethnicity, religion, sex, origin, disability, marital status, citizenship, or gender identity. We are proud to be an equal opportunity workplace. If you have a disability or special need that requires accommodation, please let us know.\nIf your application is successful, you will be required to complete pre-employment background checks through our screening provider Zinc. These include, but not limited to identity verification, educational records, references, a criminal record check, etc. The processing is based on Art. 6(1)(c) GDPR. Please see below Privacy Information for Job Applicants for details, including recipients, retention, and your rights.\nInformation on data processing:\nDE: https://www.solarisgroup.com/gdpr_notice_de\nEN: https://www.solarisgroup.com/gdpr_notice_en\nThe monthly gross salary for this internship position is:\n€2.598—€2.771 EUR",
+        "content_hash": "cad59a0ce1e8d98cd4656de5c02b5280766b5f6011052ae4fd51cecc9906a168",
+        "source_ref": "https://boards-api.greenhouse.io/v1/boards/solarisbank/jobs/8805758002"
+      },
+      "source_documents": [
+        {
+          "document_id": "greenhouse:8805758002:ats_metadata",
+          "kind": "ats_metadata",
+          "text": "{\"absolute_url\":\"https://job-boards.greenhouse.io/solarisbank/jobs/8805758002\",\"application_deadline\":null,\"company_name\":\"Solaris\",\"first_published\":\"2026-09-14T09:08:55-04:00\",\"id\":8805758002,\"internal_job_id\":6485957002,\"language\":\"en\",\"location\":{\"name\":\"Berlin\"},\"title\":\"AFC Intern\",\"updated_at\":\"2026-09-15T06:13:24-04:00\"}",
+          "content_hash": "0c0a6f277a9e510ea91ef87beef7ea10d15863a90ba84772d2a1a4fb9a870d71",
+          "source_ref": "https://boards-api.greenhouse.io/v1/boards/solarisbank/jobs/8805758002"
+        }
+      ],
+      "locations": [
+        {
+          "country_code": null,
+          "city": "Berlin",
+          "evidence_ids": [
+            "greenhouse:8805758002:location"
+          ]
+        }
+      ],
+      "source_published_at": "2026-09-14T13:08:55Z",
+      "source_updated_at": "2026-09-15T10:13:24Z",
+      "deadline_at": null,
+      "first_seen_at": "2026-09-23T15:20:58Z",
+      "last_seen_at": "2026-09-23T15:20:58Z",
+      "active_state": "unknown",
+      "discovery_kind": "initial_snapshot",
+      "facts": null,
+      "evidence": [
+        {
+          "evidence_id": "greenhouse:8805758002:location",
+          "document_id": "greenhouse:8805758002:ats_metadata",
+          "quote": "Berlin",
+          "field_path": "locations"
+        },
+        {
+          "evidence_id": "greenhouse:8805758002:published",
+          "document_id": "greenhouse:8805758002:ats_metadata",
+          "quote": "2026-09-14T09:08:55-04:00",
+          "field_path": "source_published_at"
+        },
+        {
+          "evidence_id": "greenhouse:8805758002:updated",
+          "document_id": "greenhouse:8805758002:ats_metadata",
+          "quote": "2026-09-15T06:13:24-04:00",
+          "field_path": "source_updated_at"
+        }
+      ],
+      "extraction": null
+    },
+    {
+      "schema_version": "0.2.0-draft",
+      "job_id": "greenhouse:4653315101",
+      "source": "greenhouse",
+      "source_job_id": "4653315101",
+      "company": "Workwize",
+      "title": "Customer Success Manager Internship",
+      "url": "https://job-boards.eu.greenhouse.io/workwize/jobs/4653315101",
+      "description": {
+        "document_id": "greenhouse:4653315101:description",
+        "kind": "job",
+        "text": "Location: Amsterdam, Hybrid\nInternship Length: Six months, 40 hours per week\nAre you passionate about helping others succeed and eager to learn in a fast-paced, innovative environment?\nAt Workwize, we’re looking for a Customer Success Manager Intern who is excited to dive into the world of customer success and support our clients in their journey. In this role, you’ll develop your skills by working closely with our Onboarding & CSM Teams, gaining hands-on experience in client engagement, data analysis, and day-to-day operations. If you're driven by curiosity, proactive in your approach, and ready to learn how to make an impact, this opportunity is perfect for you!\nAt Workwize, we’re revolutionizing how businesses support their global teams.\nThe rise of a global workforce has enabled companies to access a broader talent pool but has also brought logistical challenges, such as local vendor availability, timely laptop delivery, equipment management, and local retrieval and storage.\nWorkwize’s SaaS platform, integrated with suppliers and warehouses worldwide, simplifies and automates the deployment, management, and retrieval of IT hardware for distributed teams. Currently, Workwize facilitates fast, local deliveries in 100+ countries, supporting the IT lifecycle for over 30,000 users and managing 100,000+ devices globally.\nWhat you will learn:\n- Customer Success best practices: Learn how CSMs drive customer satisfaction, growth, and retention.\n- Data & Analytics: Dive deep into customer data to help the CSM team identify trends and opportunities for improvement.\n- Cross-functional collaboration: Work alongside our operational teams to ensure seamless customer experiences.\n- Strategic engagement: Gain insight into how CSMs engage with clients to ensure success, using real-time feedback and hands-on client interactions.\nKey Responsibilities\n- Assist CSMs with operational tasks such as submitting onboarding tickets, setting up basic accounts, and monitoring high-risk client orders.\n- Support CSMs by exporting and analyzing data from client accounts to help troubleshoot issues and answer product-related questions.\n- Monitor customer usage patterns and provide feedback to the CSM team to enhance customer satisfaction and retention strategies.\n- Help prepare Business Review data, Success Plan data, and other ad-hoc reports as needed.\n- Collaborate with various teams across the organization to ensure client needs are met quickly and effectively.\nSkills & Qualifications\n- Currently pursuing a degree in Business, Marketing, IT, Data Analyst, Project Manager or a related field (or have a strong interest in these areas).\n- Good communication and interpersonal skills, with a willingness to learn and grow.\n- An interest in SaaS or customer success is a plus, but not required—you’ll learn a lot on the job!\n- A basic understanding of data and analytics is helpful, but not essential. We’ll teach you the ropes.\n- A problem-solving mindset with a positive, customer-first attitude.\n- Ability to work well in a team and independently when needed.\nBenefits:\n- Be part of a fast-paced Customer Success team, gaining valuable hands-on experience in the field.\n- Immerse yourself in a startup culture with a flat structure where your ideas and contributions are truly valued.\n- A fantastic opportunity to work with data and develop skills in data analysis and reporting, directly impacting customer satisfaction.\n- Collaborate with cross-functional teams on real-world projects that make a tangible difference for our clients.\n- Potential to join the Workwize team after a successful internship evaluation.\n- Receive mentorship from experienced Customer Success Managers, equipping you with the skills and knowledge to excel in your future career.\nWhat Workwize Offers:\n- A vibrant, entrepreneurial work environment that encourages innovation and growth.\n- A monthly internship compensation of €500 /monthly\n- Weekly team lunches and fun monthly surprise events to boost team spirit and camaraderie.\n- Flexibility to work in a hybrid environment, balancing office and remote work settings.\n- The best work setup with all the necessary tools and equipment provided to ensure your success.",
+        "content_hash": "59c86f91c9604b377eedaaba60b8eaf3987328b17eb84647d23c7e0f01ec7019",
+        "source_ref": "https://boards-api.greenhouse.io/v1/boards/workwize/jobs/4653315101"
+      },
+      "source_documents": [
+        {
+          "document_id": "greenhouse:4653315101:ats_metadata",
+          "kind": "ats_metadata",
+          "text": "{\"absolute_url\":\"https://job-boards.eu.greenhouse.io/workwize/jobs/4653315101\",\"application_deadline\":null,\"company_name\":\"Workwize\",\"first_published\":\"2025-08-11T12:49:49-04:00\",\"id\":4653315101,\"internal_job_id\":4368347101,\"language\":\"en\",\"location\":{\"name\":\"Amsterdam\"},\"title\":\"Customer Success Manager Internship\",\"updated_at\":\"2026-06-29T09:49:20-04:00\"}",
+          "content_hash": "a38f1e894d2245fdbdad9142f32c9f519236e7b91cf1e82bc7e2d9d9b32fc6ae",
+          "source_ref": "https://boards-api.greenhouse.io/v1/boards/workwize/jobs/4653315101"
+        }
+      ],
+      "locations": [
+        {
+          "country_code": null,
+          "city": "Amsterdam",
+          "evidence_ids": [
+            "greenhouse:4653315101:location"
+          ]
+        }
+      ],
+      "source_published_at": "2025-08-11T16:49:49Z",
+      "source_updated_at": "2026-06-29T13:49:20Z",
+      "deadline_at": null,
+      "first_seen_at": "2026-09-23T15:20:58Z",
+      "last_seen_at": "2026-09-23T15:20:58Z",
+      "active_state": "unknown",
+      "discovery_kind": "initial_snapshot",
+      "facts": null,
+      "evidence": [
+        {
+          "evidence_id": "greenhouse:4653315101:location",
+          "document_id": "greenhouse:4653315101:ats_metadata",
+          "quote": "Amsterdam",
+          "field_path": "locations"
+        },
+        {
+          "evidence_id": "greenhouse:4653315101:published",
+          "document_id": "greenhouse:4653315101:ats_metadata",
+          "quote": "2025-08-11T12:49:49-04:00",
+          "field_path": "source_published_at"
+        },
+        {
+          "evidence_id": "greenhouse:4653315101:updated",
+          "document_id": "greenhouse:4653315101:ats_metadata",
+          "quote": "2026-06-29T09:49:20-04:00",
+          "field_path": "source_updated_at"
+        }
+      ],
+      "extraction": null
+    },
+    {
+      "schema_version": "0.2.0-draft",
+      "job_id": "greenhouse:8491128002",
+      "source": "greenhouse",
+      "source_job_id": "8491128002",
+      "company": "Point72",
+      "title": "2027 Point72 Academy Investment Analyst Summer Internship Program - Singapore",
+      "url": "https://boards.greenhouse.io/point72/jobs/8491128002?gh_jid=8491128002",
+      "description": {
+        "document_id": "greenhouse:8491128002:description",
+        "kind": "job",
+        "text": "The Point72 Academy Summer Internship — Singapore\nAre you a student interested in pursuing a career in investing? If you are graduating between December 2027 and July 2028, we invite you to apply for our 8-week summer internship, taking place from June to August 2027.\nLaunch your investing career in the Point72 Academy, an investment analyst training program that will provide you with the tools and knowledge to build a career in our ever-evolving industry. Since 2015, the Academy has graduated more than 230 analysts onto our platform as of November 2025; some are portfolio managers today.\nThe Point72 Academy Summer Internship is a combination of classroom instruction, portfolio casework, and mentorship. The program is designed to give you insights into finance, research, and the workings of the public markets and prepare you for a potential opportunity with the full-time Point72 Academy Associate Program.\nDuring the internship, you will:\n- Acquire fundamental knowledge and skills necessary to contribute as an analyst, alongside your peers.\n- Receive training in accounting, modeling, presenting, and compliance.\n- Collaborate with an investment team, gaining firsthand experience of the daily life of an equities analyst and exposure to one of the sectors covered by our Portfolio Managers.\n- Work closely with Academy coaches, delving deeper into data analysis and preparing a final pitch on an investment idea.\n- Collaborate with Compliance, Information Security and the Office of the Co-CIO to discover efficient ways to harness AI in your investment processes and workflows.\nWho We’re Looking For:\n- We welcome students from all academic disciplines. Your field of study or major is not a determining factor; we seek individuals who can effectively manage teamwork, exhibit integrity, possess intellectual curiosity, demonstrate leadership potential, and express a keen interest in the financial markets.\n- Students should have a high enthusiasm for the financial services industry. Interest in analyzing companies and looking at stocks is recommended given the project-based nature of this program.\n- Highly self‑motivated with a high risk appetite and the ability to make decisions in an ambiguous environment.\n- Candidates with excellent communication skills, both written and verbal in an Asian language.\nWe Want You to Apply if You Are:\n- A current student who will graduate from university between December 2027 and July 2028.\n- Fascinated by research and problem-solving, relentlessly curious, and constantly expanding your horizons.\n- Committed to continued success in your academic and professional career with the highest levels of professionalism, integrity, and excellence.\n- Commitment to the highest ethical standards.\n- Highly self-driven and motivated to explore a career in finance.\nWhat to Expect:\n- Your online application, essays, and resume will serve as an introduction to who you are as a candidate. Once you complete the online application, we will begin reviewing your profile.\n- Selected candidates will then receive an email invitation to participate in a case study, allowing you to showcase your experiences and demonstrate your business acumen.\n- Following submission and review of your case study, shortlisted candidates will be invited to complete an online assessment and participate in virtual one‑on‑one interviews with various members of the Academy team. Shortlisted candidates will then be invited to attend a half‑day assessment center. There are two application deadlines: one in mid‑May for candidates interested in an early summer assessment center, and another for students applying over the summer to mid Fall, which will lead to a late fall assessment center. We strongly encourage candidates to apply and complete all requirements as soon as they feel ready to begin the hiring process.\nPlease note, you may only submit one application to the Academy internship program globally, so only apply to the region you are most interested in.\nDon't miss this opportunity to kickstart your career in the world of investing with the Point72 Academy.\nPlease note that any use of GenAI is strictly prohibited when completing this application.\nABOUT POINT72\nPoint72 is a leading global alternative investment firm led by Steven A. Cohen. Building on more than 30 years of investing experience, Point72 seeks to deliver superior returns for its investors through fundamental and systematic investing strategies across asset classes and geographies. We aim to attract and retain the industry’s brightest talent by cultivating an investor-led culture and committing to our people’s long-term growth.\nWe’re a firm that thrives on ideas, and we’ve found that the Point72 Academy has provided us with diverse viewpoints and perspectives, and we are able to offer support in their growth and development as analysts and portfolio managers.",
+        "content_hash": "1c23cb5c98b72a95c4d143387c0956bf8882920c6f6b543eb9f07188977d400a",
+        "source_ref": "https://boards-api.greenhouse.io/v1/boards/point72/jobs/8491128002"
+      },
+      "source_documents": [
+        {
+          "document_id": "greenhouse:8491128002:ats_metadata",
+          "kind": "ats_metadata",
+          "text": "{\"absolute_url\":\"https://boards.greenhouse.io/point72/jobs/8491128002?gh_jid=8491128002\",\"application_deadline\":null,\"company_name\":\"Point72 \",\"first_published\":\"2026-04-02T06:32:50-04:00\",\"id\":8491128002,\"internal_job_id\":6391711002,\"language\":\"en\",\"location\":{\"name\":\"Singapore\"},\"title\":\"2027 Point72 Academy Investment Analyst Summer Internship Program - Singapore\",\"updated_at\":\"2026-09-15T17:33:58-04:00\"}",
+          "content_hash": "d1bee8ed2c033bd3e92b5d78a03cb8031ca0128d26734f835bf9dbefd5071c75",
+          "source_ref": "https://boards-api.greenhouse.io/v1/boards/point72/jobs/8491128002"
+        }
+      ],
+      "locations": [
+        {
+          "country_code": null,
+          "city": "Singapore",
+          "evidence_ids": [
+            "greenhouse:8491128002:location"
+          ]
+        }
+      ],
+      "source_published_at": "2026-04-02T10:32:50Z",
+      "source_updated_at": "2026-09-15T21:33:58Z",
+      "deadline_at": null,
+      "first_seen_at": "2026-09-23T15:20:58Z",
+      "last_seen_at": "2026-09-23T15:20:58Z",
+      "active_state": "unknown",
+      "discovery_kind": "initial_snapshot",
+      "facts": null,
+      "evidence": [
+        {
+          "evidence_id": "greenhouse:8491128002:location",
+          "document_id": "greenhouse:8491128002:ats_metadata",
+          "quote": "Singapore",
+          "field_path": "locations"
+        },
+        {
+          "evidence_id": "greenhouse:8491128002:published",
+          "document_id": "greenhouse:8491128002:ats_metadata",
+          "quote": "2026-04-02T06:32:50-04:00",
+          "field_path": "source_published_at"
+        },
+        {
+          "evidence_id": "greenhouse:8491128002:updated",
+          "document_id": "greenhouse:8491128002:ats_metadata",
+          "quote": "2026-09-15T17:33:58-04:00",
+          "field_path": "source_updated_at"
+        }
+      ],
+      "extraction": null
+    }
+  ],
+  "documents": {
+    "greenhouse:5174914:description": {
+      "document_id": "greenhouse:5174914:description",
+      "kind": "job",
+      "text": "About Charles River Associates\nCharles River Associates is a leading global consulting firm that provides economic, financial, and business management expertise to major law firms, corporations and governments around the world. CRA advises clients on economic and financial matters pertaining to litigation and regulatory proceedings, and guides corporations through critical business strategy and performance-related issues. Since 1965, clients have engaged CRA for its combination of industry experience and rigorous, fact-based analysis that provide clients with clear, implementable solutions to complex business concerns.\nPosition Overview\nCRA's European Competition practice specialises in providing economic advice on matters of competition policy and regulation. We provide advice in relation to all types of competition matters, including mergers and acquisitions, abuse of dominance, cartels, market investigations, intellectual property, and state aid. We have played a key role in many cases that have shaped European competition policy in recent years: from aerospace to software, and manufacturing to transportation. More recently, we have been at the forefront of economic thinking in antitrust investigations and regulation in the tech sector.\nInterns work closely with senior staff on projects across a variety of industries and will gain a good understanding of what it is like to work as an economist at CRA. An intern would typically:\n- Conduct analyses and collect evidence from data and research that support our expert opinions and business recommendations\n- Perform regression analyses in statistical analysis programs (such as Stata, Python, R), including large data projects requiring the use of cloud computing\n- Build economic models tailored to the issues at hand and supporting our expert opinions and business recommendations\n- Assist in the development and presentation of client deliverables, including expert reports and white papers\n- Communicate complicated economic concepts and arguments to internal teams in an understandable, accessible manner\n- Ensure the integrity and accuracy of analyses and opinions.\nDesired Qualifications\n- Master's or PhD candidates studying economics with a strong foundation in microeconomics, preferably with a specialisation in industrial economics and/or econometrics\n- Fluency in English, other language skills are considered an asset\n- High degree of numeracy, ability to analyse data, familiarity with econometric techniques\n- Exceptional written and oral communication skills\n- Strong teamwork and collaboration capabilities\n- Excellent time management and task prioritisation skills\nTo Apply\nTo be considered for this position, please submit the following:\n- Curriculum Vitae– please include current contact information\n- Cover letter– please describe your interest in CRA’s European Competition practice and state when you would be available\n- Academic results– from all relevant degrees\n- Writing sample (optional)– a sole-authored project (class paper, thesis, research paper, or similar)\nApplications will be reviewed on a rolling basis. The internship duration is usually three to six months, with flexible start dates throughout the year. The internship is paid, and we welcome candidates who are available to start from January 2027 onwards.\nWork Location Flexibility\nCharles River Associates creates a work environment that enables our colleagues to benefit from being together in the office to best deliver on our promise of career growth, mentorship and inclusivity. At the same time, we recognise that individuals realise a range of benefits when working from home periodically. We currently ask that individuals spend 3 to 4 days a week on average working in the office (which may include traveling to another Charles River Associates office or to a client's location), with specific days determined in coordination with your practice or team. At certain times of the year (e.g. holiday periods), additional remote work options are offered to those whose work commitments permit it, although our offices remain open for those who choose or need to be there.\nInternship Benefits\nAs an intern in our Munich office, you will have access to a monthly mobility allowance, which can be used towards your commute or other eligible travel expenses. You will also enjoy weekly team lunches and be invited to regular social events, providing great opportunities to connect with colleagues and build your network within the firm.\nOur Commitment to Diversity\nCharles River Associates is an equal opportunity employer. As part of our focus on equity and inclusion, we work to ensure a fair and consistent hiring process. We celebrate diversity and we are committed to an inclusive work environment.",
+      "content_hash": "9d462664cb281854c6fbfb0e53baa42539f84c06d2e86d549fa12b8d4dd71810",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/charlesriverassociates/jobs/5174914"
+    },
+    "greenhouse:5174914:ats_metadata": {
+      "document_id": "greenhouse:5174914:ats_metadata",
+      "kind": "ats_metadata",
+      "text": "{\"absolute_url\":\"https://job-boards.greenhouse.io/charlesriverassociates/jobs/5174914\",\"application_deadline\":null,\"company_name\":\"Charles River Associates\",\"first_published\":\"2023-07-13T09:30:41-04:00\",\"id\":5174914,\"internal_job_id\":2584890,\"language\":\"en\",\"location\":{\"name\":\"Dusseldorf, Germany; Munich, Germany\"},\"title\":\"Intern (European Competition practice) - m/f/d\",\"updated_at\":\"2026-09-01T00:09:19-04:00\"}",
+      "content_hash": "db7495353602771de9168cb1c0b2ea82db506f64e08ca5d877d6430f660b2bb1",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/charlesriverassociates/jobs/5174914"
+    },
+    "greenhouse:5390013008:description": {
+      "document_id": "greenhouse:5390013008:description",
+      "kind": "job",
+      "text": "Temus is a Temasek-backed consulting firm providing digital transformation solutions for the private and public sectors. We aspire to be a strategic partner in realising the Singapore Government’s Smart Nation vision. We are headquartered in Singapore and have more than 400 employees across a wide range of disciplines in strategy, design, architecture, technology, data & AI.\nRole purpose\nAn Intern works in project teams, which may be led by a Manager or Director. The expectation is for the Intern to play an active role in supporting the consulting team in defining, preparing, and delivering services and deliverables to clients. The role will provide a learning opportunity for the intern and valuable support to the organization.\nKey accountabilities\n- Work creatively and analytically to support problem-solving of business requirements\n- Gathering and analyzing data from secondary and primary research\n- Synthesize complex information and produce clear written outcomes\n- Help develop highly engaging presentations to make the case for change\n- Effectively communicate (written and oral) within the team and if needed, with project stakeholders\n- Actively contribute within a team-oriented environment\nProfessional skills\n- Good numerical and analytical skills\n- Attention to detail\n- Teamworking skills\n- Good oral and written communication skills\n- IT skills (e.g. Microsoft Office)\n- Self-motivation\n- Creative and innovative mindset\nPersonality and Interpersonal Skills\n- Ability to handle intensive workloads in a fast-paced setting\n- An effective team player, dedicated to contributing towards the outcome desired by the team\n- Deeply curious about business and technology, highly motivated to have an impact on clients, and interested in a variety of client issues\nQualifications\n- Pursuing an undergraduate or graduate degree\n- All-round achiever and outstanding academic record\n- Demonstrated leadership in extracurricular activities\n- Experience in project work\n- Fluent in English and preferably in another regional language\nTemus is an equal opportunities employer. We welcome applications from all. We do not discriminate by race, religion, belief, ethnicity, origin, disability, age, partnership status, sexual orientation, or gender identity.\nWe see the diversity of our team as a strategic advantage, and we work actively to maintain it.\nBy applying for this role, you have read and acknowledge the data privacy statement via this link - temus.com/job-applicant-data-protection/",
+      "content_hash": "fc6c1658527d172e5b94fac46199560cf9ae3503ab2cab710c325d2362cde733",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/temus/jobs/5390013008"
+    },
+    "greenhouse:5390013008:ats_metadata": {
+      "document_id": "greenhouse:5390013008:ats_metadata",
+      "kind": "ats_metadata",
+      "text": "{\"absolute_url\":\"https://job-boards.greenhouse.io/temus/jobs/5390013008\",\"application_deadline\":null,\"company_name\":\"Temus\",\"first_published\":\"2026-08-13T22:34:19-04:00\",\"id\":5390013008,\"internal_job_id\":4532413008,\"language\":\"en\",\"location\":{\"name\":\"Singapore\"},\"title\":\"Consulting Intern (Jan - May 2027)\",\"updated_at\":\"2026-08-13T22:34:19-04:00\"}",
+      "content_hash": "09a444090e7dbcc31f419640bfc5c439d83120d10a557cd120f189213c2fb706",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/temus/jobs/5390013008"
+    },
+    "greenhouse:8784142002:description": {
+      "document_id": "greenhouse:8784142002:description",
+      "kind": "job",
+      "text": "Application deadline: 8th November 2026\nProgramme start date: June 2027\nEligibility: Penultimate year students graduating in Summer 2028\nWho we are:\nRothesay is the UK’s largest pensions insurance specialist, purpose-built to protect pension schemes and their members’ pensions. With over £74 billion of assets under management, we secure the pensions of nearly one million people and pay out, on average, approximately £355 million in pension payments each month.\nRothesay is dedicated to providing excellence in customer service alongside prudent underwriting, a conservative investment strategy and the careful management of risk. We are trusted by the pension schemes of some of the UK’s best known companies to provide pension solutions, including British Airways, Cadbury’s, the Civil Aviation Authority, the Co-Operative Group, National Grid, NatWest, Morrisons and Telent.\nAt Rothesay, we are striving to transform our industry. We believe deeply in creating real security for the future and our leadership in finding new and better ways to do that is the key to our success. To do that, we need the very brightest original thinkers to bring creativity as well as rigour. Rothesay is a rewarding place to work, where quality people can thrive and prosper. We pride ourselves on the connections our people build, many of whom have been with us for over ten years.\nInternship Programme:\nOur internship programme is designed to provide hands on work experience within a fast-pace financial services environment, allowing you to develop the key skills to jump-start your career.\nThe 8-week structured programme will start with a fundamentals week offering insight into Rothesay, your team and the financial services industry. Throughout the programme there will be both on-desk and off-desk technical and business skills training, providing career building exposure to accelerate your future after you graduate. You will gain visibility and experience in a flat structure, with the opportunity to network and socialise across different levels and teams throughout the firm.\nWhat you’ll do:\nWe are currently looking to hire interns to join our Trading and Asset Origination functions. We have roles across asset origination, trading and quantitative risk trading. Your application will be considered across all these business areas.\nOur trading and asset origination functions are key in managing our balance sheet and ensuring the origination, evaluation and execution of key assets. The teams work in a fast-paced environment, and you will be joining a high calibre multi-disciplined department. We are looking for driven individuals with strong numerical and analytical capabilities.\nThe teams:\nTrading:\nThe trading team is responsible for the analysis, risk management and trade execution of liquid financial instruments relevant to Rothesay. The team particularly focuses on relative values and deployment opportunities across our asset universe for alpha generation, as well as managing the firm’s macro risk positions. Another significant part of the role entails collaboration with our internal teams and interaction with external counterparties.\nAsset origination:\nThe asset origination team source potential deals and manage the deal execution process in less liquid markets. These deals are typically large and can involve complex transaction structures. Building out dynamic financial models you will have the opportunity to conduct detailed analysis and identify the potential risks of these deals. You’ll have the chance to build strong commercial skills and a solid project management toolkit, whilst assisting in the management of internal and external stakeholders during deal execution.\nQuantitative risk trading:\nThe quantitative risk trading team focuses on quantitative analysis of potential assets the firm have the opportunity to purchase, as well as taking a holistic approach to risk management and hedging strategy of the growing portfolio. The team specialises in valuing the most complex elements of the growing asset pool and managing the more exotic risks Rothesay faces, so offers a great growth opportunity for technically strong candidates.\nWhat we’re looking for:\n- Original, collaborative, dedicated and meticulous candidates who are keen to learn and contribute to Rothesay’s business.\n- Impeccable academic credentials; we recruit from all academic disciplines, although a high degree of numeracy is essential.\n- Excellent communication skills; fluency in English is a prerequisite.\n- A clear interest in a career in financial services and in particular trading and/or structured finance.\nDisclaimer This position description is intended to describe the duties most frequently performed by an individual in this position. It is not intended to be a complete list of assigned duties, but to describe a position level. The role shall be performed within a professional office environment. Rothesay has health and safety polices that are available for all workers upon request. There are no specific health risks associated with the role.\nInclusion Rothesay actively promotes diversity and inclusivity. We know that our success depends on our people and that by nurturing a culture that values difference, we create a stronger, more dynamic business. We welcome applications from all qualified candidates, regardless of race, colour, religion, gender, gender identity or expression, sexual orientation, national origin, genetics, disability or age.\nThe collection of applicant diversity data allows Rothesay to map and gain insights into the impact of our DEI strategy for talent attraction. This data is anonymised and is not analysed against individual applications. By requesting mapping our applicants’ demographic profiles, we can identify the under-represented groups. This enables us to identify any barriers to increasing our diversity and take action.",
+      "content_hash": "76c1ae32049b583ae0e683f020f9bfa66387e06bba013be0d3286a16ce5f1bdf",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/rothesaygraduates/jobs/8784142002"
+    },
+    "greenhouse:8784142002:ats_metadata": {
+      "document_id": "greenhouse:8784142002:ats_metadata",
+      "kind": "ats_metadata",
+      "text": "{\"absolute_url\":\"https://job-boards.greenhouse.io/rothesaygraduates/jobs/8784142002\",\"application_deadline\":null,\"company_name\":\"Rothesay Graduates\",\"first_published\":\"2026-09-04T12:30:21-04:00\",\"id\":8784142002,\"internal_job_id\":6514082002,\"language\":\"en\",\"location\":{\"name\":\"London\"},\"title\":\"2027 Summer Internship Programme - Trading and Asset Origination\",\"updated_at\":\"2026-09-16T07:08:45-04:00\"}",
+      "content_hash": "6b58d25e437e2c264954185ea73b5e0eb2fa14ec5d2a325bea6af9fadeab05ae",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/rothesaygraduates/jobs/8784142002"
+    },
+    "greenhouse:5424219008:description": {
+      "document_id": "greenhouse:5424219008:description",
+      "kind": "job",
+      "text": "About WPP Media\nWPP is the trusted growth partner for the world’s leading brands. With exceptional talent, trusted data and intelligence, and world-class partnerships – all united by our pioneering agentic marketing platform, WPP Open – we help clients navigate change, capture opportunity, and deliver transformational growth.\nWPP Media is WPP's AI-driven media operating unit, bringing together media, data, and partnerships to deliver creative personalisation at scale. Connected through WPP Open and powered by Open Intelligence, clients see exactly where, how, and why their media investment is working.\nFor more information, visit wppmedia.com.\nReports To: Vice President, Media Delivery and Operations\nFunction: Media Management & Delivery\nLocation: Hong Kong\nRole Summary and Impact\nThis comprehensive 18-month rotational program is designed to build the next generation of industry leaders. As a Graduate Trainee, you will gain hands-on experience through concentrated rotations across key business functions. This program will provide a deep understanding of the biddable media ecosystem (including Ad-Operations, Programmatic, Search, Social, and SEO), Data & Technology, and Research. In addition to media expertise, you will gain valuable leadership exposure by helping to shape our company culture and leading company-wide events as a member of our Young Committee (Y-Co), preparing you for a fast-tracked career as a subject matter expert within WPP Media.\nCore Responsibilities:\nRotational Development: Actively participate in rotations across Biddable Media (Ad-Operations, Programmatic, Paid Search, Paid Social, SEO) and Data & Tech (Research) to build specialist expertise.\nCampaign Management & Execution: Drive the end-to-end management of advertising campaigns, including setup, execution on major biddable platforms, and performance analysis.\nPerformance Optimization: Analyze campaign data to identify trends and insights, providing actionable recommendations to improve campaign performance and achieve client objectives.\nData Storytelling & Application: Structure and visualize campaign data to build compelling client reports and performance dashboards, contributing to the development of data-driven media strategies.\nUncover Strategic Insights: Provide foundational research on competitor intelligence, market trends, and consumer behavior that directly informs client media strategy.\nStakeholder Collaboration: Work closely with internal teams and external partners to ensure seamless campaign execution and foster strong professional relationships.\nLeadership & Cultural Contribution: Gain leadership development experience by participating in the company's Young Committee (Y-Co), contributing to the planning and execution of key company-wide events and initiatives.\nSkills and Experience\nAt WPP Media, we believe in the power of our culture and our people. It’s what elevates us to deliver exceptional experiences for both our clients and each other. In this role it will be critical to embrace WPP & WPP Media’s shared core values:\n- Be Extraordinary by Leading Collectively to Inspire transformational Creativity.\n- Create an Open environment by Balancing People and Client Experiences by Cultivating Trust.\n- Lead Optimistically by Championing Growth and Development to Mobilize the Enterprise.\nRequired Skills & Experience:\n- Final year university student or recent graduate. Early career professionals with 1-2 years of relevant experience are also welcome.\n- A strong passion for the media, data, and technology landscape.\n- An appreciation for data and numbers, with the ability to translate findings into campaign insights.\n- Excellent communication skills and a collaborative, team-oriented mindset.\nDesired Skills & Experience:\n- Fluent in spoken and written English and Cantonese is a plus.\n- Bachelor’s degree in Marketing, Advertising, Communications, Business, or a related field.\n- Prior internship or work experience in a relevant field.\nLife at WPP Media & Benefits\nOur passion for shaping the next era of media includes investing in our employees to help them do their best work, and we’re just as committed to employee growth as we are to responsible media investment. WPP Media employees can tap into the global WPP Media & WPP networks to pursue their passions, grow their networks, and learn at the cutting edge of marketing and advertising. We have a variety of employee resource groups and host frequent in-office events showcasing team wins, sharing thought leadership, and celebrating holidays and milestone events. Our benefits include competitive medical, group retirement plans, vision, and dental insurance, significant paid time off, preferential partner discounts, and employee mental health awareness days.\nWPP Media is an equal opportunity employer and considers applicants for all positions without discrimination or regard to particular characteristics. We are committed to fostering a culture of respect in which everyone feels they belong and has the same opportunities to progress in their careers.\nWe believe the best work happens when we're together, fostering creativity, collaboration, and connection. That's why we’ve adopted a hybrid approach, with teams in the office around four days a week. If you require flexibility, please discuss this with the hiring team during the interview process.\nApplication Timeline\n- Application Deadline: April 30, 2027\n- Interview Period: TBC\n- Programme Starts: TBC\nPlease read our Privacy Notice for more information on how we process the information you provide.",
+      "content_hash": "b3708b0969e9d5d5e30fc7d012676a67fd330048161af4798cd6c96530273764",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/wppmedia/jobs/5424219008"
+    },
+    "greenhouse:5424219008:ats_metadata": {
+      "document_id": "greenhouse:5424219008:ats_metadata",
+      "kind": "ats_metadata",
+      "text": "{\"absolute_url\":\"https://job-boards.greenhouse.io/wppmedia/jobs/5424219008\",\"application_deadline\":null,\"company_name\":\"WPP Media\",\"first_published\":\"2026-09-15T00:50:26-04:00\",\"id\":5424219008,\"internal_job_id\":null,\"language\":\"en\",\"location\":{\"name\":\"Hong Kong, Hong Kong\"},\"title\":\"WPP Media | 2027 Graduate Trainee Programme\",\"updated_at\":\"2026-09-21T14:32:42-04:00\"}",
+      "content_hash": "f916f14f24648be914b22872c1f88e62bceec9d0b5d47ca3d20652f411b1dd48",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/wppmedia/jobs/5424219008"
+    },
+    "greenhouse:4317640009:description": {
+      "document_id": "greenhouse:4317640009:description",
+      "kind": "job",
+      "text": "Aircall is a unicorn, AI-powered customer communications platform used by 22,000+ companies worldwide to drive revenue, resolve issues faster, and scale customer-facing teams. We’re redefining customer communications by bringing voice, SMS, WhatsApp, and AI together into one seamless workspace.\nOur momentum comes from a simple idea: help teams work smarter, not harder. Aircall’s AI Voice Agent automates routine calls, AI Assist streamlines post-call work, and AI Assist Pro delivers real-time guidance so people can do their best work. The result is higher revenue, faster resolutions, and teams that scale with confidence.\nAircall is headquartered in Paris, our European HQ, with a strong North American presence anchored in Seattle, our North American HQ, and teams across Madrid, London, Berlin, San Francisco, New York City, Sydney, and Mexico City. We’ve built a product customers love and a business that’s scaling quickly, backed by world-class investors and driven by rapid AI innovation across multiple product lines.\nAt Aircall, you’ll join a company in motion. We’re ambitious, product-driven, and execution-focused, with visible impact, fast decisions, and real growth.\nHow we work at Aircall: We’re customer-obsessed, data-driven, and focused on delivering meaningful outcomes. We value ownership, continuous learning, and thoughtful speed. If you thrive in a collaborative, fast-moving environment where trust and impact matter, you’ll feel at home here.\nWe are looking for a talented and highly motivated Strategy & Operations intern to work directly with our General Manager, Small Business, acting as a true right hand in driving strategic initiatives and operational excellence across the business unit.\nThis is not a typical internship opportunity. You will step in the heart of a fast-moving, established global tech company where you’ll learn how a successful business is run end-to-end. If you're hungry for responsibility, eager to discover how high-stakes decisions are made, and excited by the idea of being the GM’s right hand in running and growing a business unit, this role offers an unparalleled experience.\nYou’ll get a front-row seat to leadership and you will work on the initiatives that matter most to the business—from shaping strategy to improving performance, launching new programs, and unblocking critical decisions. Your work will be visible, meaningful, and directly tied to outcomes that influence teams, customers, and the bottom line.\nThis internship will start from November 2026.\nThe internship duration will be 6 months.\nKey Responsibilities:\n-\nSupport the GM in defining quarterly and annual strategic priorities and OKRs\n-\nConduct market research, competitive benchmarking, and financial modeling to inform major decisions\n-\nBuild executive-ready written memos and recommendations related to hot topics\n-\nTrack key KPIs, surface performance insights, and maintain business dashboards\n-\nContribute to forecasting, workforce planning, and weekly business reviews\n-\nLead or co-own cross-functional projects from scoping to execution (e.g., cost savings, GTM experiments, AI pilots, operational excellence initiatives)\n-\nCoordinate stakeholders, drive timelines, and ensure high-quality delivery\n-\nPrepare materials for leadership meetings and follow up on leadership action items\n-\nAct as a problem-solver to the GM on diverse business topics\nQualifications:\n-\nCurrently pursuing a Master degree in Business, Engineering, Economics, Data/Analytics or similar within a top tier university, business school, engineering school or equivalent\n-\nStrong analytical abilities; comfortable with Google Sheets (SQL/BI tools are a plus)\n-\nExcellent written and verbal communication; able to distill complex ideas into clear insights, slides, or narratives\n-\nDemonstrated ability to take ownership, work independently, and thrive in a fast-paced or ambiguous environment\n-\nStrong project management instincts: structured, organized, and reliable with follow-through\n-\nEntrepreneurial mindset: proactive, resourceful, curious, and eager to take ownership and solve problems\n-\nPrevious internship experience in strategy consulting, finance, strategy, or high-growth startups is a plus (but not mandatory for outstanding candidates)\nWhy join us?\n🚀 Key moment to join Aircall in terms of growth and opportunities\n💆‍♀️ Our people matter, work-life balance is important at Aircall\n📚 Fast-learning environment, entrepreneurial and strong team spirit\n🌍 45+ Nationalities: cosmopolite & multi-cultural mindset\n💶 Competitive salary package & benefits\nDE&I Statement:\nAt Aircall, we believe diversity, equity and inclusion – irrespective of origins, identity, background and orientations – are core to our journey.\nWe pride ourselves on promoting active inclusion within our business to foster a strong sense of belonging for all. We’re working to create a place filled with diverse people who can enrich and learn from one another. We’re committed to ensuring that everyone not only has a seat at the table but is valued and respected at it by providing equal opportunities to develop and thrive.\nWe will constantly challenge ourselves to make sure that we live up to our ambitions around diversity, equity and inclusion, and keep this conversation open. Above all else, we understand and acknowledge that we have work to do and much to learn.\nWant to know more about candidate privacy? Find our Candidate Privacy Notice here.\nWe may use artificial intelligence (AI) tools to support parts of the hiring process, such as reviewing applications, analyzing resumes, or assessing responses. These tools assist our recruitment team but do not replace human judgment. Final hiring decisions are ultimately made by humans. If you would like more information about how your data is processed, please contact us.",
+      "content_hash": "b4e586c1897045883505bffa37d835411942b8882e4d63e682c249cd20ab1c87",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/aircallioinc/jobs/4317640009"
+    },
+    "greenhouse:4317640009:ats_metadata": {
+      "document_id": "greenhouse:4317640009:ats_metadata",
+      "kind": "ats_metadata",
+      "text": "{\"absolute_url\":\"https://job-boards.greenhouse.io/aircallioinc/jobs/4317640009\",\"application_deadline\":null,\"company_name\":\"Aircall.io, Inc.\",\"first_published\":\"2026-07-15T01:31:58-04:00\",\"id\":4317640009,\"internal_job_id\":4186198009,\"language\":\"en\",\"location\":{\"name\":\"Paris Office\"},\"title\":\"Strategy & Operations Intern — Office of the General Manager, Small Business\",\"updated_at\":\"2026-09-10T15:32:52-04:00\"}",
+      "content_hash": "0b06a23c01a79bbff16e418fb9f8b7a43734e805c14b6ebcf4f97c5f66f9567f",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/aircallioinc/jobs/4317640009"
+    },
+    "greenhouse:8805758002:description": {
+      "document_id": "greenhouse:8805758002:description",
+      "kind": "job",
+      "text": "Solaris is Europe’s leading embedded finance platform, pioneering Banking-as-a-Service to bridge the gap between financial technology and licensed banking. Founded in 2016 and headquartered in Berlin, Solaris enables fintechs, digital ecosystems, and multinationals to embed accounts, cards, lending, and payments directly into their own products, creating seamless financial experiences for their users. As a fully licensed German bank, Solaris combines the highest standards of IT security and regulatory resilience with a modular, highly scalable infrastructure.\nToday, Solaris is driving the next evolution of financial services by transitioning into an AI-native banking platform, ensuring European businesses can deploy secure, adaptable financial products at scale.\nWhy join Solaris?\n- 🚀 We are fundamentally redesigning banking processes around AI orchestration, standardized modular building blocks, and embedded regulatory compliance.\n- 🎯 We combine tech and banking in dedicated hubs - driving the technology infrastructure out of Berlin and banking operations out of Frankfurt.\n- 💡 Through our internal mobility, growth opportunities, and the Solaris Academy, we offer continuous learning tracks, AI ambassador mentorship, and upskilling to keep your skills ahead of the curve.\n- ⚖️ We foster a workplace rooted in integrity, proactive risk management, and equality actively driving initiatives like DEI initiatives.\nYour Role\n- Daily processing of the hits from our IT-supported transaction monitoring system.\n- Processing of requests for information (Auskunftsersuchen).\n- Supporting correspondence with the authorities / public prosecutor's offices.\n- Supporting the analysis and investigation of anti-fraud and money laundering inquiries from other units, external parties or other.\n- Promote and actively use the AI to enhance AFC Investigations processes and improve operational efficiency.\nWe'd love to see\nDepending on your level of experience, your responsibilities and scope of role will range. We don’t care much about fancy titles, but rather about real personal and professional development, as laid out in our learning framework. Let’s figure together out how you can contribute to our team.\n- Completed university degree (in a relevant subject) (trainee)\n- Current university studies (in a relevant subject) (intern)\n- Alternatively: Training as a bank clerk and a job-specific further education or comparable qualification\n- Ideally experience in the area of AML compliance\n- Previous experience from customer service, the area of AML compliance or internal auditing is an advantage\n- Good understanding of the IT landscape\n- Knowledge of regulatory requirements (MLA, KWG etc.) are an advantage\n- Proficiency in English language. Knowledge of German, Spanish, Italian or French language is an advantage\n- Industry related certificates advantageous (e.g. CAMS, ICA)\n- Analytical, detail-oriented and strong business acumen.\n- Stakeholder management skills\n- Affinity for agile methodology\n- High level of integrity\n- Comfortable working with AI tools, thinking critically about AI outputs, and contributing to a culture of responsible AI use. We expect you to demonstrate comfort with AI-assisted workflows and a willingness to continuously develop their AI capabilities as the technology evolves.\nBenefits\n- Transparent framework to support your career goals\n- Lunch reimbursement\n- Mental health support via Thrive\n- Flexible working model\n- Deutschlandticket subsidy for voluntary internship model\nWhile job ads usually paint an ideal picture of a candidate, studies show that most applicants meet an average of 60% of the criteria. Unfortunately, many promising candidates tend to apply only if they meet all the criteria. So if you think you have what it takes, but don't necessarily meet every single item in the job description, please contact us anyway. We'd love to talk with you and find out if you might be a good fit for us.\nAt Solaris, we are committed to nurturing an inclusive environment, where all Solarians feel valued, respected and supported. We are dedicated to building a diverse workforce that reflects the diversity of our communities. We are committed to equal employment opportunity regardless of color, ethnicity, religion, sex, origin, disability, marital status, citizenship, or gender identity. We are proud to be an equal opportunity workplace. If you have a disability or special need that requires accommodation, please let us know.\nIf your application is successful, you will be required to complete pre-employment background checks through our screening provider Zinc. These include, but not limited to identity verification, educational records, references, a criminal record check, etc. The processing is based on Art. 6(1)(c) GDPR. Please see below Privacy Information for Job Applicants for details, including recipients, retention, and your rights.\nInformation on data processing:\nDE: https://www.solarisgroup.com/gdpr_notice_de\nEN: https://www.solarisgroup.com/gdpr_notice_en\nThe monthly gross salary for this internship position is:\n€2.598—€2.771 EUR",
+      "content_hash": "cad59a0ce1e8d98cd4656de5c02b5280766b5f6011052ae4fd51cecc9906a168",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/solarisbank/jobs/8805758002"
+    },
+    "greenhouse:8805758002:ats_metadata": {
+      "document_id": "greenhouse:8805758002:ats_metadata",
+      "kind": "ats_metadata",
+      "text": "{\"absolute_url\":\"https://job-boards.greenhouse.io/solarisbank/jobs/8805758002\",\"application_deadline\":null,\"company_name\":\"Solaris\",\"first_published\":\"2026-09-14T09:08:55-04:00\",\"id\":8805758002,\"internal_job_id\":6485957002,\"language\":\"en\",\"location\":{\"name\":\"Berlin\"},\"title\":\"AFC Intern\",\"updated_at\":\"2026-09-15T06:13:24-04:00\"}",
+      "content_hash": "0c0a6f277a9e510ea91ef87beef7ea10d15863a90ba84772d2a1a4fb9a870d71",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/solarisbank/jobs/8805758002"
+    },
+    "greenhouse:4653315101:description": {
+      "document_id": "greenhouse:4653315101:description",
+      "kind": "job",
+      "text": "Location: Amsterdam, Hybrid\nInternship Length: Six months, 40 hours per week\nAre you passionate about helping others succeed and eager to learn in a fast-paced, innovative environment?\nAt Workwize, we’re looking for a Customer Success Manager Intern who is excited to dive into the world of customer success and support our clients in their journey. In this role, you’ll develop your skills by working closely with our Onboarding & CSM Teams, gaining hands-on experience in client engagement, data analysis, and day-to-day operations. If you're driven by curiosity, proactive in your approach, and ready to learn how to make an impact, this opportunity is perfect for you!\nAt Workwize, we’re revolutionizing how businesses support their global teams.\nThe rise of a global workforce has enabled companies to access a broader talent pool but has also brought logistical challenges, such as local vendor availability, timely laptop delivery, equipment management, and local retrieval and storage.\nWorkwize’s SaaS platform, integrated with suppliers and warehouses worldwide, simplifies and automates the deployment, management, and retrieval of IT hardware for distributed teams. Currently, Workwize facilitates fast, local deliveries in 100+ countries, supporting the IT lifecycle for over 30,000 users and managing 100,000+ devices globally.\nWhat you will learn:\n- Customer Success best practices: Learn how CSMs drive customer satisfaction, growth, and retention.\n- Data & Analytics: Dive deep into customer data to help the CSM team identify trends and opportunities for improvement.\n- Cross-functional collaboration: Work alongside our operational teams to ensure seamless customer experiences.\n- Strategic engagement: Gain insight into how CSMs engage with clients to ensure success, using real-time feedback and hands-on client interactions.\nKey Responsibilities\n- Assist CSMs with operational tasks such as submitting onboarding tickets, setting up basic accounts, and monitoring high-risk client orders.\n- Support CSMs by exporting and analyzing data from client accounts to help troubleshoot issues and answer product-related questions.\n- Monitor customer usage patterns and provide feedback to the CSM team to enhance customer satisfaction and retention strategies.\n- Help prepare Business Review data, Success Plan data, and other ad-hoc reports as needed.\n- Collaborate with various teams across the organization to ensure client needs are met quickly and effectively.\nSkills & Qualifications\n- Currently pursuing a degree in Business, Marketing, IT, Data Analyst, Project Manager or a related field (or have a strong interest in these areas).\n- Good communication and interpersonal skills, with a willingness to learn and grow.\n- An interest in SaaS or customer success is a plus, but not required—you’ll learn a lot on the job!\n- A basic understanding of data and analytics is helpful, but not essential. We’ll teach you the ropes.\n- A problem-solving mindset with a positive, customer-first attitude.\n- Ability to work well in a team and independently when needed.\nBenefits:\n- Be part of a fast-paced Customer Success team, gaining valuable hands-on experience in the field.\n- Immerse yourself in a startup culture with a flat structure where your ideas and contributions are truly valued.\n- A fantastic opportunity to work with data and develop skills in data analysis and reporting, directly impacting customer satisfaction.\n- Collaborate with cross-functional teams on real-world projects that make a tangible difference for our clients.\n- Potential to join the Workwize team after a successful internship evaluation.\n- Receive mentorship from experienced Customer Success Managers, equipping you with the skills and knowledge to excel in your future career.\nWhat Workwize Offers:\n- A vibrant, entrepreneurial work environment that encourages innovation and growth.\n- A monthly internship compensation of €500 /monthly\n- Weekly team lunches and fun monthly surprise events to boost team spirit and camaraderie.\n- Flexibility to work in a hybrid environment, balancing office and remote work settings.\n- The best work setup with all the necessary tools and equipment provided to ensure your success.",
+      "content_hash": "59c86f91c9604b377eedaaba60b8eaf3987328b17eb84647d23c7e0f01ec7019",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/workwize/jobs/4653315101"
+    },
+    "greenhouse:4653315101:ats_metadata": {
+      "document_id": "greenhouse:4653315101:ats_metadata",
+      "kind": "ats_metadata",
+      "text": "{\"absolute_url\":\"https://job-boards.eu.greenhouse.io/workwize/jobs/4653315101\",\"application_deadline\":null,\"company_name\":\"Workwize\",\"first_published\":\"2025-08-11T12:49:49-04:00\",\"id\":4653315101,\"internal_job_id\":4368347101,\"language\":\"en\",\"location\":{\"name\":\"Amsterdam\"},\"title\":\"Customer Success Manager Internship\",\"updated_at\":\"2026-06-29T09:49:20-04:00\"}",
+      "content_hash": "a38f1e894d2245fdbdad9142f32c9f519236e7b91cf1e82bc7e2d9d9b32fc6ae",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/workwize/jobs/4653315101"
+    },
+    "greenhouse:8491128002:description": {
+      "document_id": "greenhouse:8491128002:description",
+      "kind": "job",
+      "text": "The Point72 Academy Summer Internship — Singapore\nAre you a student interested in pursuing a career in investing? If you are graduating between December 2027 and July 2028, we invite you to apply for our 8-week summer internship, taking place from June to August 2027.\nLaunch your investing career in the Point72 Academy, an investment analyst training program that will provide you with the tools and knowledge to build a career in our ever-evolving industry. Since 2015, the Academy has graduated more than 230 analysts onto our platform as of November 2025; some are portfolio managers today.\nThe Point72 Academy Summer Internship is a combination of classroom instruction, portfolio casework, and mentorship. The program is designed to give you insights into finance, research, and the workings of the public markets and prepare you for a potential opportunity with the full-time Point72 Academy Associate Program.\nDuring the internship, you will:\n- Acquire fundamental knowledge and skills necessary to contribute as an analyst, alongside your peers.\n- Receive training in accounting, modeling, presenting, and compliance.\n- Collaborate with an investment team, gaining firsthand experience of the daily life of an equities analyst and exposure to one of the sectors covered by our Portfolio Managers.\n- Work closely with Academy coaches, delving deeper into data analysis and preparing a final pitch on an investment idea.\n- Collaborate with Compliance, Information Security and the Office of the Co-CIO to discover efficient ways to harness AI in your investment processes and workflows.\nWho We’re Looking For:\n- We welcome students from all academic disciplines. Your field of study or major is not a determining factor; we seek individuals who can effectively manage teamwork, exhibit integrity, possess intellectual curiosity, demonstrate leadership potential, and express a keen interest in the financial markets.\n- Students should have a high enthusiasm for the financial services industry. Interest in analyzing companies and looking at stocks is recommended given the project-based nature of this program.\n- Highly self‑motivated with a high risk appetite and the ability to make decisions in an ambiguous environment.\n- Candidates with excellent communication skills, both written and verbal in an Asian language.\nWe Want You to Apply if You Are:\n- A current student who will graduate from university between December 2027 and July 2028.\n- Fascinated by research and problem-solving, relentlessly curious, and constantly expanding your horizons.\n- Committed to continued success in your academic and professional career with the highest levels of professionalism, integrity, and excellence.\n- Commitment to the highest ethical standards.\n- Highly self-driven and motivated to explore a career in finance.\nWhat to Expect:\n- Your online application, essays, and resume will serve as an introduction to who you are as a candidate. Once you complete the online application, we will begin reviewing your profile.\n- Selected candidates will then receive an email invitation to participate in a case study, allowing you to showcase your experiences and demonstrate your business acumen.\n- Following submission and review of your case study, shortlisted candidates will be invited to complete an online assessment and participate in virtual one‑on‑one interviews with various members of the Academy team. Shortlisted candidates will then be invited to attend a half‑day assessment center. There are two application deadlines: one in mid‑May for candidates interested in an early summer assessment center, and another for students applying over the summer to mid Fall, which will lead to a late fall assessment center. We strongly encourage candidates to apply and complete all requirements as soon as they feel ready to begin the hiring process.\nPlease note, you may only submit one application to the Academy internship program globally, so only apply to the region you are most interested in.\nDon't miss this opportunity to kickstart your career in the world of investing with the Point72 Academy.\nPlease note that any use of GenAI is strictly prohibited when completing this application.\nABOUT POINT72\nPoint72 is a leading global alternative investment firm led by Steven A. Cohen. Building on more than 30 years of investing experience, Point72 seeks to deliver superior returns for its investors through fundamental and systematic investing strategies across asset classes and geographies. We aim to attract and retain the industry’s brightest talent by cultivating an investor-led culture and committing to our people’s long-term growth.\nWe’re a firm that thrives on ideas, and we’ve found that the Point72 Academy has provided us with diverse viewpoints and perspectives, and we are able to offer support in their growth and development as analysts and portfolio managers.",
+      "content_hash": "1c23cb5c98b72a95c4d143387c0956bf8882920c6f6b543eb9f07188977d400a",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/point72/jobs/8491128002"
+    },
+    "greenhouse:8491128002:ats_metadata": {
+      "document_id": "greenhouse:8491128002:ats_metadata",
+      "kind": "ats_metadata",
+      "text": "{\"absolute_url\":\"https://boards.greenhouse.io/point72/jobs/8491128002?gh_jid=8491128002\",\"application_deadline\":null,\"company_name\":\"Point72 \",\"first_published\":\"2026-04-02T06:32:50-04:00\",\"id\":8491128002,\"internal_job_id\":6391711002,\"language\":\"en\",\"location\":{\"name\":\"Singapore\"},\"title\":\"2027 Point72 Academy Investment Analyst Summer Internship Program - Singapore\",\"updated_at\":\"2026-09-15T17:33:58-04:00\"}",
+      "content_hash": "d1bee8ed2c033bd3e92b5d78a03cb8031ca0128d26734f835bf9dbefd5071c75",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/point72/jobs/8491128002"
+    }
+  },
+  "source_manifest": [
+    {
+      "source": "greenhouse",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/charlesriverassociates/jobs/5174914",
+      "retrieved_at": "2026-09-23T15:20:58Z",
+      "record_count": 1,
+      "redistribution_allowed": null
+    },
+    {
+      "source": "greenhouse",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/temus/jobs/5390013008",
+      "retrieved_at": "2026-09-23T15:20:58Z",
+      "record_count": 1,
+      "redistribution_allowed": null
+    },
+    {
+      "source": "greenhouse",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/rothesaygraduates/jobs/8784142002",
+      "retrieved_at": "2026-09-23T15:20:58Z",
+      "record_count": 1,
+      "redistribution_allowed": null
+    },
+    {
+      "source": "greenhouse",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/wppmedia/jobs/5424219008",
+      "retrieved_at": "2026-09-23T15:20:58Z",
+      "record_count": 1,
+      "redistribution_allowed": null
+    },
+    {
+      "source": "greenhouse",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/aircallioinc/jobs/4317640009",
+      "retrieved_at": "2026-09-23T15:20:58Z",
+      "record_count": 1,
+      "redistribution_allowed": null
+    },
+    {
+      "source": "greenhouse",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/solarisbank/jobs/8805758002",
+      "retrieved_at": "2026-09-23T15:20:58Z",
+      "record_count": 1,
+      "redistribution_allowed": null
+    },
+    {
+      "source": "greenhouse",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/workwize/jobs/4653315101",
+      "retrieved_at": "2026-09-23T15:20:58Z",
+      "record_count": 1,
+      "redistribution_allowed": null
+    },
+    {
+      "source": "greenhouse",
+      "source_ref": "https://boards-api.greenhouse.io/v1/boards/point72/jobs/8491128002",
+      "retrieved_at": "2026-09-23T15:20:58Z",
+      "record_count": 1,
+      "redistribution_allowed": null
+    }
+  ],
+  "quarantine": []
+}
