@@ -2,7 +2,8 @@
 
 This module orchestrates the already-verified single-job Greenhouse boundary
 across several configured postings and returns one `JobSnapshot 0.2.1-draft`.
-It adds no shared contract, no configuration model and no semantic extraction.
+It adds no shared contract, no shared configuration model and no semantic
+extraction.
 
 Approved behavior:
 
@@ -15,13 +16,27 @@ Approved behavior:
   posting, preserving the exact Greenhouse public API posting endpoint as
   `source_ref`, the batch observation time as `retrieved_at`, and
   `record_count=1`. Failed targets create no successful manifest entry.
+
+A batch is bounded by an explicit local JSON configuration (`snapshot_id` plus
+an ordered list of `board_token`/`job_id` targets) and a per-request timeout.
+`run_greenhouse_batch` reads that configuration, builds the snapshot and
+persists it as one UTF-8 JSON object that `load_snapshot` reads back:
+
+    PYTHONPATH=src python -m oi.io.greenhouse_batch \\
+        --config config/greenhouse_batch01.json \\
+        --output data/snapshots/greenhouse_batch01.json
 """
 
 from __future__ import annotations
 
+import argparse
+import json
+import os
+import sys
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Sequence, Union
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Sequence, Union
 
 from oi.contracts import (
     SNAPSHOT_CONTRACT_VERSION,
@@ -239,3 +254,180 @@ def build_greenhouse_snapshot(
         source_manifest=manifest,
         quarantine=_quarantine_summaries(quarantine_counts),
     )
+
+
+class BatchConfigError(ValueError):
+    """Raised when a batch configuration file cannot define a usable batch.
+
+    A configuration defect is a caller input defect, so it is rejected before
+    any network call instead of being quarantined.
+    """
+
+
+@dataclass(frozen=True, slots=True)
+class GreenhouseBatchConfig:
+    """One local batch configuration: snapshot identity plus ordered targets.
+
+    Local batch input only: deliberately not a shared configuration contract.
+    """
+
+    snapshot_id: str
+    targets: tuple[GreenhouseTarget, ...]
+
+
+_CONFIG_FIELDS = {"snapshot_id", "targets"}
+_TARGET_FIELDS = {"board_token", "job_id"}
+
+
+def _config_target(value: Any, index: int) -> GreenhouseTarget:
+    if not isinstance(value, dict) or set(value) != _TARGET_FIELDS:
+        raise BatchConfigError(
+            f"target {index} must be an object with exactly "
+            f"'board_token' and 'job_id'"
+        )
+    board_token, job_id = value["board_token"], value["job_id"]
+    if not isinstance(board_token, str) or not isinstance(job_id, str):
+        raise BatchConfigError(
+            f"target {index} 'board_token' and 'job_id' must be strings"
+        )
+    try:
+        return _as_target((board_token, job_id))
+    except ValueError as error:
+        raise BatchConfigError(f"target {index}: {error}") from error
+
+
+def load_batch_config(path: Path) -> GreenhouseBatchConfig:
+    """Read and validate one UTF-8 JSON batch configuration file.
+
+    Raises:
+        OSError: If the path cannot be read, including FileNotFoundError.
+        BatchConfigError: If the content is not valid JSON, has missing or
+            unknown fields, an empty or non-string `snapshot_id`, no targets,
+            a malformed or empty target, or a duplicate target. Nothing is
+            defaulted or repaired.
+    """
+
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise BatchConfigError(f"batch config '{path}' is not valid JSON") from error
+
+    if not isinstance(raw, dict) or set(raw) != _CONFIG_FIELDS:
+        raise BatchConfigError(
+            "batch config must be an object with exactly 'snapshot_id' and 'targets'"
+        )
+
+    snapshot_id = raw["snapshot_id"]
+    if not isinstance(snapshot_id, str) or not snapshot_id.strip():
+        raise BatchConfigError("batch config 'snapshot_id' must be a non-empty string")
+
+    raw_targets = raw["targets"]
+    if not isinstance(raw_targets, list) or not raw_targets:
+        raise BatchConfigError("batch config 'targets' must be a non-empty list")
+
+    targets = [
+        _config_target(value, index) for index, value in enumerate(raw_targets)
+    ]
+    try:
+        ordered = _normalize_targets(targets)
+    except DuplicateTargetError as error:
+        raise BatchConfigError(str(error)) from error
+
+    return GreenhouseBatchConfig(
+        snapshot_id=snapshot_id.strip(),
+        targets=tuple(ordered),
+    )
+
+
+def write_snapshot(snapshot: JobSnapshot, path: Path) -> None:
+    """Persist one snapshot as a single UTF-8 JSON object.
+
+    The file is written to a sibling temporary path and then atomically moved
+    into place, so a failed write never leaves a truncated snapshot behind.
+    """
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_text(snapshot.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    os.replace(temporary, path)
+
+
+def run_greenhouse_batch(
+    config_path: Path,
+    output_path: Path,
+    *,
+    observed_at: datetime,
+    timeout_s: float = 15.0,
+) -> JobSnapshot:
+    """Build the configured batch snapshot and persist it to `output_path`.
+
+    The configuration is fully validated before any fetch. Expected per-posting
+    failures are quarantined per D-038 and the snapshot is still written.
+    Configuration defects and unexpected failures propagate and leave any
+    existing file at `output_path` untouched.
+    """
+
+    config = load_batch_config(config_path)
+    snapshot = build_greenhouse_snapshot(
+        config.targets,
+        snapshot_id=config.snapshot_id,
+        observed_at=observed_at,
+        timeout_s=timeout_s,
+    )
+    write_snapshot(snapshot, output_path)
+    return snapshot
+
+
+def _parse_observed_at(value: str) -> datetime:
+    candidate = value[:-1] + "+00:00" if value.endswith("Z") else value
+    try:
+        parsed = datetime.fromisoformat(candidate)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(
+            f"'{value}' is not an ISO-8601 timestamp"
+        ) from error
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise argparse.ArgumentTypeError("--observed-at must include a timezone")
+    return parsed
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Ingest a configured Greenhouse batch into one JobSnapshot."
+    )
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--observed-at",
+        type=_parse_observed_at,
+        default=None,
+        help="timezone-aware ISO-8601 batch observation time (default: now, UTC)",
+    )
+    parser.add_argument("--timeout", type=float, default=15.0)
+    args = parser.parse_args(argv)
+
+    observed_at = args.observed_at or datetime.now(timezone.utc).replace(
+        microsecond=0
+    )
+    snapshot = run_greenhouse_batch(
+        args.config,
+        args.output,
+        observed_at=observed_at,
+        timeout_s=args.timeout,
+    )
+
+    attempted = len(snapshot.jobs) + sum(q.count for q in snapshot.quarantine)
+    print(
+        f"{snapshot.snapshot_id}: ingested {len(snapshot.jobs)}/{attempted} "
+        f"postings into {args.output}"
+    )
+    for summary in snapshot.quarantine:
+        print(
+            f"quarantined {summary.count} posting(s): {summary.reason}",
+            file=sys.stderr,
+        )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

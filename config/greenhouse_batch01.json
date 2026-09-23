@@ -1,0 +1,13 @@
+{
+  "snapshot_id": "greenhouse-batch01",
+  "targets": [
+    {"board_token": "charlesriverassociates", "job_id": "5174914"},
+    {"board_token": "temus", "job_id": "5390013008"},
+    {"board_token": "rothesaygraduates", "job_id": "8784142002"},
+    {"board_token": "wppmedia", "job_id": "5424219008"},
+    {"board_token": "aircallioinc", "job_id": "4317640009"},
+    {"board_token": "solarisbank", "job_id": "8805758002"},
+    {"board_token": "workwize", "job_id": "4653315101"},
+    {"board_token": "point72", "job_id": "8491128002"}
+  ]
+}
