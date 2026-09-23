@@ -4,10 +4,10 @@
 
 | Control | Value |
 |---|---|
-| Context version | 0.4.5-draft - JobSnapshot 0.2.1-draft jointly approved for A-01 |
+| Context version | 0.4.6-draft - Group A Greenhouse batch ingestion behavior approved |
 | Contract version | 0.2.0-draft core frozen; JobSnapshot 0.2.1-draft jointly approved; result/config envelopes remain separately unfrozen |
 | Created | 2026-09-17 |
-| Last updated | 2026-09-20 |
+| Last updated | 2026-09-22 |
 | Project deadline | 2026-09-29; exact submission time/timezone still to confirm |
 | Current-state boundary | Planning/product decisions are recorded here; implementation and measured progress require repository/session evidence |
 
@@ -636,6 +636,8 @@ These decisions were provided in the kick-off discussion and are integrated into
 | D-035 | The remaining `0.2.0-draft` candidate/clarification schema is jointly approved: `CandidateProfile` uses evidence-backed semantic fields, explicit preferences/declarations, `dict[constraint_id, list[EligibilityAnswer]]`, and resolvable candidate provenance; country/work-authorization semantics are explicit; `ClarificationRequest` uses closed answer/priority enums and validated `CandidateFieldPath` families. `answer_key` membership for a specific constraint remains a `RuleCatalogue` responsibility, not a shared-contract rule. Shared fixtures are fixed at `tests/fixtures/contracts/v0.2.0-draft/{candidate_profile,clarification_request,job_record}.json`. The Q-08 candidate/clarification schema decision is closed; its fixture verification condition was satisfied on 2026-09-20 by commit `03a208a`, with `121 passed` and 3/3 fixture round-trips. This decision freezes the models explicitly covered by D-034/D-035; it does not freeze `JobSnapshot` or downstream result/config envelopes. | Approved by Marco + Pierpaolo, 2026-09-20; verification condition satisfied 2026-09-20 |
 | D-036 | The repository-root `PROJECT_CONTEXT.md` is the single editable canonical copy of current project truth. The ChatGPT Project Source copy is a convenience mirror and must be refreshed after approved changes; when versions differ, the repository-root copy governs until synchronization. This changes storage authority only and does not change the source-role separation established by D-029 to D-033. | Approved by Marco, 2026-09-20 |
 | D-037 | `JobSnapshot 0.2.1-draft` is the jointly approved backward-compatible A/B snapshot envelope. It adds exact `SourceManifestEntry`, `QuarantineSummary` and `JobSnapshot` serialization around unchanged frozen `0.2.0-draft` `JobRecord` payloads; uses one UTF-8 JSON object; makes `documents` the canonical registry for every embedded job description/source document and top-level job evidence document reference; stores quarantine summary metadata only; and leaves RuleCatalogue/ranking semantics unchanged. A owns `load_snapshot(Path) -> JobSnapshot` and the text-only `PdfExtractionError`/`extract_pdf_text(pdf_bytes, document_id)` boundary; malformed, unusable encrypted and no-text PDFs raise `PdfExtractionError`, with no OCR. | Approved by Marco + Pierpaolo, 2026-09-20 |
+| D-038 | Group A Greenhouse batch ingestion is partial-success. A configured posting that fails with an expected Greenhouse fetch or normalization failure is omitted from `jobs` and summarized through stable `JobSnapshot.quarantine` reasons, while other valid postings remain in the snapshot. Unexpected programming/contract failures propagate. | Approved by Marco, 2026-09-22 |
+| D-039 | Group A Greenhouse batch snapshots use one `SourceManifestEntry` per successfully fetched-and-normalized posting, preserving the exact Greenhouse public API posting endpoint as `source_ref`, the batch observation time as `retrieved_at`, and `record_count=1`. Failed targets do not create successful manifest entries. | Approved by Marco, 2026-09-22 |
 
 ### Proposed implementation defaults - review/freeze before independent implementation
 
