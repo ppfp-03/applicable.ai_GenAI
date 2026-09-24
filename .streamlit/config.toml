@@ -1,76 +1,27 @@
 # Applicable.ai theme.
-# Values come from design-system/tokens.css. Keep them in sync with that file:
-# it is the source of truth, this is a projection of it onto Streamlit's own
-# theme keys. The CSS variables the components use are injected separately by
-# ui/theme.py.
+# The approved mockups (Inter, light glass) are the source of truth. The CSS
+# that paints them is ui/css/*.css, published by ui/theme.py; these keys only
+# keep Streamlit's own widgets (inputs, popovers, dialogs) in the same family.
 
 [server]
-enableStaticServing = true          # serves ./static/ (fonts, logos) under /app/static/
+enableStaticServing = true          # serves ./static/ (fonts, stylesheets, logos) under /app/static/
+
+[client]
+showSidebarNavigation = false
+toolbarMode = "minimal"
 
 [theme]
 base = "light"
-primaryColor = "#F26A3D"            # brand
-backgroundColor = "#FBF7F2"         # canvas
-secondaryBackgroundColor = "#F3EDE4" # surface-sunk (inputs, expanders)
-textColor = "#1F1B16"               # ink
-linkColor = "#B63F16"               # brand-ink
-borderColor = "#E7DFD3"             # line
-baseRadius = "12px"                 # radius-md
-font = "Figtree"
-headingFont = "Bricolage Grotesque"
-codeFont = "JetBrains Mono"
-
-[theme.sidebar]
-backgroundColor = "#FFFFFF"         # surface
-
-# Dark mirrors the same roles. Note on-brand stays dark on the mandarin fill.
-[theme.dark]
-primaryColor = "#FF7A4D"
-backgroundColor = "#16140F"
-secondaryBackgroundColor = "#2A261F"
-textColor = "#F5EFE6"
-linkColor = "#FF9C73"
-borderColor = "#35302A"
-
-[theme.dark.sidebar]
-backgroundColor = "#1F1C17"
+primaryColor = "#F26A3D"            # brand orange (mockup blue, mapped)
+backgroundColor = "#F5F6F8"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#1D1D1F"
+linkColor = "#F26A3D"
+borderColor = "#E5E5EA"
+baseRadius = "16px"
+font = "Inter"
 
 [[theme.fontFaces]]
-family = "Figtree"
-url = "app/static/figtree-latin-400-normal.woff2"
-weight = 400
-
-[[theme.fontFaces]]
-family = "Figtree"
-url = "app/static/figtree-latin-500-normal.woff2"
-weight = 500
-
-[[theme.fontFaces]]
-family = "Figtree"
-url = "app/static/figtree-latin-600-normal.woff2"
-weight = 600
-
-[[theme.fontFaces]]
-family = "Figtree"
-url = "app/static/figtree-latin-700-normal.woff2"
-weight = 700
-
-[[theme.fontFaces]]
-family = "Bricolage Grotesque"
-url = "app/static/bricolage-grotesque-latin-600-normal.woff2"
-weight = 600
-
-[[theme.fontFaces]]
-family = "Bricolage Grotesque"
-url = "app/static/bricolage-grotesque-latin-800-normal.woff2"
-weight = 800
-
-[[theme.fontFaces]]
-family = "JetBrains Mono"
-url = "app/static/jetbrains-mono-latin-400-normal.woff2"
-weight = 400
-
-[[theme.fontFaces]]
-family = "JetBrains Mono"
-url = "app/static/jetbrains-mono-latin-500-normal.woff2"
-weight = 500
+family = "Inter"
+url = "app/static/inter-latin-wght-normal.woff2"
+weight = "100 900"
