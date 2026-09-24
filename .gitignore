@@ -9,3 +9,6 @@ node_modules/
 
 # Stylesheets generated at runtime by ui/theme.py from the design system.
 static/applicable-*.css
+
+# Stylesheets published at runtime by ui/theme.py from ui/css/.
+static/aa-*.css
