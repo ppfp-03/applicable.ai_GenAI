@@ -4,10 +4,10 @@
 
 | Control | Value |
 |---|---|
-| Context version | 0.4.6-draft - Group A Greenhouse batch ingestion behavior approved |
+| Context version | 0.4.8-draft - Greenhouse Batch 01 redistribution status approved |
 | Contract version | 0.2.0-draft core frozen; JobSnapshot 0.2.1-draft jointly approved; result/config envelopes remain separately unfrozen |
 | Created | 2026-09-17 |
-| Last updated | 2026-09-22 |
+| Last updated | 2026-09-24 |
 | Project deadline | 2026-09-29; exact submission time/timezone still to confirm |
 | Current-state boundary | Planning/product decisions are recorded here; implementation and measured progress require repository/session evidence |
 
@@ -623,7 +623,7 @@ These decisions were provided in the kick-off discussion and are integrated into
 | D-028 | Session logging is required for substantive work; the current logging procedure and template live only in `SESSION_LOGS.md` and the operating instructions. | Recorded |
 
 
-### Documentation architecture approved 18 September 2026
+### Project and technical decisions
 
 | ID | Decision | Status |
 |---|---|---|
@@ -638,6 +638,10 @@ These decisions were provided in the kick-off discussion and are integrated into
 | D-037 | `JobSnapshot 0.2.1-draft` is the jointly approved backward-compatible A/B snapshot envelope. It adds exact `SourceManifestEntry`, `QuarantineSummary` and `JobSnapshot` serialization around unchanged frozen `0.2.0-draft` `JobRecord` payloads; uses one UTF-8 JSON object; makes `documents` the canonical registry for every embedded job description/source document and top-level job evidence document reference; stores quarantine summary metadata only; and leaves RuleCatalogue/ranking semantics unchanged. A owns `load_snapshot(Path) -> JobSnapshot` and the text-only `PdfExtractionError`/`extract_pdf_text(pdf_bytes, document_id)` boundary; malformed, unusable encrypted and no-text PDFs raise `PdfExtractionError`, with no OCR. | Approved by Marco + Pierpaolo, 2026-09-20 |
 | D-038 | Group A Greenhouse batch ingestion is partial-success. A configured posting that fails with an expected Greenhouse fetch or normalization failure is omitted from `jobs` and summarized through stable `JobSnapshot.quarantine` reasons, while other valid postings remain in the snapshot. Unexpected programming/contract failures propagate. | Approved by Marco, 2026-09-22 |
 | D-039 | Group A Greenhouse batch snapshots use one `SourceManifestEntry` per successfully fetched-and-normalized posting, preserving the exact Greenhouse public API posting endpoint as `source_ref`, the batch observation time as `retrieved_at`, and `record_count=1`. Failed targets do not create successful manifest entries. | Approved by Marco, 2026-09-22 |
+| D-040 | Each hard constraint may define its own clarification answer keys. An answer key names the missing candidate information required to evaluate a concrete case, and its clarification path uses the frozen `eligibility_answers.<CONSTRAINT_ID>.<ANSWER_KEY>` family. Answer-key membership belongs to `RuleCatalogue` mappings, not the shared contract (section 6D). Each new answer key requires explicit approval when introduced. Approved example, not a hardcoded exception: constraint `HC_MIN_EXPERIENCE`, answer key `has_corporate_finance_experience`, path `eligibility_answers.HC_MIN_EXPERIENCE.has_corporate_finance_experience`, a boolean clarification field for the Corporate Finance experience scenario. | Approved by Marco, Pierpaolo + Giorgio G, 2026-09-24 |
+| D-041 | Greenhouse Batch 01 (A-03) is a technical development/demo snapshot of collected and normalized job postings. It provides stable, reproducible input for demonstrations and downstream intelligence development. It is not the frozen evaluation dataset and does not make Greenhouse the only permanent source; D-021 still governs source strategy. | Approved by Marco, Pierpaolo + Giorgio G, 2026-09-24 |
+| D-042 | The application accesses the demo snapshot through one loading boundary, `get_demo_snapshot()` (A-04). Consumers do not depend on the snapshot file path. The boundary only loads and validates the snapshot; it contains no intelligence, eligibility, ranking or transformation logic. | Approved by Marco, Pierpaolo + Giorgio G, 2026-09-24 |
+| D-043 | The Greenhouse Batch 01 snapshot (D-041) of real job postings is approved for project development and demo use. The repository may temporarily contain these postings and is expected to become private after project completion. Before any future external publication or continued public access, the team verifies that sharing the stored job content is appropriate. Source strategy is unchanged (D-021). | Approved by Marco, Pierpaolo + Giorgio G, 2026-09-24 |
 
 ### Proposed implementation defaults - review/freeze before independent implementation
 
@@ -723,4 +727,4 @@ The public sources below support technical assumptions, not claims about the pro
 
 No runtime provider login, billing, endpoint dataset collection, application execution, browser demo or academic evaluation is established merely by this document. Current implementation/progress claims require evidence in the repository and/or `SESSION_LOGS.md`.
 
-**END OF PROJECT CONTEXT - v0.4.5-draft.**
+**END OF PROJECT CONTEXT - v0.4.8-draft.**
