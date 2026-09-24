@@ -40,7 +40,7 @@ header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecorat
 .stMarkdown [data-testid="stMarkdownContainer"] > div{margin:0}
 .x,.x *{box-sizing:border-box;margin:0;padding:0}
 .x{font-size:16px;line-height:normal}
-.x b{font-weight:inherit}
+
 .x i{font-style:normal}
 .x mark{background:#FFF1D6;color:var(--t1);border-radius:4px;padding:0 3px}
 /* Invisible helpers: scripts and zero-height anchors. */
