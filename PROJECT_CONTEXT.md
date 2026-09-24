@@ -4,14 +4,14 @@
 
 | Control | Value |
 |---|---|
-| Context version | 0.4.8-draft - Greenhouse Batch 01 redistribution status approved |
+| Context version | 0.4.9-draft - operational plan storage clarified |
 | Contract version | 0.2.0-draft core frozen; JobSnapshot 0.2.1-draft jointly approved; result/config envelopes remain separately unfrozen |
 | Created | 2026-09-17 |
 | Last updated | 2026-09-24 |
 | Project deadline | 2026-09-29; exact submission time/timezone still to confirm |
 | Current-state boundary | Planning/product decisions are recorded here; implementation and measured progress require repository/session evidence |
 
-For current roles, assignments, priorities, deadlines and handoffs use `TEAM_MEMBER_STARTER_GUIDES.md`. For chronological work evidence use `SESSION_LOGS.md`. For assistant behavior use the Project Operating Instructions. Project Guidelines remain authoritative for course requirements; the Project Proposal records the original project scope and rationale.
+For current roles, assignments, priorities, deliverables, deadlines and handoffs use the repository-root `TEAM_MEMBER_STARTER_GUIDES.md`, which is the repository operational layer. It does not override this file: if it conflicts with a decision, contract or constraint recorded here, this file governs and the conflict must be reported. For chronological work evidence use `SESSION_LOGS.md`. For assistant behavior use the Project Operating Instructions. Project Guidelines remain authoritative for course requirements; the Project Proposal records the original project scope and rationale.
 
 **Canonical storage:** the repository-root `PROJECT_CONTEXT.md` is the single editable canonical copy of current project truth. The ChatGPT Project Source copy is a convenience mirror for project conversations and must be refreshed after approved context changes. If the two copies differ, the repository-root file governs until the mirror is synchronized. This storage rule does not change the source roles defined below.
 
