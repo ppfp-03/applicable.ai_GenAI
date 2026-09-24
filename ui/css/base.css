@@ -172,7 +172,7 @@ header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecorat
 /* Pills and segmented controls: the mockups' chips and .seg capsules. */
 .stPills label,.stSegmentedControl label{display:none}
 .stPills [role="radiogroup"],.stPills [role="group"]{gap:8px}
-.stPills button[data-variant="pills"]{font-family:inherit;font-size:12px;font-weight:600;border-radius:999px;padding:6px 12px;height:auto;min-height:0;background:rgba(0,0,0,.045);border:0;color:var(--t1);box-shadow:none}
-.stPills button[data-variant="pills"] p{font-size:inherit;font-weight:inherit}
-.stPills button[aria-checked="true"],.stPills button[aria-pressed="true"],.stPills button[data-selected="true"]{background:var(--blue);color:#fff}
-.stPills button[aria-checked="true"] p,.stPills button[data-selected="true"] p{color:#fff}
+[data-testid="stButtonGroup"] button[data-variant="pills"]{font-family:inherit;font-size:12px;font-weight:600;border-radius:999px;padding:6px 12px;height:auto;min-height:0;background:rgba(0,0,0,.045);border:0;color:var(--t1);box-shadow:none}
+[data-testid="stButtonGroup"] button[data-variant="pills"] p{font-size:inherit;font-weight:inherit}
+[data-testid="stButtonGroup"] button[aria-checked="true"],[data-testid="stButtonGroup"] button[aria-pressed="true"],[data-testid="stButtonGroup"] button[data-selected="true"]{background:var(--blue);color:#fff}
+[data-testid="stButtonGroup"] button[aria-checked="true"] p,[data-testid="stButtonGroup"] button[aria-pressed="true"] p,[data-testid="stButtonGroup"] button[data-selected="true"] p{color:#fff}

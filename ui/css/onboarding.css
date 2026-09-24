@@ -562,3 +562,5 @@
 .st-key-ofoot > [data-testid="stElementContainer"]:first-child{margin-right:auto}
 .st-key-ofoot button{height:40px;min-height:40px;padding:0 22px;font-size:13.5px}
 .st-key-ofoot .x{font-size:13px}
+.st-key-ofoot .i{font-size:13px;color:var(--t2)}
+.st-key-ofoot .i b{color:var(--t1);font-weight:600}
