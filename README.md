@@ -6,13 +6,23 @@ and prioritise career opportunities.
 
 ## Current status
 
-This repository contains only the initial application foundation: a Streamlit
-shell with Candidate Profile and Top Opportunities placeholders, empty Python
-modules, provisional configuration, and prompt placeholders.
+The Streamlit app reproduces the approved mockups (`00_Onboarding` to
+`05_Ranking`) in the product's orange palette, running end to end on the
+synthetic demo data in `data/demo.json` (persona: Giulia Rossi, fictional
+companies only). No real LLM is called yet.
 
-No AI pipeline, LLM calls, eligibility checks, ranking logic, or generated AI
-outputs are implemented. There is no database, authentication, Docker setup,
-vector database, or ATS integration.
+- **Home**: this week's carousel, a two-week timeline, top matches and the
+  applications wallet.
+- **Matches**: the top five, each score broken down into four factors with
+  fixed weights (40/25/20/15).
+- **Role**: eligibility against eight fixed criteria, decided by
+  `core/rules.py`.
+- **One quick question**: the UK work question. Saving the answer recomputes
+  eligibility and ranking everywhere.
+- **Profile**: review and correct what was read from the CV.
+- **Onboarding**: seven steps, from uploading the CV to the updated ranking.
+- **Applications** and **Explore**: no mockup; built in the same visual
+  language.
 
 ## Setup
 
@@ -110,12 +120,24 @@ streamlit run app.py
 pytest
 ```
 
-The `tests/` package is a placeholder with no tests yet. Pytest will report no
-tests collected and return exit code 5 until tests are added.
+The tests cover the deterministic rules (the eight criteria, the Swiss
+permit table) and the ranking arithmetic. The expected orders are the ones
+the mockups show.
 
 ## Structure
 
-- `app.py`: Streamlit application shell.
+- `app.py`: Streamlit entry point, with hidden navigation. The capsule in the
+  top bar is the navigation.
+- `views/`: one file per screen.
+- `core/rules.py`: eligibility, decided only by deterministic rules.
+  `core/ranking.py` holds the priority score, and `core/store.py` the demo
+  data, session state and everything derived from them.
+- `ui/css/`: mockup CSS, one file per screen. `ui/palette.py` maps the
+  mockups' blues to the orange scale at publish time, and `ui/theme.py`
+  publishes the stylesheets to `static/`.
+- `ui/html.py`, `ui/shell.py`, `ui/parts.py`: markup that only displays (icons,
+  top bar, score bars). Every action is a native Streamlit widget, often an
+  invisible button placed over the mockup element.
 - `package.json` and `scripts/dev.cjs`: npm development launcher for Streamlit.
 - `config/`: development-only hard constraint and ranking factor definitions.
 - `data/synthetic/`: reserved for future synthetic data; currently empty.
@@ -126,7 +148,7 @@ tests collected and return exit code 5 until tests are added.
   generic interface, `kimi.py` implements it for the Kimi API.
 - `src/oi/intelligence/`: reserved for future intelligence modules.
 - `src/oi/ui/`: reserved for reusable interface components.
-- `tests/`: reserved for future tests.
+- `tests/`: rules and ranking tests.
 
 Both configuration files use version `development-0.1` and contain provisional
 development values. The three hard constraints are marked `development` and
