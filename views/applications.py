@@ -11,7 +11,7 @@ from __future__ import annotations
 import streamlit as st
 
 from core import clock, store
-from ui import parts, shell
+from ui import parts, shell, tabs
 from ui.html import CK, WN, esc, hit, html, logo
 from ui.theme import page_css
 
@@ -34,7 +34,7 @@ CHECKLIST = {
 
 apps = store.applications()
 SEL = "apps_sel"
-qid = st.query_params.get("id")
+qid = tabs.param("id")
 if qid and any(a["role"] == qid for a in apps):
     st.session_state[SEL] = qid
 st.session_state.setdefault(SEL, next((a["role"] for a in apps if a["stage"] == "interview"), apps[0]["role"]))
@@ -49,9 +49,9 @@ with shell.header(
     f"{esc(urgent['r'].company)} closes in {clock.days_until(urgent['r'].closes)} days",
 ):
     if st.button("Explore roles", key="explore"):
-        st.switch_page("views/explore.py")
+        tabs.go("explore")
 
-with st.container(key="strip"):
+with st.container(key="ap-strip"):
     bar = "".join(f'<i style="flex:{max(sc[k], .2)};background:{c}"></i>' for k, _, c in STAGES)
     leg = "".join(f'<span><i style="background:{c}"></i>{n} <b>{sc[k]}</b></span>' for k, n, c in STAGES)
     html(f'<div class="astrip gl"><span class="s-t">Pipeline</span><div class="abar">{bar}</div><div class="aleg">{leg}</div></div>')
@@ -76,7 +76,7 @@ def card(a: dict) -> str:
     )
 
 
-with st.container(key="main"):
+with st.container(key="ap-main"):
     with st.container(key="lanes"):
         for k, name, color in STAGES:
             with st.container(key=f"gl-lane-{k}"):
@@ -123,9 +123,9 @@ with st.container(key="main"):
             st.text_area("Notes", key=f"note-{r.id}", placeholder="Recruiter name, what you discussed, next step…")
         with st.container(key="end-a"):
             pass
-        with st.container(key="foot"):
-            if st.button("Open role", key="open"):
-                st.switch_page("views/role.py", query_params={"id": r.id})
+        with st.container(key="ap-foot"):
+            if st.button("Open role", key="ap-open"):
+                tabs.go("role", id=r.id)
             first, _ = a["actions"]
             if st.button(first, type="primary", key="act"):
                 st.toast(f"{first} · {r.company}")

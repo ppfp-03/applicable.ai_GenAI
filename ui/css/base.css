@@ -98,7 +98,11 @@ header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecorat
 .st-key-topbar{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;height:48px;flex-wrap:nowrap!important}
 .st-key-topbar > div{flex:none;width:auto!important}
 .st-key-topbar > [data-testid="stElementContainer"]:first-child{width:260px!important}
-.st-key-cap{display:flex!important;flex-direction:row!important;gap:2px!important;padding:4px;border-radius:999px;flex-wrap:nowrap!important;width:auto!important;background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.85);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 8px 28px rgba(28,40,64,.07),0 0 0 .5px rgba(0,0,0,.05)}
+/* The native capsule: tabs are st.page_link. With ui/js/nav.js running it is
+ * hidden (kept for layout and as the links the script clicks) and the
+ * floating .aa-nav below is what the user sees. */
+.st-key-cap{display:flex!important;flex-direction:row!important;gap:2px!important;padding:4px;border-radius:999px;flex-wrap:nowrap!important;width:auto!important;border:0;background:linear-gradient(180deg,rgba(255,255,255,.46),rgba(255,255,255,.24));backdrop-filter:blur(22px) saturate(200%) brightness(1.04);-webkit-backdrop-filter:blur(22px) saturate(200%) brightness(1.04);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.45),inset 0 0 14px rgba(255,255,255,.35),0 10px 30px rgba(28,40,64,.10),0 1px 3px rgba(28,40,64,.06),0 0 0 .5px rgba(0,0,0,.06)}
+html.aa-nav-float .st-key-cap{visibility:hidden}
 .st-key-cap [data-testid="stElementContainer"],[class*="st-key-nav"]{width:auto!important;flex:none}
 .st-key-cap .stPageLink a{font-family:inherit;font-size:13px;font-weight:560;color:#3A3A3C;padding:8px 18px;border-radius:999px;display:flex;align-items:center;gap:6px;transition:background .2s,box-shadow .2s;background:transparent;margin:0;line-height:normal;height:auto;text-decoration:none}
 .st-key-cap .stPageLink a:hover{background:rgba(255,255,255,.55)}
@@ -106,13 +110,44 @@ header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecorat
 .st-key-cap .stPageLink a span,.st-key-cap .stPageLink a p{font-size:13px;font-weight:560;color:inherit;line-height:normal}
 .st-key-cap .stPageLink a em{font-style:normal;font-size:11px;color:var(--t3);font-weight:560;margin-left:6px}
 [class*="st-key-nav-on"] .stPageLink a{background:#fff!important;color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.08),0 0 0 .5px rgba(0,0,0,.05)}
+
+/* The floating capsule (ui/js/nav.js): liquid glass, a thin bright sheet over
+ * a strong blur, lit on its rim. It follows the page, then sticks and compacts. */
+.aa-nav{position:fixed;z-index:990;transform:translateX(-50%);transform-origin:top center;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s;font-family:"Inter",sans-serif}
+.aa-nav.stuck{transform:translateX(-50%) scale(.94)}
+.aa-nav.gone{opacity:0;pointer-events:none}
+.aa-cap{position:relative;isolation:isolate;display:flex;gap:2px;padding:4px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.46),rgba(255,255,255,.24));backdrop-filter:blur(22px) saturate(200%) brightness(1.04);-webkit-backdrop-filter:blur(22px) saturate(200%) brightness(1.04);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.45),inset 0 0 14px rgba(255,255,255,.35),0 10px 30px rgba(28,40,64,.10),0 1px 3px rgba(28,40,64,.06),0 0 0 .5px rgba(0,0,0,.06);transition:background .35s,box-shadow .35s,backdrop-filter .35s}
+.aa-nav.stuck .aa-cap{background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.5));backdrop-filter:blur(30px) saturate(210%) brightness(1.05);-webkit-backdrop-filter:blur(30px) saturate(210%) brightness(1.05);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.45),inset 0 0 14px rgba(255,255,255,.35),0 14px 36px rgba(28,40,64,.16),0 2px 6px rgba(28,40,64,.08),0 0 0 .5px rgba(0,0,0,.08)}
+.aa-cap::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:2;background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(255,255,255,0) 38%,rgba(255,255,255,0) 62%,rgba(255,255,255,.55));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.aa-tab{position:relative;z-index:1;font-size:13px;font-weight:560;line-height:normal;color:#3A3A3C;padding:8px 18px;border-radius:999px;display:flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap;user-select:none;-webkit-user-drag:none;transition:color .25s}
+.aa-tab:hover,.aa-tab.on{color:var(--t1)}
+.aa-tab:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.aa-tab em{font-style:normal;font-size:11px;color:var(--t3);font-weight:560;margin-left:6px}
+.aa-lens{position:absolute;z-index:0;border-radius:999px;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.8));box-shadow:inset 0 1px 0 #fff,inset 0 -1px 1px rgba(0,0,0,.04),0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(28,40,64,.08),0 0 0 .5px rgba(0,0,0,.05);transform:scale(1);transition:transform .4s cubic-bezier(.34,1.56,.64,1),background .25s,box-shadow .25s,opacity .2s}
+/* Pressed or dragged, the lens swells and clears, like a drop of glass. */
+.aa-lens.press{transform:scale(1.12,1.18);background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.22));backdrop-filter:blur(1.5px) saturate(220%) brightness(1.06);-webkit-backdrop-filter:blur(1.5px) saturate(220%) brightness(1.06);box-shadow:inset 0 1px 1px rgba(255,255,255,.95),inset 0 -1px 2px rgba(255,255,255,.6),inset 0 0 10px rgba(255,255,255,.55),0 8px 22px rgba(28,40,64,.14),0 0 0 .5px rgba(0,0,0,.08)}
+
+/* The tab host (ui/tabs.py): nav.js names the tab in front on <html>. */
+html[data-tab]:not([data-tab="home"]) .st-key-tab-home{display:none!important}
+html[data-tab]:not([data-tab="matches"]) .st-key-tab-matches{display:none!important}
+html[data-tab]:not([data-tab="applications"]) .st-key-tab-applications{display:none!important}
+html[data-tab]:not([data-tab="explore"]) .st-key-tab-explore{display:none!important}
+html[data-tab]:not([data-tab="profile"]) .st-key-tab-profile{display:none!important}
+.stMainBlockContainer [data-testid="stElementContainer"]:has(> .stMarkdown .aa-tabs){display:none}
+
+/* Changing page: the content fades out, and back in once the new page has
+ * finished drawing. The background glow stays. */
+.stMainBlockContainer > [data-testid="stVerticalBlock"] > [data-testid="stLayoutWrapper"] > :not(.st-key-topbar),.stMainBlockContainer > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"]:not(:has(.bgx)){transition:opacity .32s ease,transform .45s cubic-bezier(.2,.8,.2,1)}
+html.aa-leaving .stMainBlockContainer > [data-testid="stVerticalBlock"] > [data-testid="stLayoutWrapper"] > :not(.st-key-topbar),html.aa-leaving .stMainBlockContainer > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"]:not(:has(.bgx)){opacity:0;transform:translateY(8px);transition:opacity .14s ease,transform .14s ease}
+/* While anything is dragged (lens, carousel, strips): no text selection. */
+html.aa-dragging,html.aa-dragging *{user-select:none!important;-webkit-user-select:none!important;cursor:grabbing!important}
 .st-key-tr{display:flex!important;flex-direction:row!important;align-items:center;gap:10px!important;width:260px!important;justify-content:flex-end;flex-wrap:nowrap!important}
 .st-key-tr [data-testid="stElementContainer"],.st-key-tr .stPopover{width:auto!important;flex:none}
 
-.st-key-hi{display:flex!important;flex-direction:row!important;align-items:flex-end;justify-content:space-between;margin-top:22px;flex-wrap:nowrap!important}
-.st-key-hi > div{width:auto!important}
-.st-key-acts{margin-left:auto;flex:none!important;display:flex!important;flex-direction:row!important;gap:8px!important;align-items:center;width:auto!important;flex-wrap:nowrap!important}
-.st-key-acts [data-testid="stElementContainer"]{width:auto!important}
+.st-key-hi,[class*="st-key-hi--"]{display:flex!important;flex-direction:row!important;align-items:flex-end;justify-content:space-between;margin-top:22px;flex-wrap:nowrap!important}
+.st-key-hi > div,[class*="st-key-hi--"] > div{width:auto!important}
+.st-key-acts,[class*="st-key-acts--"]{margin-left:auto;flex:none!important;display:flex!important;flex-direction:row!important;gap:8px!important;align-items:center;width:auto!important;flex-wrap:nowrap!important}
+.st-key-acts [data-testid="stElementContainer"],[class*="st-key-acts--"] [data-testid="stElementContainer"]{width:auto!important}
 
 /* ───────────────────────── 3 · Native widget skins ───────────────────────── */
 

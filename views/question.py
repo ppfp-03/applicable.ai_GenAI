@@ -12,7 +12,7 @@ from __future__ import annotations
 import streamlit as st
 
 from core import store
-from ui import shell
+from ui import shell, tabs
 from ui.html import CLOCK, SH, esc, hit, html, logo
 from ui.theme import page_css
 
@@ -39,7 +39,7 @@ with shell.header(
     f"Asked only because <b>{cat['uk_roles']} roles</b> depend on it · your answer updates one profile field",
 ):
     if st.button("Answer later", key="later"):
-        st.switch_page("views/home.py")
+        tabs.go("home")
 
 OPTIONS = [
     ("yes", "Yes, I can work in the UK", "For example UK/Irish citizen, settled status or a valid work visa",
@@ -84,11 +84,11 @@ with st.container(key="main"):
                 )
                 if st.button("Skip", key="q-skip", shortcut="Escape"):
                     st.session_state["flash"] = "Skipped · we’ll ask again later"
-                    st.switch_page("views/home.py")
+                    tabs.go("home")
                 if st.button("Save answer", type="primary", key="q-save", shortcut="Enter"):
                     store.set_uk(choice)
                     st.session_state["flash"] = f"Answer saved · Work authorization · UK = {store.UK_LABELS[choice]}"
-                    st.switch_page("views/matches.py")
+                    tabs.go("matches")
 
     # Live preview: the same rules, run on the selected answer.
     with st.container(key="pan-q"):

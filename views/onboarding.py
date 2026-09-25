@@ -21,7 +21,7 @@ import streamlit as st
 
 from core import clock, store
 from ui import onboarding_markup as M
-from ui import parts
+from ui import parts, tabs
 from ui.html import CK12, CK_WHITE, WN12, esc, html
 from ui.theme import page_css
 
@@ -423,7 +423,7 @@ with st.container(key="otop"):
         overlay(f"st{n}", box, f"Go to step {n}: {STEP_NAMES[n - 1]}", on_click=go, args=(target,))
     with st.container(key="oexit"):
         if st.button("Save and exit", key="exit"):
-            st.switch_page("views/home.py")
+            tabs.go("home")
         html('<span class="av">GR</span>')
 
 with st.container(key="obody"):
@@ -502,8 +502,8 @@ with st.container(key="obody"):
                 if overlay(f"it{i}", BTN_7[i], f"Open {v.company}"):
                     if i == 0:
                         store.save_application(v.id)
-                        st.switch_page("views/applications.py", query_params={"id": v.id})
-                    st.switch_page("views/role.py", query_params={"id": v.id})
+                        tabs.go("applications", id=v.id)
+                    tabs.go("role", id=v.id)
 
 with st.container(key="ofoot"):
     html(f'<span class="i">{info}</span>')
@@ -521,6 +521,6 @@ with st.container(key="ofoot"):
             v = store.ranked(store.answers(), AS_OF)[0]
             store.save_application(v.id)
             S["flash"] = f"Application started · {v.company}"
-            st.switch_page("views/applications.py", query_params={"id": v.id})
+            tabs.go("applications", id=v.id)
         go(KEYS[idx + 1])
         st.rerun()

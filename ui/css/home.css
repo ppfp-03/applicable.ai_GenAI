@@ -9,14 +9,17 @@
 .st-key-ib-prev button,.st-key-ib-next button{width:34px;height:34px;min-height:34px}
 
 /* Carousel */
-.st-key-car{position:relative;height:318px;margin-top:16px}
+.st-key-car{position:relative;height:318px;margin-top:16px;touch-action:pan-y;cursor:grab}
 .st-key-car [data-testid="stElementContainer"]:has(.car-side){position:absolute!important;inset:0;width:100%!important}
 .car-side{position:relative;height:318px}
-.uc{position:absolute;top:0;height:318px;border-radius:26px;padding:22px 24px;display:flex;flex-direction:column;left:50%;width:620px;background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);box-shadow:0 1px 0 #fff inset,0 8px 28px rgba(28,40,64,.07),0 0 0 .5px rgba(0,0,0,.05);pointer-events:none}
+.uc{position:absolute;top:0;height:318px;border-radius:26px;padding:22px 24px;display:flex;flex-direction:column;left:50%;width:620px;background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);box-shadow:0 1px 0 #fff inset,0 8px 28px rgba(28,40,64,.07),0 0 0 .5px rgba(0,0,0,.05);pointer-events:none;transform:translateX(-50%) scale(.62);opacity:0;z-index:3;transition:opacity .25s,background-color .25s}
+/* Three cards show: the centre and one each side. The centre copy hides
+ * behind the native card until the carousel moves (ui/js/home.js). */
+.uc[data-o="0"]{transform:translateX(-50%);z-index:5}
 .uc[data-o="-1"]{transform:translateX(calc(-50% - 470px)) scale(.8);opacity:.8;z-index:4}
 .uc[data-o="1"]{transform:translateX(calc(-50% + 470px)) scale(.8);opacity:.8;z-index:4}
-.uc[data-o="-2"]{transform:translateX(calc(-50% - 720px)) scale(.62);opacity:.35;z-index:3}
-.uc[data-o="2"]{transform:translateX(calc(-50% + 720px)) scale(.62);opacity:.35;z-index:3}
+.uc[data-o="-2"]{transform:translateX(calc(-50% - 720px)) scale(.62)}
+.uc[data-o="2"]{transform:translateX(calc(-50% + 720px)) scale(.62)}
 .uc .tt,.ucx .tt{font-size:22px;font-weight:680;letter-spacing:-0.028em;line-height:1.15}
 .uc .mm,.ucx .mm{font-size:12.5px;color:var(--t2);margin-top:4px}
 .uc .lg,.ucx .lg{width:46px;height:46px;border-radius:12px;font-size:17px}
@@ -36,7 +39,8 @@
 .nrow b{font-weight:600}.nrow .r{color:var(--t2)}.nrow .s{margin-left:auto;font-weight:650}
 
 /* The centre card is a native container, so its buttons are real. */
-.st-key-card-uc{position:absolute!important;left:50%;top:0;transform:translateX(-50%);width:620px!important;height:318px;padding:22px 24px;z-index:5;display:flex;flex-direction:column}
+.st-key-card-uc{position:absolute!important;left:50%;top:0;transform:translateX(-50%);width:620px!important;height:318px;padding:22px 24px;z-index:5;display:flex;flex-direction:column;cursor:auto;transition:opacity .2s}
+html.aa-car-moving .st-key-card-uc{opacity:0;pointer-events:none;transition:opacity .12s}
 .st-key-card-uc > div{width:100%}
 .st-key-ucf{display:flex!important;flex-direction:row!important;align-items:center;gap:10px!important;margin-top:auto;flex-wrap:nowrap!important}
 .st-key-ucf [data-testid="stElementContainer"]{width:auto!important}
@@ -55,8 +59,6 @@
 [class*="st-key-side-"] button{width:100%;height:100%;opacity:0}
 .st-key-side-m1{left:42px;top:32px}.st-key-side-p1{right:42px;top:32px}
 .st-key-side-m1 button,.st-key-side-p1 button{width:496px;height:254px}
-.st-key-side-m2{left:0;top:62px}.st-key-side-p2{right:0;top:62px}
-.st-key-side-m2 button,.st-key-side-p2 button{width:80px;height:196px}
 
 /* Timeline */
 .st-key-gl-tl{margin-top:18px;padding:14px 22px!important;position:relative}
@@ -87,10 +89,15 @@
 .st-key-marr{display:flex!important;flex-direction:row!important;gap:8px!important;width:auto!important;flex-wrap:nowrap!important}
 .st-key-marr [data-testid="stElementContainer"]{width:auto!important}
 .st-key-ib-mprev button,.st-key-ib-mnext button{width:30px;height:30px;min-height:30px}
-.st-key-mr{position:relative;margin-top:14px;height:234px;overflow:hidden}
-.st-key-mr [data-testid="stElementContainer"]:has(.trk){position:absolute!important;inset:0;width:100%!important}
-.trk{display:flex;gap:12px;height:234px;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
-.mc{width:196px;flex:none;border-radius:18px;padding:14px;background:rgba(255,255,255,.8);box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05);display:flex;flex-direction:column;transition:opacity .4s}
+/* A horizontal scroller: wheel, trackpad, arrows and mouse drag (ui/js/home.js). */
+.st-key-mr{position:relative;margin-top:14px;height:234px;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none;scroll-snap-type:x proximity;scroll-behavior:smooth;overscroll-behavior-x:contain;cursor:grab}
+.st-key-mr::-webkit-scrollbar{display:none}
+.st-key-mr[data-s="start"]{-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.st-key-mr[data-s="mid"]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 88%,transparent)}
+.st-key-mr[data-s="end"]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%);mask-image:linear-gradient(90deg,transparent,#000 6%)}
+.st-key-mr [data-testid="stElementContainer"]:has(.trk){position:absolute!important;left:0;top:0;width:max-content!important}
+.trk{display:flex;gap:12px;height:234px}
+.mc{width:196px;flex:none;border-radius:18px;padding:14px;background:rgba(255,255,255,.8);box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05);display:flex;flex-direction:column;scroll-snap-align:start}
 .mc .h{display:flex;justify-content:space-between;align-items:flex-start}
 .mc .lg{width:36px;height:36px;border-radius:10px;font-size:13px}
 .mc .sc{font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums}
@@ -111,13 +118,19 @@
 .st-key-wal{position:relative;flex:1;margin-top:12px;height:222px}
 .st-key-wal [data-testid="stElementContainer"]:has(.wback){position:absolute!important;inset:0;width:100%!important}
 .wback{position:relative;height:222px}
-.wc{position:absolute;left:0;right:0;white-space:nowrap;border-radius:18px;padding:8px 16px 18px;color:#fff;display:flex;flex-direction:column;gap:10px;box-shadow:0 -2px 10px rgba(0,0,0,.08);height:44px;overflow:hidden;transform-origin:top center}
+.wc{position:absolute;left:0;right:0;white-space:nowrap;border-radius:18px;padding:8px 16px 18px;color:#fff;display:flex;flex-direction:column;gap:10px;box-shadow:0 -2px 10px rgba(0,0,0,.08);height:44px;overflow:hidden;transform-origin:top center;transition:top .38s cubic-bezier(.2,.8,.2,1),transform .38s cubic-bezier(.2,.8,.2,1),height .38s cubic-bezier(.2,.8,.2,1)}
+/* The card that just left the front slides back up into the stack. Two
+ * identical names, so a second move in a row restarts the animation. */
+.wc.in0{animation:wcin0 .45s cubic-bezier(.2,.8,.2,1)}.wc.in1{animation:wcin1 .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes wcin0{from{top:100px;height:122px;transform:scale(1)}}
+@keyframes wcin1{from{top:100px;height:122px;transform:scale(1)}}
 .wc .hd{display:flex;align-items:center;gap:10px;height:28px;flex:none}
 .wc .lg{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.18);font-size:12px}
 .wc .t{font-size:13px;font-weight:620}.wc .st{margin-left:auto;font-size:11px;font-weight:620;opacity:.85;text-transform:uppercase;letter-spacing:.05em}
 [class*="st-key-wpick-"]{position:absolute!important;left:0;right:0;z-index:4;width:100%!important}
 [class*="st-key-wpick-"] button{width:100%;height:44px;opacity:0;padding:0}
-.st-key-wfront{position:absolute!important;left:0;right:0;top:100px;bottom:0;background:#fff;border-radius:18px;padding:16px 18px;z-index:5;box-shadow:0 -6px 20px rgba(28,40,64,.10),0 0 0 .5px rgba(0,0,0,.08);display:flex;flex-direction:column;width:auto!important}
+.st-key-wfront{position:absolute!important;left:0;right:0;top:100px;bottom:0;background:#fff;border-radius:18px;padding:16px 18px;z-index:5;box-shadow:0 -6px 20px rgba(28,40,64,.10),0 0 0 .5px rgba(0,0,0,.08);display:flex;flex-direction:column;width:auto!important;transition:opacity .28s ease,transform .35s cubic-bezier(.2,.8,.2,1)}
+html.aa-wal-lift .st-key-wfront{opacity:0;transform:translateY(16px);pointer-events:none}
 .st-key-wfront > div{width:100%}
 .wf .hd{display:flex;align-items:center;gap:10px;height:36px}
 .wf .lg{width:36px;height:36px;border-radius:10px;font-size:14px}

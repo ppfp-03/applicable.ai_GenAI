@@ -10,7 +10,7 @@ from __future__ import annotations
 import streamlit as st
 
 from core import clock, store
-from ui import parts, shell
+from ui import parts, shell, tabs
 from ui.html import check_icon, esc, hit, html, logo
 from ui.theme import page_css
 
@@ -18,7 +18,7 @@ d = store.data()
 page_css("explore")
 
 FILTERS = ["All", "Eligible", "To verify", "New today", "Excluded"]
-qf = st.query_params.get("filter")
+qf = tabs.param("filter")
 if qf == "new" and st.session_state.get("_x_qf") != qf:
     st.session_state["_x_qf"] = qf
     st.session_state["x-filter"] = "New today"
@@ -32,7 +32,7 @@ with shell.header(
     f"<b>{len(allv)} roles</b> tracked here · same rules for every role · {new_n} new today",
 ):
     q = st.text_input("Search", placeholder="Search company, role or city", key="x-q",
-                      value=st.query_params.get("city", ""))
+                      value=tabs.param("city", ""))
 
 with st.container(key="filters"):
     f = st.pills("Filter", FILTERS, default="All", key="x-filter", label_visibility="collapsed") or "All"
@@ -73,7 +73,7 @@ def card(v) -> str:
     )
 
 
-with st.container(key="main"):
+with st.container(key="ex-main"):
     with st.container(key="gl-grid"):
         html(
             f'<div class="sh"><div><b>{f if f != "All" else "All roles"}</b><span>{len(shown)} shown · '
@@ -107,9 +107,9 @@ with st.container(key="main"):
             html(f'<div class="lab">8 fixed criteria<span>{v.met} of 8 met</span></div><div class="box crit">{rows}</div>')
             with st.container(key="end-x"):
                 html(f'<div class="gate box">{parts.gate(v)}</div>' if v.standing != "excluded" else "")
-            with st.container(key="foot"):
-                if st.button("Open role", key="open"):
-                    st.switch_page("views/role.py", query_params={"id": v.id})
+            with st.container(key="ex-foot"):
+                if st.button("Open role", key="ex-open"):
+                    tabs.go("role", id=v.id)
                 if st.button("Save", type="primary", key="save", disabled=v.standing == "excluded"):
                     store.save_application(v.id, "saved")
                     st.toast(f"Saved · {v.company} · {v.title}")

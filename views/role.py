@@ -12,7 +12,7 @@ from __future__ import annotations
 import streamlit as st
 
 from core import clock, store
-from ui import parts, shell
+from ui import parts, shell, tabs
 from ui.html import CK, SH, check_icon, esc, glyph, hit, html, logo
 from ui.theme import page_css
 
@@ -51,7 +51,7 @@ with shell.header(
     f"{esc(role.title)} · <b>{esc(role.company)}</b> · {esc(role.city)} · checked today {role.get('checked', d.updated)}",
 ):
     if st.button("‹ Matches", key="back"):
-        st.switch_page("views/matches.py")
+        tabs.go("matches")
     if st.button("Open job posting", key="posting"):
         st.toast("Opening the job posting")
     if st.button("Check again", key="again"):
@@ -263,7 +263,7 @@ with st.container(key="main"):
                     k["alt"][0],
                 ):
                     if c.id == "language":
-                        st.switch_page("views/explore.py", query_params={"city": role.city})
+                        tabs.go("explore", city=role.city)
                     st.toast(f"{k['alt'][0]} · {k['alt'][1]}")
             with st.container(key="foot"):
                 if st.button("Report a mistake", key="report"):
@@ -286,7 +286,7 @@ with st.container(key="main"):
                             st.rerun()
                 elif c.id == "permission" and role.country == "GB":
                     if st.button(k["btn"], type="primary", key="ask"):
-                        st.switch_page("views/question.py")
+                        tabs.go("question")
                 elif c.id == "field":
                     with st.popover(k["btn"], type="primary", key="draft"):
                         st.text_area("To the recruiter", d.eligibility_copy["field"]["draft"], height=160, key="draft-text")
@@ -308,7 +308,7 @@ with st.container(key="main"):
                 html(f'<div class="gate box" style="display:flex;align-items:center;gap:10px;padding:12px 14px;font-size:12.5px">{parts.gate(v)}</div>')
             with st.container(key="foot"):
                 if st.button("‹ Matches", key="back2"):
-                    st.switch_page("views/matches.py")
+                    tabs.go("matches")
                 if st.button("Start application", type="primary", key="apply"):
                     store.save_application(role.id)
-                    st.switch_page("views/applications.py", query_params={"id": role.id})
+                    tabs.go("applications", id=role.id)

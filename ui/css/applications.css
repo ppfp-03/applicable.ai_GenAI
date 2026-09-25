@@ -1,14 +1,14 @@
 /* Applications — no mockup; built from the shared mockup vocabulary
  * (glass sections, tiles, side panel) so it reads as the same product. */
 
-.st-key-strip{margin-top:18px}
+.st-key-ap-strip{margin-top:18px}
 .astrip{display:flex;align-items:center;gap:24px;padding:16px 22px;border-radius:22px}
 .astrip .s-t{font-size:13px;font-weight:650;white-space:nowrap}
 .abar{flex:1;display:flex;gap:3px;height:12px}.abar i{display:block;border-radius:4px}
 .aleg{display:flex;gap:16px;font-size:12px;color:var(--t2);white-space:nowrap}.aleg span{display:flex;align-items:center;gap:6px}.aleg b{color:var(--t1);font-weight:650}.aleg i{width:8px;height:8px;border-radius:50%;display:block}
 
-.st-key-main{display:grid!important;grid-template-columns:1fr 420px;gap:20px!important;margin-top:16px;min-height:716px}
-.st-key-main > div{width:auto!important;min-width:0}
+.st-key-ap-main{display:grid!important;grid-template-columns:1fr 420px;gap:20px!important;margin-top:16px;min-height:716px}
+.st-key-ap-main > div{width:auto!important;min-width:0}
 .st-key-lanes{display:grid!important;grid-template-columns:repeat(4,1fr);gap:14px!important;align-items:start}
 .st-key-lanes > div{width:auto!important;min-width:0}
 [class*="st-key-gl-lane-"]{padding:14px!important;display:flex;flex-direction:column;gap:8px!important;min-height:716px}
@@ -34,6 +34,6 @@
 .st-key-stage label,.st-key-anote label{display:none}
 .st-key-stage [data-baseweb="select"] > div{border-radius:999px;background:rgba(255,255,255,.8);border:0;box-shadow:0 0 0 .5px rgba(0,0,0,.12);font-size:13px}
 .st-key-anote textarea{min-height:70px;resize:none;padding:12px 14px}
-.st-key-foot{display:flex!important;flex-direction:row!important;gap:8px!important;flex-wrap:nowrap!important}
-.st-key-foot > *{flex:1!important;width:auto!important}
-.st-key-foot button{width:100%}
+.st-key-ap-foot{display:flex!important;flex-direction:row!important;gap:8px!important;flex-wrap:nowrap!important}
+.st-key-ap-foot > *{flex:1!important;width:auto!important}
+.st-key-ap-foot button{width:100%}

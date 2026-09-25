@@ -12,7 +12,7 @@ from __future__ import annotations
 import streamlit as st
 
 from core import store
-from ui import parts, shell
+from ui import parts, shell, tabs
 from ui.html import LOCK, esc, hit, html, logo
 from ui.theme import page_css
 
@@ -36,12 +36,12 @@ with shell.header(
     f"updated today {d.updated}",
 ):
     if st.button("Adjust preferences", key="adj"):
-        st.switch_page("views/onboarding.py", query_params={"step": "3a"})
+        tabs.go("onboarding", step="3a")
 
-with st.container(key="main"):
+with st.container(key="mt-main"):
     with st.container(key="col"):
         # Before ranking: what the rules did to the catalogue.
-        with st.container(key="strip"):
+        with st.container(key="mt-strip"):
             html(
                 '<div class="strip gl"><div class="s-in">'
                 f'<div class="s-t">Before ranking<span>{checked} roles checked · '
@@ -60,7 +60,7 @@ with st.container(key="main"):
                 '<span class="s-top">Top 5</span></div></div></div>'
             )
             if st.button("1 question can verify more", key="q-link"):
-                st.switch_page("views/question.py")
+                tabs.go("question")
 
         # The top five.
         with st.container(key="gl-top5"):
@@ -102,7 +102,7 @@ with st.container(key="main"):
                 f'<span class="lockb">{LOCK}A high match can’t override a conflict</span></div></div>',
                 "See why",
             ):
-                st.switch_page("views/role.py", query_params={"id": gone.id})
+                tabs.go("role", id=gone.id)
 
     # The selected role, taken apart.
     v = top[st.session_state[SEL]]
@@ -129,12 +129,12 @@ with st.container(key="main"):
         )
         with st.container(key="end-r"):
             html(f'<div class="gate box">{parts.gate(v)}</div>')
-        with st.container(key="foot"):
-            if st.button("Open role", key="open"):
-                st.switch_page("views/role.py", query_params={"id": v.id})
+        with st.container(key="mt-foot"):
+            if st.button("Open role", key="mt-open"):
+                tabs.go("role", id=v.id)
             app = parts.application_for(v.id)
             applied = app is not None and app["stage"] in ("applied", "interview")
             if st.button("View application" if applied else "Start application", type="primary", key="go"):
                 if not applied:
                     store.save_application(v.id)
-                st.switch_page("views/applications.py", query_params={"id": v.id})
+                tabs.go("applications", id=v.id)

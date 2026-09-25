@@ -3,6 +3,9 @@
 The top bar is the mockups' capsule navigation. Each tab is a native
 `st.page_link`; the badge counts come from state, so "Matches 49" follows the
 current eligible count.
+
+In the browser, `ui/js/nav.js` draws a floating copy of the capsule that
+survives page changes and hides this one; these links are what it clicks.
 """
 
 from __future__ import annotations
@@ -12,6 +15,7 @@ from typing import Iterator
 
 import streamlit as st
 
+from ui import tabs
 from ui.html import BELL, MARK, SEARCH, html, md_icon
 
 #: Four blurred glows, positioned as on the mockups' 1600 x 1000 stage.
@@ -24,13 +28,13 @@ _GLOW = (
     "</div>"
 )
 
-#: (key, label, page file). Order is the mockups' order.
+#: (key, label). Order is the mockups' order; each key names a page in ui/tabs.
 NAV = [
-    ("home", "Home", "views/home.py"),
-    ("matches", "Matches", "views/matches.py"),
-    ("applications", "Applications", "views/applications.py"),
-    ("explore", "Explore", "views/explore.py"),
-    ("profile", "Profile", "views/profile.py"),
+    ("home", "Home"),
+    ("matches", "Matches"),
+    ("applications", "Applications"),
+    ("explore", "Explore"),
+    ("profile", "Profile"),
 ]
 
 
@@ -51,6 +55,8 @@ def topbar(active: str, counts: dict[str, int] | None = None) -> None:
         active: Key of the current tab in NAV ("" for none).
         counts: Badge per tab key, e.g. {"matches": 49}.
     """
+    if tabs.running():
+        return  # inside the tab host, which draws the one top bar itself
     counts = counts or {}
     if st.session_state.get("flash"):
         st.toast(st.session_state.pop("flash"))
@@ -58,11 +64,11 @@ def topbar(active: str, counts: dict[str, int] | None = None) -> None:
     with st.container(key="topbar"):
         brand()
         with st.container(key="cap"):
-            for key, label, page in NAV:
+            for key, label in NAV:
                 text = f"{label} *{counts[key]}*" if key in counts else label
                 on = "-on" if key == active else ""
                 with st.container(key=f"nav{on}-{key}"):
-                    st.page_link(page, label=text)
+                    st.page_link(tabs.page(key), label=text)
         with st.container(key="tr"):
             _search()
             with st.popover(md_icon(BELL, "Notifications"), key="ib-bell"):
@@ -72,8 +78,8 @@ def topbar(active: str, counts: dict[str, int] | None = None) -> None:
                     '<div style="font-size:13px;font-weight:650">Giulia Rossi</div>'
                     '<div style="font-size:12px;color:#6E6E73;margin:2px 0 10px">Synthetic demo profile</div>'
                 )
-                st.page_link("views/profile.py", label="Your profile")
-                st.page_link("views/onboarding.py", label="Restart onboarding")
+                st.page_link(tabs.page("profile"), label="Your profile")
+                st.page_link(tabs.page("onboarding"), label="Restart onboarding")
 
 
 def _search() -> None:
@@ -89,7 +95,7 @@ def _search() -> None:
         ][:8]
         for o in hits:
             st.page_link(
-                "views/role.py",
+                tabs.page("role"),
                 label=f"{o.title} · {o.company} · {o.city}",
                 query_params={"id": o.id},
             )
@@ -103,10 +109,12 @@ def header(title: str, meta: str) -> Iterator[None]:
         title: The H1.
         meta: The grey line under it, as markup. The SYNTHETIC tag is added.
     """
-    with st.container(key="hi"):
+    # Inside the tab host five headers share the page: key each by its tab.
+    tab = tabs.running()
+    with st.container(key=f"hi--{tab}" if tab else "hi"):
         html(
             f'<div class="hi-l"><h1>{title}</h1>'
             f'<div class="m"><span class="syn">SYNTHETIC</span>{meta}</div></div>'
         )
-        with st.container(key="acts"):
+        with st.container(key=f"acts--{tab}" if tab else "acts"):
             yield

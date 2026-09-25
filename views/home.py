@@ -4,16 +4,20 @@ A carousel of the five things worth doing this week, the next two weeks on a
 timeline, the top matches and the applications wallet. The centre card of
 the carousel is a native container, so every action in it is a real widget;
 the side cards are drawn behind it and brought forward with native buttons.
+
+Motion lives in `ui/js/home.js`: the carousel and the top matches can be
+dragged, and every move animates before the native button commits it.
 """
 
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
+from pathlib import Path
 
 import streamlit as st
 
 from core import clock, store
-from ui import shell
+from ui import shell, tabs
 from ui.html import CK, NEXT, PREV, WN, esc, html, logo, md_icon
 from ui.theme import page_css
 
@@ -21,11 +25,12 @@ d = store.data()
 page_css("home")
 
 CARD = "home_card"
-MATCH = "home_match_offset"
 WALLET = "home_wallet"
+MOVED = "home_wallet_moved"
+MOVES = "home_wallet_moves"
 st.session_state.setdefault(CARD, 2)
-st.session_state.setdefault(MATCH, 0)
 st.session_state.setdefault(WALLET, [0, 1, 2, 3])
+MOTION_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "home.js").read_text(encoding="utf-8")
 
 week = d.week
 N = len(week)
@@ -152,41 +157,42 @@ def offset(j: int) -> int:
 
 
 with st.container(key="car"):
+    # Every card is drawn, the centre one too: while the carousel moves, the
+    # drawn copy stands in for the native card.
     sides = "".join(
-        f'<div class="uc" data-o="{offset(j)}">{side_html(item)}</div>'
+        f'<div class="uc" data-j="{j}" data-o="{offset(j)}">{side_html(item)}</div>'
         for j, item in enumerate(week)
-        if offset(j) != 0 and abs(offset(j)) <= 2
     )
-    html(f'<div class="car-side">{sides}</div>')
+    html(f'<div class="car-side" data-cur="{cur}" data-n="{N}">{sides}</div>')
 
-    for o, key in ((-1, "side-m1"), (1, "side-p1"), (-2, "side-m2"), (2, "side-p2")):
+    for o, key in ((-1, "side-m1"), (1, "side-p1")):
         st.button("Bring forward", key=key, on_click=go, args=(cur + o,))
 
     item = week[cur]
     with st.container(key="card-uc"):
         if item["kind"] == "question":
-            html('<div class="ucx">' + lead(item) + '</div><div style="margin-top:24px;font-size:12px;color:var(--t2);font-weight:560">Your answer</div>')
+            html(f'<div class="ucx" data-i="{cur}">' + lead(item) + '</div><div style="margin-top:24px;font-size:12px;color:var(--t2);font-weight:560">Your answer</div>')
             with st.container(key="hk"):
                 choice = st.pills("Your answer", item["options"], key="hk-choice", label_visibility="collapsed")
             result = item["results"].get(choice, item["results"]["*"]) if choice else esc(item["waiting"])
             html(f'<div class="ucx"><div class="mm" style="margin-top:14px">{result}</div></div>')
         else:
-            html('<div class="ucx">' + lead(item) + body(item) + "</div>")
+            html(f'<div class="ucx" data-i="{cur}">' + lead(item) + body(item) + "</div>")
 
         with st.container(key="ucf"):
             kind = item["kind"]
             if kind == "done":
                 if st.button("View application", key="uc-view"):
-                    st.switch_page("views/applications.py", query_params={"id": item["role"]})
+                    tabs.go("applications", id=item["role"])
             elif kind == "interview":
                 if st.button("Open prep", type="primary", key="uc-prep"):
-                    st.switch_page("views/applications.py", query_params={"id": item["role"]})
+                    tabs.go("applications", id=item["role"])
                 if st.button("Copy join link", key="uc-join"):
                     st.toast("Join link copied")
             elif kind == "next":
                 if st.button("Continue application", type="primary", key="uc-cont"):
                     store.save_application(item["role"], "progress")
-                    st.switch_page("views/applications.py", query_params={"id": item["role"]})
+                    tabs.go("applications", id=item["role"])
                 st.button("Not now", key="uc-later", on_click=go, args=(cur + 1,))
             elif kind == "question":
                 if st.button("Save answer", type="primary", key="uc-save", disabled=not choice):
@@ -196,7 +202,7 @@ with st.container(key="car"):
             elif kind == "new":
                 if st.button(f"Review {len(store.new_matches())} matches", type="primary", key="uc-new"):
                     st.session_state[store.REVIEWED] = True
-                    st.switch_page("views/explore.py", query_params={"filter": "new"})
+                    tabs.go("explore", filter="new")
             note = item.get("note") or (
                 f'Same rules as your other <b>{store.counts()["eligible"]} eligible</b> roles'
             )
@@ -259,7 +265,7 @@ with st.container(key="gl-tl"):
 
 tops = store.top_matches()
 apps = {a["role"]: a for a in store.applications()}
-VIS = 4
+STEP = 208  # card width plus gap
 
 
 def mcard(v) -> str:
@@ -284,8 +290,10 @@ def mcard(v) -> str:
     )
 
 
-def shift(step: int) -> None:
-    st.session_state[MATCH] = max(0, min(len(tops) - VIS, st.session_state[MATCH] + step))
+def bring_forward(w: int, order: list) -> None:
+    st.session_state[WALLET] = [x for x in order if x != w] + [w]
+    st.session_state[MOVED] = True
+    st.session_state[MOVES] = st.session_state.get(MOVES, 0) + 1
 
 
 STAGE = {
@@ -303,34 +311,24 @@ with st.container(key="bt"):
                 "same rules for every role</span></div></div>"
             )
             with st.container(key="marr"):
-                st.button(md_icon(PREV, "Previous"), key="ib-mprev", on_click=shift, args=(-1,))
-                st.button(md_icon(NEXT, "Next"), key="ib-mnext", on_click=shift, args=(1,))
-        mi = st.session_state[MATCH]
+                # The strip scrolls in the browser; these only nudge it.
+                st.button(md_icon(PREV, "Previous"), key="ib-mprev")
+                st.button(md_icon(NEXT, "Next"), key="ib-mnext")
+        # A horizontal scroller: the cards and their click targets scroll together.
         with st.container(key="mr"):
-            cards = "".join(
-                mcard(v).replace(
-                    'class="mc"',
-                    f'class="mc" style="opacity:{1 if mi <= j < mi + VIS else .5 if j == mi + VIS else .25}"',
-                    1,
-                )
-                for j, v in enumerate(tops)
-            )
-            html(f'<div class="trk" style="transform:translateX({-mi * 208}px)">{cards}</div>')
+            html(f'<div class="trk">{"".join(mcard(v) for v in tops)}</div>')
             css = []
-            for slot in range(VIS + 1):
-                j = mi + slot
-                if j >= len(tops):
-                    break
-                css.append(f".st-key-mcard-{slot}{{left:{slot * 208}px}}")
-                if st.button(f"Open {tops[j].company}", key=f"mcard-{slot}"):
-                    st.switch_page("views/role.py", query_params={"id": tops[j].id})
+            for j, v in enumerate(tops):
+                css.append(f".st-key-mcard-{j}{{left:{j * STEP}px}}")
+                if st.button(f"Open {v.company}", key=f"mcard-{j}"):
+                    tabs.go("role", id=v.id)
             st.markdown(f"<style>{''.join(css)}</style>", unsafe_allow_html=True)
 
     with st.container(key="gl-apps"):
         sc = store.stage_counts()
         with st.container(key="sh-apps"):
             html(f'<div class="sh"><div><b>Applications</b><span>{sum(sc.values())} total</span></div></div>')
-            st.page_link("views/applications.py", label="See all")
+            st.page_link(tabs.page("applications"), label="See all")
         html(
             '<div class="wsum2">'
             f'<span><i style="background:#C7C7CC"></i>Saved <b>{sc["saved"]}</b></span>'
@@ -345,6 +343,8 @@ with st.container(key="bt"):
             if a:
                 firsts.append(a)
         order = [i for i in st.session_state[WALLET] if i < len(firsts)]
+        # The card that just left the front slides back into the stack.
+        arrive = f" in{st.session_state.get(MOVES, 0) % 2}" if st.session_state.pop(MOVED, False) else ""
         with st.container(key="wal"):
             backs = []
             for pos, w in enumerate(order[:-1]):
@@ -354,7 +354,8 @@ with st.container(key="bt"):
                     label = f"In progress · {a['progress'][0]}/{a['progress'][1]}"
                 scale = [0.9, 0.94, 0.97][pos] if pos < 3 else 1
                 backs.append(
-                    f'<div class="wc" style="top:{pos * 28}px;transform:scale({scale});background:{color};z-index:{pos + 1}">'
+                    f'<div class="wc{arrive if pos == len(order) - 2 else ""}" data-p="{pos}" data-k="{w}" '
+                    f'style="top:{pos * 28}px;transform:scale({scale});background:{color};z-index:{pos + 1}">'
                     f'<div class="hd"><span class="lg">{a["r"].mono}</span>'
                     f'<div class="t">{esc(a["r"].company)} · {esc(a["r"].title)}</div>'
                     f'<span class="st">{esc(label)}</span></div></div>'
@@ -363,9 +364,9 @@ with st.container(key="bt"):
             css = []
             for pos, w in enumerate(order[:-1]):
                 css.append(f".st-key-wpick-{pos}{{top:{pos * 28}px}}")
-                if st.button(f"Bring forward {firsts[w]['r'].company}", key=f"wpick-{pos}"):
-                    st.session_state[WALLET] = [x for x in order if x != w] + [w]
-                    st.rerun()
+                st.button(
+                    f"Bring forward {firsts[w]['r'].company}", key=f"wpick-{pos}", on_click=bring_forward, args=(w, order)
+                )
             st.markdown(f"<style>{''.join(css)}</style>", unsafe_allow_html=True)
 
             front = firsts[order[-1]]
@@ -374,7 +375,7 @@ with st.container(key="bt"):
                 label = f"In progress · {front['progress'][0]}/{front['progress'][1]}"
             with st.container(key="wfront"):
                 html(
-                    f'<div class="wf"><div class="hd">{logo(front["r"].mono, color, 36, 14)}'
+                    f'<div class="wf" data-k="{order[-1]}"><div class="hd">{logo(front["r"].mono, color, 36, 14)}'
                     f'<div style="min-width:0"><div class="t">{esc(front["r"].company)} · {esc(front["r"].title)}</div>'
                     f'<div class="sub">{esc(front["note"])}</div></div>'
                     f'<span class="tag" style="{tag_css}">{esc(label)}</span></div></div>'
@@ -382,9 +383,9 @@ with st.container(key="bt"):
                 with st.container(key="wff"):
                     first, second = front["actions"]
                     if st.button(first, type="primary", key="wf-a"):
-                        st.switch_page("views/applications.py", query_params={"id": front["role"]})
+                        tabs.go("applications", id=front["role"])
                     if st.button(second, key="wf-b"):
-                        st.switch_page("views/applications.py", query_params={"id": front["role"]})
+                        tabs.go("applications", id=front["role"])
                     html('<span class="wfn">Tap a card to bring it forward</span>')
 
 
@@ -414,3 +415,6 @@ with st.container(key="aa-js-clock"):
 </script>""",
         unsafe_allow_javascript=True,
     )
+
+with st.container(key="aa-js-motion"):
+    st.html(f"<script>{MOTION_JS}</script>", unsafe_allow_javascript=True)

@@ -12,7 +12,7 @@ from __future__ import annotations
 import streamlit as st
 
 from core import store
-from ui import shell
+from ui import shell, tabs
 from ui.html import CHEV, CK, WN, esc, glyph, hit, html, md_icon
 from ui.theme import page_css
 
@@ -58,9 +58,9 @@ with shell.header(
     + (f"<b>{n} section{'s' if n != 1 else ''}</b> need a quick look before ranking" if n else "<b>all sections</b> confirmed"),
 ):
     if st.button("Replace CV", key="replace"):
-        st.switch_page("views/onboarding.py", query_params={"step": "1"})
+        tabs.go("onboarding", step="1")
     if st.button("Send to ranking", type="primary" if not n else "secondary", key="send", disabled=bool(n)):
-        st.switch_page("views/matches.py")
+        tabs.go("matches")
 
 # Pipeline steps.
 done = [(CK, "Upload"), (CK, "Text extraction"), (CK, "AI extraction"), (CK, "Candidate profile")]
@@ -83,7 +83,7 @@ else:
 html(f'<div class="steps gl">{steps}</div>')
 
 cur = st.session_state[CUR]
-with st.container(key="main"):
+with st.container(key="pf-main"):
     with st.container(key="gl-prof"):
         html(
             '<div class="sh"><div><b>Candidate profile</b><span>What we read from your CV and your answers · '
@@ -139,7 +139,7 @@ with st.container(key="main"):
             )
             if s.get("link"):
                 if st.button(s["link"], type="tertiary", key="uk-link"):
-                    st.switch_page("views/question.py")
+                    tabs.go("question")
         checks = "".join(
             f'<div class="ck"><span class="ci{"" if ok else " a"}">{CK if ok else WN}</span>{esc(t)}'
             f'<span class="s{"" if ok else " a"}">{esc(r)}</span></div>'
@@ -160,7 +160,7 @@ with st.container(key="main"):
                 placeholder="Explain what you changed, e.g. “Singapore: requires Employment Pass sponsorship.”",
                 label_visibility="collapsed",
             )
-        with st.container(key="foot"):
+        with st.container(key="pf-foot"):
             if st.button("Mark as incorrect", key="bad"):
                 status[sid] = "rev"
                 st.toast("Correct the values above, then add a note")
