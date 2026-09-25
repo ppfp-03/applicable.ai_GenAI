@@ -574,3 +574,237 @@ def availability_exclusion(
     if job.deadline_at is not None and job.deadline_at <= now:
         return "expired"
     return None
+
+
+# --- Internal pipeline -----------------------------------------------------
+#
+# Everything below is a private orchestration layer, not the shared ranking
+# contract. RankingConfig, RankingItem and RankingResponse are not frozen, so
+# these types are deliberately named Pipeline* and may change freely. Once the
+# shared envelopes and the eligibility interface are frozen, an adapter maps
+# them onto AssessedJob and PipelineResult without touching scoring behavior.
+
+
+EligibilityStanding = Literal["eligible", "uncertain", "ineligible"]
+
+ExclusionReason = Literal["closed", "expired", "ineligible"]
+
+# Local default for this pipeline only; the shared shortlist size is not frozen.
+PIPELINE_DEFAULT_LIMIT = 5
+
+
+@dataclass(frozen=True)
+class AssessedJob:
+    """A job whose eligibility the caller has already decided.
+
+    ``eligibility`` comes from the eligibility engine; ranking never computes
+    it. ``eligibility_note`` is free diagnostic text passed through untouched.
+    ``profile_fit`` is an already computed score, or ``None`` when absent.
+    """
+
+    job: JobRecord
+    eligibility: EligibilityStanding
+    eligibility_note: str | None = None
+    profile_fit: float | None = None
+
+    def __post_init__(self) -> None:
+        if self.eligibility not in ("eligible", "uncertain", "ineligible"):
+            raise ValueError(f"unknown eligibility {self.eligibility!r}")
+        object.__setattr__(
+            self, "profile_fit", validate_factor_value("profile_fit", self.profile_fit)
+        )
+
+    @property
+    def job_id(self) -> str:
+        return self.job.job_id
+
+
+@dataclass(frozen=True)
+class PipelineEntry:
+    """One scored-or-unscored job in a ranked group, with every assessment."""
+
+    assessed: AssessedJob
+    breakdown: ScoreBreakdown
+    preference: PreferenceFitAssessment
+    deadline: DeadlineAssessment
+    freshness: FreshnessAssessment
+
+    @property
+    def job_id(self) -> str:
+        return self.assessed.job_id
+
+    @property
+    def score(self) -> float | None:
+        return self.breakdown.score
+
+
+@dataclass(frozen=True)
+class PipelineExclusion:
+    """A job kept out of every ranked group, and why.
+
+    ``availability`` is the posting-level reason (closed or expired) and is
+    reported before ``ineligible``; the caller's eligibility is kept as given,
+    so a closed posting is never relabelled as candidate ineligibility.
+    """
+
+    assessed: AssessedJob
+    reason: ExclusionReason
+    availability: AvailabilityExclusion | None
+
+    @property
+    def job_id(self) -> str:
+        return self.assessed.job_id
+
+
+@dataclass(frozen=True)
+class PipelineGroup:
+    """One eligibility group: the top of the order, the rest, and unscored jobs.
+
+    ``top`` holds at most the pipeline limit and is never padded. ``rest``
+    keeps the scored jobs beyond the limit so none is lost. ``unscored`` holds
+    jobs with no computable score, ordered by job ID and never given one.
+    """
+
+    top: tuple[PipelineEntry, ...]
+    rest: tuple[PipelineEntry, ...]
+    unscored: tuple[PipelineEntry, ...]
+
+
+@dataclass(frozen=True)
+class PipelineResult:
+    """Internal outcome of one ranking run; not the shared RankingResponse."""
+
+    eligible: PipelineGroup
+    uncertain: PipelineGroup
+    excluded: tuple[PipelineExclusion, ...]
+    limit: int
+
+
+def _require_limit(limit: int) -> int:
+    if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+        raise ValueError(f"limit must be an integer >= 1, got {limit!r}")
+    return limit
+
+
+def _score_entry(
+    assessed: AssessedJob,
+    candidate: CandidateProfile,
+    *,
+    weights: Mapping[str, float],
+    now: datetime,
+    deadline_horizon_days: float,
+    freshness_horizon_days: float,
+    profile_fit_scorer: ProfileFitScorer | None,
+) -> PipelineEntry:
+    job = assessed.job
+    if profile_fit_scorer is None:
+        profile_fit = assessed.profile_fit
+    elif assessed.profile_fit is not None:
+        raise ValueError(
+            f"job {job.job_id!r} has a supplied profile_fit and a scorer was "
+            "also given; pass one or the other"
+        )
+    else:
+        profile_fit = profile_fit_from(profile_fit_scorer, candidate, job)
+
+    preference = assess_preference_fit(candidate.preferences, job)
+    deadline = assess_deadline_urgency(
+        job.deadline_at, now, horizon_days=deadline_horizon_days
+    )
+    freshness = assess_freshness(
+        source_published_at=job.source_published_at,
+        first_seen_at=job.first_seen_at,
+        discovery_kind=job.discovery_kind,
+        now=now,
+        horizon_days=freshness_horizon_days,
+    )
+    breakdown = compute_priority_score(
+        FactorScores(
+            profile_fit=profile_fit,
+            preference_fit=preference.score,
+            deadline_urgency=deadline.urgency,
+            freshness=freshness.freshness,
+        ),
+        weights,
+    )
+    return PipelineEntry(assessed, breakdown, preference, deadline, freshness)
+
+
+def _group(entries: list[PipelineEntry], limit: int) -> PipelineGroup:
+    by_id = {entry.job_id: entry for entry in entries}
+    ordered = order_by_priority(ScoredJob(entry.job_id, entry.breakdown) for entry in entries)
+    ranked = [by_id[item.job_id] for item in ordered.ranked]
+    return PipelineGroup(
+        top=tuple(ranked[:limit]),
+        rest=tuple(ranked[limit:]),
+        unscored=tuple(by_id[item.job_id] for item in ordered.unscored),
+    )
+
+
+def run_ranking_pipeline(
+    candidate: CandidateProfile,
+    jobs: Iterable[AssessedJob],
+    *,
+    weights: Mapping[str, object],
+    now: datetime,
+    deadline_horizon_days: float,
+    freshness_horizon_days: float,
+    profile_fit_scorer: ProfileFitScorer | None = None,
+    limit: int = PIPELINE_DEFAULT_LIMIT,
+) -> PipelineResult:
+    """Score already-assessed jobs and split them into ranked groups.
+
+    Closed or expired postings are excluded for availability, then
+    ineligible jobs are excluded; neither is scored. Eligible and uncertain
+    jobs are scored with the same rules and no penalty, then ordered
+    separately. Profile fit comes either from each job's supplied value or
+    from ``profile_fit_scorer``, never both. Nothing here calls a model.
+
+    Raises:
+        ValueError: On a duplicate job ID, an invalid limit or horizon, or a
+            job carrying a profile fit when a scorer is also given.
+        InvalidWeights, InvalidTimestamp, InvalidFactorValue: As raised by
+            the primitives above.
+    """
+
+    checked_weights = validate_weights(weights)
+    _require_aware("now", now)
+    _require_horizon(deadline_horizon_days)
+    _require_horizon(freshness_horizon_days)
+    limit = _require_limit(limit)
+
+    items = list(jobs)
+    seen: set[str] = set()
+    for assessed in items:
+        if assessed.job_id in seen:
+            raise ValueError(f"duplicate job_id {assessed.job_id!r}")
+        seen.add(assessed.job_id)
+
+    excluded: list[PipelineExclusion] = []
+    groups: dict[str, list[PipelineEntry]] = {"eligible": [], "uncertain": []}
+    for assessed in items:
+        availability = availability_exclusion(assessed.job, now)
+        if availability is not None:
+            excluded.append(PipelineExclusion(assessed, availability, availability))
+            continue
+        if assessed.eligibility == "ineligible":
+            excluded.append(PipelineExclusion(assessed, "ineligible", None))
+            continue
+        groups[assessed.eligibility].append(
+            _score_entry(
+                assessed,
+                candidate,
+                weights=checked_weights,
+                now=now,
+                deadline_horizon_days=deadline_horizon_days,
+                freshness_horizon_days=freshness_horizon_days,
+                profile_fit_scorer=profile_fit_scorer,
+            )
+        )
+
+    return PipelineResult(
+        eligible=_group(groups["eligible"], limit),
+        uncertain=_group(groups["uncertain"], limit),
+        excluded=tuple(sorted(excluded, key=lambda item: item.job_id)),
+        limit=limit,
+    )
