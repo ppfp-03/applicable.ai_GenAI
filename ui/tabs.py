@@ -89,3 +89,7 @@ def host(front: str) -> None:
                 runpy.run_path(str(_VIEWS / f"{tab}.py"), run_name="__main__")
     finally:
         st.session_state[_RUNNING] = None
+
+    from ui import tour  # local: tour imports this module
+
+    tour.render(shown)
