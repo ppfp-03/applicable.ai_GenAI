@@ -17,6 +17,7 @@ import sys
 from pathlib import Path
 
 import streamlit as st
+from dotenv import load_dotenv
 
 # The ingestion packages (oi.*) live under src/.
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
@@ -33,6 +34,9 @@ st.set_page_config(
 )
 
 inject()
+# KIMI_API_KEY and friends, for CV extraction. Variables already set in the
+# environment win; a missing .env leaves extraction to fail visibly.
+load_dotenv(Path(__file__).resolve().parent / ".env")
 store.init()
 
 

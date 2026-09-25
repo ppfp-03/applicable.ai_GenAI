@@ -23,6 +23,7 @@ from typing import Any, Optional
 import streamlit as st
 
 from core import ranking, rules
+from oi.contracts import CandidateProfile
 
 _DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "demo.json"
 
@@ -130,6 +131,8 @@ NOTES = "section_notes"
 APPS = "applications"
 EXTRA = "extra_answers"
 REVIEWED = "new_reviewed"
+CANDIDATE = "candidate_profile"
+EXTRACTION_ERROR = "extraction_error"
 
 
 def init() -> None:
@@ -142,6 +145,8 @@ def init() -> None:
     st.session_state.setdefault(NOTES, {})
     st.session_state.setdefault(APPS, copy.deepcopy(d.applications))
     st.session_state.setdefault(REVIEWED, False)
+    st.session_state.setdefault(CANDIDATE, None)
+    st.session_state.setdefault(EXTRACTION_ERROR, None)
 
 
 def answers() -> dict:
@@ -162,6 +167,37 @@ def set_uk(choice: Optional[str]) -> None:
 def set_answer(key: str, value: Any) -> None:
     """Record any other answer (e.g. the Fudan letter was uploaded)."""
     st.session_state[ANSWERS] = {**answers(), key: value}
+
+
+def candidate() -> Optional[CandidateProfile]:
+    """The profile extracted from the uploaded CV, or None before one is."""
+    return st.session_state.get(CANDIDATE)
+
+
+def set_candidate(profile: CandidateProfile) -> None:
+    """Record a freshly extracted profile. It replaces any earlier one and
+    clears the last extraction error."""
+    st.session_state[CANDIDATE] = profile
+    st.session_state[EXTRACTION_ERROR] = None
+
+
+def has_candidate_for(content_hash: str) -> bool:
+    """Whether the stored profile was extracted from the CV with this hash,
+    so uploading the same file again need not call the model again."""
+    profile = candidate()
+    return profile is not None and profile.provenance.extraction.input_hash == content_hash
+
+
+def extraction_error() -> Optional[str]:
+    """Why the last extraction failed, or None."""
+    return st.session_state.get(EXTRACTION_ERROR)
+
+
+def set_extraction_error(message: str) -> None:
+    """Record a failed extraction. The stored profile is dropped: it came
+    from a different CV, and showing it would pass it off as this one."""
+    st.session_state[EXTRACTION_ERROR] = message
+    st.session_state[CANDIDATE] = None
 
 
 # ───────────────────────── Derived views ─────────────────────────
