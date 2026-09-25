@@ -6,6 +6,10 @@ Sets up the page, links the shared stylesheet, and hands over to
 role and onboarding screens are reached from inside the product rather than
 from the capsule.
 
+Nothing opens before the first-run flow allows it: a visitor starts on the
+access screens (views/welcome.py), goes through onboarding and the guided
+tour, and only then reaches the app. `?demo=skip` jumps straight in.
+
 The five capsule tabs share one host (ui/tabs.py) that runs them all, so
 switching tab happens in the browser. Each still has its own URL: one page
 per tab, each bringing its own tab to the front.
@@ -17,6 +21,7 @@ import sys
 from pathlib import Path
 
 import streamlit as st
+from dotenv import load_dotenv
 
 # The ingestion packages (oi.*) live under src/.
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
@@ -33,6 +38,9 @@ st.set_page_config(
 )
 
 inject()
+# KIMI_API_KEY and friends, for CV extraction. Variables already set in the
+# environment win; a missing .env leaves extraction to fail visibly.
+load_dotenv(Path(__file__).resolve().parent / ".env")
 store.init()
 
 
@@ -56,6 +64,13 @@ tabs.PAGES.update(
     question=st.Page("views/question.py", title="One quick question", url_path="question"),
     role=st.Page("views/role.py", title="Role", url_path="role"),
     onboarding=st.Page("views/onboarding.py", title="Onboarding", url_path="onboarding"),
+    welcome=st.Page("views/welcome.py", title="Welcome", url_path="welcome"),
 )
 
-st.navigation(list(tabs.PAGES.values()), position="hidden").run()
+page = st.navigation(list(tabs.PAGES.values()), position="hidden")
+allowed = store.STAGE_PAGES.get(store.stage())
+if allowed is None and page.url_path == tabs.PAGES["welcome"].url_path:
+    st.switch_page(tabs.PAGES["home"])  # signed in: the access screens are behind you
+if allowed and page.url_path not in {tabs.PAGES[n].url_path for n in allowed}:
+    st.switch_page(tabs.PAGES[allowed[0]])
+page.run()

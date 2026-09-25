@@ -1,11 +1,29 @@
+# Local environment files and secrets
 .env
-venv/
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Virtual environments
 .venv/
+venv/
+
+# Python and test artifacts
 __pycache__/
+*.py[cod]
 .pytest_cache/
+.coverage
+htmlcov/
+
+# Editor files
 .vscode/
-.DS_Store
+
+# Node artifacts (npm scripts here only wrap Python commands)
 node_modules/
+package-lock.json
+
+# Operating system files
+.DS_Store
 
 # Stylesheets generated at runtime by ui/theme.py from the design system.
 static/applicable-*.css
