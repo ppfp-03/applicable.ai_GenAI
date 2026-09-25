@@ -52,7 +52,8 @@ Unless the task brief explicitly overrides these rules:
 - do not push;
 - do not merge, rebase, cherry-pick, reset, or rewrite history;
 - do not discard or overwrite unrelated user changes;
-- do not modify files outside the task's allowed-file list.
+- do not modify files outside the task's allowed-file list;
+- treat `design-system/` as read-only reference: copy the assets it provides into `ui/` or `static/` and change the copies, never the originals.
 
 ### Agent-first file editing
 
@@ -99,6 +100,7 @@ Use the shortest safe loop:
 Before reporting completion:
 
 - run every verification command in the task brief;
+- for UI changes (`app.py`, `views/`, `ui/`, `static/`), run `streamlit run app.py` and compare every affected screen with `design-system/screenshots/` and the acceptance checklist in `design-system/40-build-spec.md`;
 - run `git diff --check` unless the task says otherwise;
 - inspect tracked allowed-file changes against `HEAD`, not only the unstaged diff;
 - inspect every new untracked allowed file explicitly, for example by reading it or using `git diff --no-index -- /dev/null <file> || true`;
