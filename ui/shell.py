@@ -73,13 +73,29 @@ def topbar(active: str, counts: dict[str, int] | None = None) -> None:
             _search()
             with st.popover(md_icon(BELL, "Notifications"), key="ib-bell"):
                 html('<div style="font-size:13px;font-weight:560;padding:4px 2px">No new notifications</div>')
-            with st.popover("GR", key="ib-av"):
-                html(
-                    '<div style="font-size:13px;font-weight:650">Giulia Rossi</div>'
-                    '<div style="font-size:12px;color:#6E6E73;margin:2px 0 10px">Synthetic demo profile</div>'
-                )
-                st.page_link(tabs.page("profile"), label="Your profile")
-                st.page_link(tabs.page("onboarding"), label="Restart onboarding")
+            _account()
+
+
+def _account() -> None:
+    """The avatar menu: who is signed in, the tour again, log out."""
+    from core import store  # local: the shell must not import data at module load
+    from ui.html import esc
+
+    u = store.user()
+    with st.popover(store.initials(u["name"]), key="ib-av"):
+        html(
+            f'<div style="font-size:13px;font-weight:650">{esc(u["name"])}</div>'
+            f'<div style="font-size:12px;color:#6E6E73;margin:2px 0 10px">{esc(u["email"] or "Synthetic demo profile")}</div>'
+        )
+        st.page_link(tabs.page("profile"), label="Your profile")
+        if st.button("Replay the tour", key="av-tour", type="tertiary"):
+            store.set_stage("tour")
+            st.session_state["tour_step"] = 0
+            tabs.go("home")
+        st.page_link(tabs.page("onboarding"), label="Restart onboarding")
+        if st.button("Log out", key="av-out", type="tertiary"):
+            store.log_out()
+            st.switch_page(tabs.page("welcome"))
 
 
 def _search() -> None:

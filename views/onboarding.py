@@ -90,6 +90,13 @@ idx = KEYS.index(step)
 key, num, info, cta = FLOW[idx]
 
 
+def finish() -> None:
+    """Leaving the wizard for the first time: the guided tour comes next."""
+    if store.stage() == "onboarding":
+        store.set_stage("tour")
+        S["tour_step"] = 0
+
+
 def go(k: str) -> None:
     S["ob_step"] = k
     if k == "5":
@@ -560,8 +567,9 @@ with st.container(key="otop"):
         overlay(f"st{n}", box, f"Go to step {n}: {STEP_NAMES[n - 1]}", on_click=go, args=(target,))
     with st.container(key="oexit"):
         if st.button("Save and exit", key="exit"):
+            finish()
             tabs.go("home")
-        html('<span class="av">GR</span>')
+        html(f'<span class="av">{esc(store.initials(store.user()["name"]))}</span>')
 
 with st.container(key="obody"):
     if step == "1":
@@ -644,6 +652,7 @@ with st.container(key="obody"):
         if S["ob_filter"] == 0:
             for i, v in enumerate(top):
                 if overlay(f"it{i}", BTN_7[i], f"Open {v.company}"):
+                    finish()
                     if i == 0:
                         store.save_application(v.id)
                         tabs.go("applications", id=v.id)
@@ -665,6 +674,7 @@ with st.container(key="ofoot"):
             v = store.ranked(store.answers(), AS_OF)[0]
             store.save_application(v.id)
             S["flash"] = f"Application started · {v.company}"
+            finish()
             tabs.go("applications", id=v.id)
         go(KEYS[idx + 1])
         st.rerun()

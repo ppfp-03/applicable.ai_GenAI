@@ -61,9 +61,9 @@ elif stage == "signup":
             '<div class="wc-h">Create your account</div>'
             '<div class="wc-p">Then we read your CV and build your first shortlist.</div>'
         )
-        name = st.text_input("Full name", key="w-name", placeholder="Giulia Rossi")
+        name = st.text_input("Full name", key="w-name", placeholder="Your name")
         email = st.text_input("Email", key="w-email", placeholder="you@university.edu")
-        st.text_input("Password", key="w-pw", type="password", placeholder="At least 8 characters")
+        st.text_input("Password", key="w-pw", type="password")
         if S.get("w-err"):
             html(f'<div class="wc-err">{S["w-err"]}</div>')
         if st.button("Create account", type="primary", key="w-create", width="stretch"):

@@ -8,6 +8,8 @@
 
 /* Landing */
 .st-key-whero{width:760px!important;margin:150px auto 0;text-align:center;align-items:center}
+.st-key-whero > [data-testid="stElementContainer"]{width:100%!important}
+.st-key-whero .x{text-align:center}
 .wh-k{font-size:12.5px;font-weight:620;color:var(--blue);letter-spacing:.01em;margin-bottom:16px}
 .x h1.wh-h{font-size:56px;font-weight:720;letter-spacing:-0.045em;line-height:1.06;color:var(--t1);padding:0}
 .wh-p{font-size:17px;color:var(--t2);line-height:1.55;margin:22px auto 0;max-width:600px}
@@ -28,7 +30,7 @@
 .st-key-wcard .stTextInput label p{font-size:12px;font-weight:600;color:var(--t2)}
 .st-key-wcard .stTextInput input{font-size:14px;height:42px;padding:0 14px}
 .st-key-wcard .stButton button{height:44px;min-height:44px;font-size:14px}
-.st-key-wcard .stButton button[data-testid="stBaseButton-tertiary"]{height:auto;min-height:0;font-size:13px}
+.st-key-wcard .stButton button[data-testid="stBaseButton-tertiary"]{height:auto;min-height:0;font-size:13px;color:var(--blue)}
 .wc-err{font-size:12.5px;color:var(--red);font-weight:560}
 .wc-or{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--t3)}
 .wc-or::before,.wc-or::after{content:"";flex:1;height:1px;background:var(--line)}
