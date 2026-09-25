@@ -13,6 +13,7 @@ is saved and recomputes everything.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -20,6 +21,10 @@ from pathlib import Path
 import streamlit as st
 
 from core import clock, store
+from oi.intelligence.extraction import extract_candidate
+from oi.io.document_loader import load_document
+from oi.providers.kimi import KimiClient
+from oi.providers.model_client import ExtractionError
 from ui import onboarding_markup as M
 from ui import parts, tabs
 from ui.html import CK12, CK_WHITE, WN12, esc, html
@@ -55,6 +60,8 @@ ACTS_3B = [(422, 645, 61, 104), (505, 652, 49, 90), (576, 645, 72, 104)]
 SEG_3B = [(24, 4, 104, 26)]
 OPTS_6 = [(230, 375, 600, 68), (230, 453, 600, 68), (230, 531, 600, 68)]
 FILT_7 = [(33, 107, 56, 26), (91, 107, 157, 26), (249, 107, 75, 26)]
+#: Where the CV's reading status sits: over the mockup's file card, below the drop zone.
+CV_STATUS = (428, 458, 664)
 BTN_7 = [(1336, 194, 135, 34), (1405, 324, 66, 34), (1405, 454, 66, 34), (1405, 583, 66, 34), (1405, 713, 66, 34)]
 
 IMPORTANCE = ["Must have", "Important", "Nice to have", "Don’t mind"]
@@ -74,6 +81,7 @@ S.setdefault("ob_tick", 0)
 S.setdefault("ob_uk", "yes")
 S.setdefault("ob_filter", 0)
 S.setdefault("ob_file", None)
+S.setdefault("ob_cv", None)
 
 qs = st.query_params.get("step")
 if qs in KEYS and S.get("_ob_qs") != qs:
@@ -93,6 +101,25 @@ def go(k: str) -> None:
 
 BEFORE = {**store.answers(), "uk_work": None}
 AS_OF = d.profile["onboarded"]
+
+
+def read_cv(pdf_bytes: bytes) -> None:
+    """Extract a profile from an uploaded CV and store it, or store why not.
+
+    The same file uploaded again reuses the stored profile rather than
+    calling the model a second time. Failures are stored, never papered over
+    with the demo profile.
+    """
+    # Same hash the loader puts on the SourceDocument, so it can be checked
+    # before any reading or model call happens.
+    content_hash = hashlib.sha256(pdf_bytes).hexdigest()
+    if store.has_candidate_for(content_hash):
+        return
+    try:
+        document = load_document(pdf_bytes, f"cv-{content_hash[:12]}")
+        store.set_candidate(extract_candidate(document, KimiClient()))
+    except (ValueError, RuntimeError, ExtractionError) as exc:
+        store.set_extraction_error(str(exc))
 
 
 def overlay(name: str, box, label: str, on_click=None, args=None, shortcut=None) -> bool:
@@ -115,6 +142,8 @@ def step1() -> str:
     if name:
         body = body.replace("Synthetic_CV_Giulia_Rossi.pdf", esc(name)).replace("Reading text · 64%", "Read · 100%")
         body = body.replace('<div class="u-pb"><i></i></div>', '<div class="u-pb"><i style="width:100%"></i></div>')
+    if store.extraction_error():  # the error takes the file card's place
+        body = body.replace('<div class="w-card u-file">', '<div class="w-card u-file" style="visibility:hidden">')
     return body
 
 
@@ -431,9 +460,20 @@ with st.container(key="obody"):
         html(f'<section class="w-sec">{step1()}</section>')
         with st.container(key="oup"):
             up = st.file_uploader("Drop your CV here", type=["pdf"], key="ob-cv", label_visibility="collapsed")
-            if up is not None and S["ob_file"] != up.name:
-                S["ob_file"] = up.name
+        x, y, w = CV_STATUS
+        st.markdown(
+            f"<style>.stApp .st-key-ocv{{position:absolute!important;z-index:7;left:{x}px;top:{y}px;width:{w}px!important}}</style>",
+            unsafe_allow_html=True,
+        )
+        with st.container(key="ocv"):
+            if up is not None and S["ob_cv"] != up.file_id:
+                S["ob_cv"] = up.file_id
+                with st.spinner("Reading your CV…"):
+                    read_cv(up.getvalue())
+                S["ob_file"] = up.name if store.candidate() else None
                 st.rerun()
+            if store.extraction_error():
+                st.error(f"We couldn’t read your CV. {store.extraction_error()}")
     elif step == "2":
         html(f'<section class="w-sec">{step2()}</section>')
         for i, (name, state, val) in enumerate(
