@@ -14,9 +14,11 @@ Delivery goes through `static/`: Streamlit strips `<style>` elements from
 `st.markdown`, which carries a `<link>` through. The hash in the name means a
 changed file is fetched fresh and an unchanged one is never rewritten.
 
-The mockups are drawn on a 1600 px stage. `inject()` also sets the page zoom
-so that stage fills the window width, the way the mockups scale themselves,
-and loads the floating glass top bar (`ui/js/nav.js`).
+The mockups are drawn on a 1600 px stage. `inject()` also sets `--aa-k`, the
+zoom that makes that stage fill the window width, and loads the floating glass
+top bar (`ui/js/nav.js`). base.css applies it to the stage and the capsule
+only: zooming <html> would shrink the 100vh scroll container with it and
+leave an empty band under the page.
 """
 
 from __future__ import annotations
@@ -43,7 +45,7 @@ _ZOOM_JS = f"""
 <script>
 (function(){{
   const fit=()=>{{const k=Math.max(.5,Math.min(window.innerWidth/{STAGE_WIDTH},1.25));
-    document.documentElement.style.zoom=k;}};
+    const h=document.documentElement;h.style.zoom='';h.style.setProperty('--aa-k',k);}};
   if(!window.__aaZoom){{window.__aaZoom=1;window.addEventListener('resize',fit);}}
   fit();
 }})();

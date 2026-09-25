@@ -25,6 +25,10 @@ html,body,.stApp{font-family:"Inter",-apple-system,sans-serif;color:var(--t1);-w
 header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecoration"],[data-testid="stSidebar"],[data-testid="stSidebarCollapsedControl"],footer,#MainMenu{display:none!important}
 [data-testid="stStatusWidget"]{opacity:.6}
 .stMain{overflow-x:hidden}
+/* The stage scales to the window (--aa-k, set by ui/theme.py). Only the
+ * content and the floating capsule zoom; the scroll container keeps the full
+ * window height at any browser zoom. */
+.stMainBlockContainer,.aa-nav{zoom:var(--aa-k,1)}
 .stMain .block-container,.stMainBlockContainer{position:relative;width:1600px!important;max-width:1600px!important;min-width:1600px;padding:18px 40px 26px!important;margin:0 auto}
 /* The mockups space everything themselves: no framework gaps. */
 .stMainBlockContainer [data-testid="stVerticalBlock"],.stMainBlockContainer [data-testid="stHorizontalBlock"]{gap:0}
