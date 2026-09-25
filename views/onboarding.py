@@ -55,7 +55,6 @@ TOP = [(355, 6, 119, 36), (476, 6, 93, 36), (570, 6, 128, 36), (700, 6, 105, 36)
 SEG_3A = [(33, 27, 104, 28), (139, 27, 98, 28)]
 IMP_Y = [391, 439, 487, 535, 583, 631, 680]
 IMP_X = [588, 697, 806, 915]
-CHIPS_2 = [(47, 238, 120, 27), (173, 238, 89, 27), (544, 238, 117, 27), (667, 238, 47, 27)]
 ACTS_3B = [(422, 645, 61, 104), (505, 652, 49, 90), (576, 645, 72, 104)]
 SEG_3B = [(24, 4, 104, 26)]
 OPTS_6 = [(230, 375, 600, 68), (230, 453, 600, 68), (230, 531, 600, 68)]
@@ -70,8 +69,6 @@ IMPORTANCE = ["Must have", "Important", "Nice to have", "Don’t mind"]
 
 S = st.session_state
 S.setdefault("ob_step", "1")
-S.setdefault("ob_wa", None)
-S.setdefault("ob_spons", "yes")
 S.setdefault("ob_imp", [0, 1, 1, 1, 2, 2, 3])
 S.setdefault("ob_count", STORIES["start"])
 S.setdefault("ob_story", 0)
@@ -147,21 +144,132 @@ def step1() -> str:
     return body
 
 
+#: Profile sections read from the CV: card title and CandidateProfile field.
+CV_SECTIONS = [("Skills", "skills"), ("Education", "education"), ("Experience", "experience")]
+#: Sections the mockup shows that CV extraction does not read.
+UNREAD_SECTIONS = ["Work authorization", "Sponsorship", "Languages"]
+#: How many skills a card lists before summarising the rest as "+N".
+SKILL_CHIPS = 8
+#: How many values an education or experience card lists before "+N more".
+CARD_LINES = 3
+#: How many quotes each section shows on the CV page, which does not scroll.
+PAGE_QUOTES = 3
+
+#: The mockup's own icons, by card title, and its source-line document icon.
+ICONS = {title: icon for icon, title in re.findall(r'<div class="ic">(.*?)</div><b>(.*?)</b>', M.S_2)}
+DOC_ICON = re.search(r'<div class="p-src">(<svg.*?</svg>)', M.S_2).group(1)
+FOUND = '<span class="w-b ok"><i></i>Found</span>'
+NOT_FOUND = '<span class="w-b ne"><i></i>Not found</span>'
+NOT_READ = '<span class="w-b ne"><i></i>Not read</span>'
+
+
+def profile_card(title: str, badge: str, body: str, src: str = "") -> str:
+    source = f'<div class="p-src">{DOC_ICON}{src}</div>' if src else ""
+    return (
+        f'<div class="w-card p-s"><div class="p-h"><div class="ic">{ICONS[title]}</div>'
+        f"<b>{title}</b>{badge}</div>{body}{source}</div>"
+    )
+
+
+def fact_quote(profile, fact) -> str:
+    """The CV text a fact rests on, for hovering over the fact."""
+    quotes = {e.evidence_id: e.quote for e in profile.provenance.evidence}
+    return " … ".join(" ".join(quotes[i].split()) for i in fact.evidence_ids)
+
+
+def section_quotes(profile, field: str) -> list[str]:
+    """The distinct CV quotes behind one section, in order. Several facts
+    often rest on the same line of the CV; that line counts once."""
+    return list(dict.fromkeys(fact_quote(profile, f) for f in getattr(profile, field)))
+
+
+def quote_count(n: int) -> str:
+    return f"{n} quote{'s' if n != 1 else ''}"
+
+
+def swap(body: str, pattern: str, new: str) -> str:
+    """Replace the one fragment of mockup markup `pattern` matches.
+
+    Raises:
+        RuntimeError: If the fragment is missing. The mockup's own content is
+            the demo candidate's, so a silent miss would show it as extracted.
+    """
+    # A function, so backslashes in CV text are never read as group references.
+    out, n = re.subn(pattern, lambda _m: new, body, count=1, flags=re.S)
+    if n != 1:
+        raise RuntimeError(f"Step 2 mockup markup has changed: nothing matches {pattern!r}.")
+    return out
+
+
+def cv_card(profile, title: str, field: str) -> str:
+    """A card for one section read from the CV: its facts, or why there are none."""
+    if profile is None:
+        return profile_card(title, NOT_READ, '<div class="p-v">Upload your CV in step 1</div>')
+    facts = getattr(profile, field)
+    if not facts:
+        return profile_card(title, NOT_FOUND, '<div class="p-v">Not stated in your CV</div>')
+
+    def item(fact, tag: str, cls: str = "") -> str:
+        return f'<{tag}{cls} title="{esc(fact_quote(profile, fact))}">{esc(fact.value)}</{tag}>'
+
+    if field == "skills":
+        chips = "".join(item(f, "span", ' class="w-chip"') for f in facts[:SKILL_CHIPS])
+        if len(facts) > SKILL_CHIPS:
+            chips += f'<span class="w-chip">+{len(facts) - SKILL_CHIPS}</span>'
+        body = f'<div class="p-chips">{chips}</div>'
+    else:
+        first, rest = facts[0], facts[1:CARD_LINES]
+        more = len(facts) - CARD_LINES
+        lines = " · ".join(item(f, "span") for f in rest) + (f" · +{more} more" if more > 0 else "")
+        body = f'<div class="p-v">{item(first, "span")}</div>' + (f'<div class="p-m">{lines}</div>' if lines else "")
+    return profile_card(title, FOUND, body, f"From your CV · {quote_count(len(section_quotes(profile, field)))}")
+
+
+def cv_page(profile) -> str:
+    """The CV panel: the quotes each section was read from, highlighted."""
+    if profile is None:
+        return '<div class="p-m" style="margin-top:0">Quotes from your CV appear here once it has been read.</div>'
+    filler = '<div class="p-ln" style="width:92%"></div><div class="p-ln" style="width:78%"></div>'
+    blocks = []
+    for title, field in CV_SECTIONS:
+        quotes = section_quotes(profile, field)
+        if not quotes:
+            continue
+        shown = "".join(
+            f'<div style="font-size:12px;line-height:1.5;color:var(--t1)">{esc(q)}</div>' for q in quotes[:PAGE_QUOTES]
+        )
+        if len(quotes) > PAGE_QUOTES:
+            shown += f'<div style="font-size:11.5px;color:var(--t3)">+{len(quotes) - PAGE_QUOTES} more</div>'
+        blocks.append(f'<div class="p-hl b"><span class="tg">{title}</span>{shown}</div>')
+    return filler.join(blocks)
+
+
 def step2() -> str:
+    """What was read from the CV, each value backed by the quote it came from.
+
+    Nothing here comes from the demo profile. Sections the CV extraction does
+    not read are marked as such rather than filled in.
+    """
+    profile = store.candidate()
     body = M.S_2
-    wa = S["ob_wa"]
-    body = body.replace(
-        '<span class="w-chip add">+ Add a country</span><span class="w-chip">Only these</span>',
-        f'<span class="w-chip add{" on" if wa == "add" else ""}">+ Add a country</span>'
-        f'<span class="w-chip{" on" if wa == "only" else ""}">Only these</span>',
+    if profile is None:
+        sub = "No CV read yet. <b>Upload your CV in step 1</b> to fill in your profile."
+        quotes = "Not uploaded"
+    else:
+        found = sum(bool(getattr(profile, field)) for _, field in CV_SECTIONS)
+        sub = f"{found} of {len(CV_SECTIONS)} sections found in your CV. <b>Each value is backed by a quote from it.</b>"
+        distinct = {q for _, field in CV_SECTIONS for q in section_quotes(profile, field)}
+        quotes = quote_count(len(distinct))
+    cards = [cv_card(profile, title, field) for title, field in CV_SECTIONS] + [
+        profile_card(title, NOT_READ, '<div class="p-v">Not read from your CV</div>') for title in UNREAD_SECTIONS
+    ]
+    body = swap(body, r'<div class="w-sub">.*?</div>', f'<div class="w-sub">{sub}</div>')
+    body = swap(
+        body, r'<div class="p-grid">.*?</div></div>\n<div class="p-r">',
+        f'<div class="p-grid">{"".join(cards)}</div></div>\n<div class="p-r">',
     )
-    sp = S["ob_spons"]
-    body = body.replace(
-        '<span class="w-chip on">Yes, that’s right</span><span class="w-chip">Edit</span>',
-        f'<span class="w-chip{" on" if sp == "yes" else ""}">Yes, that’s right</span>'
-        f'<span class="w-chip{" on" if sp == "edit" else ""}">Edit</span>',
-    )
-    return body
+    body = swap(body, re.escape("Your CV<span>Page 2 of 2</span>"), f"Your CV<span>{quotes}</span>")
+    return swap(body, r'<div class="p-page">.*?</div></div>$', f'<div class="p-page">{cv_page(profile)}</div></div>')
 
 
 def step3a() -> str:
@@ -476,10 +584,6 @@ with st.container(key="obody"):
                 st.error(f"We couldn’t read your CV. {store.extraction_error()}")
     elif step == "2":
         html(f'<section class="w-sec">{step2()}</section>')
-        for i, (name, state, val) in enumerate(
-            [("wa-add", "ob_wa", "add"), ("wa-only", "ob_wa", "only"), ("sp-yes", "ob_spons", "yes"), ("sp-edit", "ob_spons", "edit")]
-        ):
-            overlay(name, CHIPS_2[i], name, on_click=S.__setitem__, args=(state, val))
     elif step == "3a":
         html(f'<section class="w-sec">{step3a()}</section>')
         overlay("to3b", SEG_3A[1], "2 · Explore", on_click=go, args=("3b",))
