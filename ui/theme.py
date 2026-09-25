@@ -15,7 +15,7 @@ Delivery goes through `static/`: Streamlit strips `<style>` elements from
 changed file is fetched fresh and an unchanged one is never rewritten.
 
 The mockups are drawn on a 1600 px stage. `inject()` also sets `--aa-k`, the
-zoom that makes that stage fill the window width, and loads the floating glass
+zoom that fits that stage inside the window, and loads the floating glass
 top bar (`ui/js/nav.js`). base.css applies it to the stage and the capsule
 only: zooming <html> would shrink the 100vh scroll container with it and
 leave an empty band under the page.
@@ -38,13 +38,15 @@ _CSS_DIR = _UI_DIR / "css"
 _STATIC_DIR = _UI_DIR.parent / "static"
 _NAV_JS = _UI_DIR / "js" / "nav.js"
 
-#: Width of the mockups' stage, in CSS pixels.
+#: Size of the mockups' stage, in CSS pixels. The whole stage fits the window
+#: (width and height), so a screen reads without scrolling at any browser zoom.
 STAGE_WIDTH = 1600
+STAGE_HEIGHT = 1000
 
 _ZOOM_JS = f"""
 <script>
 (function(){{
-  const fit=()=>{{const k=Math.max(.5,Math.min(window.innerWidth/{STAGE_WIDTH},1.25));
+  const fit=()=>{{const k=Math.max(.4,Math.min(window.innerWidth/{STAGE_WIDTH},window.innerHeight/{STAGE_HEIGHT},2));
     const h=document.documentElement;h.style.zoom='';h.style.setProperty('--aa-k',k);}};
   if(!window.__aaZoom){{window.__aaZoom=1;window.addEventListener('resize',fit);}}
   fit();

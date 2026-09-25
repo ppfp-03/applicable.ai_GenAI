@@ -10,7 +10,7 @@
 .st-key-gl-grid{min-height:740px}
 .st-key-grid{display:grid!important;grid-template-columns:repeat(5,1fr);gap:12px!important;margin-top:14px}
 .st-key-grid > div{width:auto!important;min-width:0}
-.mc{border-radius:18px;padding:14px;display:flex;flex-direction:column;height:234px;cursor:pointer}
+.mc{border-radius:18px;padding:14px;display:flex;flex-direction:column;height:226px;cursor:pointer}
 .mc .h{display:flex;justify-content:space-between;align-items:flex-start}
 .mc .lg{width:36px;height:36px;border-radius:10px;font-size:13px}
 .mc .sc{font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums}
