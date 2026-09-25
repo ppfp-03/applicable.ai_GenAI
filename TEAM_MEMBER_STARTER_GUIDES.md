@@ -42,50 +42,74 @@ duplicating the change in `PROJECT_CONTEXT.md`.
 
 ## Repository implementation ownership
 
-Direct repository implementation is owned by the two coding leads:
+After the coding redistribution, direct repository implementation is
+owned by five feature owners, each working on a dedicated feature
+branch:
 
--   **Marco**: Group A coding lead for shared contracts, data/input
-    integration, ingestion, normalization, snapshots and related
-    repository integration.
--   **Pierpaolo**: Group B coding lead for runtime AI,
-    intelligence/eligibility/ranking implementation, UI and related
-    repository integration.
+-   **Marco - AI Runtime & Intelligence Integration**
+    (`feature/ai-runtime-marco`).
+    -   Owns: provider abstraction; LLM runtime integration; candidate
+        extraction; job requirement extraction; evidence-backed outputs;
+        extraction provenance; prompt versioning; runtime decision
+        support.
+    -   Does not own: eligibility; ranking; UI; contract changes without
+        approval.
+-   **Pierpaolo - UI Production Integration**
+    (`feature/ui-production-pierpaolo`).
+    -   Owns: onboarding; profile screens; opportunities list;
+        opportunity details; clarification screens; loading/error states;
+        UI integration.
+    -   Does not own: business logic; duplicate ranking; duplicate
+        eligibility engine.
+-   **Giorgio G - Eligibility Engine**
+    (`feature/eligibility-engine-giorgio-g`).
+    -   Owns: `RuleCatalogue`; hard constraint evaluation;
+        `MET / CONFLICT / UNKNOWN / NOT_APPLICABLE` handling; eligibility
+        tests.
+-   **Giorgio M - Ranking Engine** (`feature/ranking-engine-giorgio-m`).
+    -   Owns: ranking engine; embedding boundary; scoring configuration;
+        ranking tests.
+-   **Tommaso - Clarification Engine & Acceptance**
+    (`feature/clarification-engine-tommaso`).
+    -   Owns: clarification logic; structured answers; profile updates;
+        recomputation tests; acceptance execution after integration.
 
-Other members own research, evaluation, taxonomy, testing, evidence,
-reporting or presentation work as specified in their sections below.
-They should not modify repository code unless Marco or Pierpaolo
-explicitly delegates a bounded coding task or the team updates the
-assignment here.
+Other members own research, evaluation, testing, evidence, reporting or
+presentation work as specified in their sections below. They should not
+modify repository code unless a feature owner explicitly delegates a
+bounded coding task or the team updates the assignment here.
 
-Git/branch mechanics, coding-agent safety rules and repository editing
-workflow belong in `AGENTS.md`, not in this team coordination document.
+Coding-agent safety rules and repository editing workflow belong in
+`AGENTS.md`; the team-level branch and pull request workflow is in
+"Feature branch workflow" below.
 
 ## Quick assignment matrix
 
   ---------------------------------------------------------------------------
   Member            What to do first     First output       Target
   ----------------- -------------------- ------------------ -----------------
-  Marco             A-05 UI data access  UI data access     24 Sep
-                    boundary             helper + tests
+  Marco             AI runtime &         Provider           feature branch
+                    intelligence         abstraction + LLM  PR
+                    integration          extraction with
+                                         evidence/provenance
 
-  Giorgio M         Test                 Verified           19 Sep
-                    Greenhouse/company   source/coverage
-                    coverage             recommendation
+  Giorgio M         Ranking engine       Ranking engine +   feature branch
+                                         scoring config +   PR
+                                         ranking tests
 
-  Tommaso           Execute frozen       21-case design     22-24 Sep
-                    `A-TESTS-01_r02`     pack complete;
-                    against an           execution evidence
-                    identified build     next
+  Tommaso           Clarification engine Clarification +    feature branch
+                    & acceptance         recomputation      PR; acceptance
+                                         tests; then        after
+                                         `A-TESTS-01_r02`   integration
+                                         execution
 
-  Pierpaolo         UI/design            UI on real         24 Sep
-                    integration +        `JobRecord` data
-                    intelligence         (pre-intelligence
-                    pipeline using A     state)
-                    boundaries
+  Pierpaolo         UI production        Production UI      feature branch
+                    integration          screens wired to   PR
+                                         shared engine
 
-  Giorgio G         Define               Constraint         19 Sep
-                    hard-constraint      catalogue + 3
-                    taxonomy + personas  synthetic personas
+  Giorgio G         Eligibility engine   `RuleCatalogue` +  feature branch
+                                         hard-constraint    PR
+                                         evaluation + tests
 
   Nils              Freeze held-out      B-04 methodology   23-26 Sep
                     inputs and run the   pack complete;
@@ -107,13 +131,15 @@ member.
 
 ------------------------------------------------------------------------
 
-# Marco - Group A: Data & Integration
+# Marco - AI Runtime & Intelligence Integration
 
 ## Your mission
 
-Build the reliable **input/data side** of the system so Pierpaolo can
-develop the intelligence and UI against stable contracts instead of
-waiting for the final dataset.
+Build the **AI runtime and intelligence integration**: provider
+abstraction, LLM runtime integration, candidate and job requirement
+extraction with evidence-backed outputs, extraction provenance and
+prompt versioning. Earlier Group A data/input work is kept below as
+historical context.
 
 ## Completed work
 
@@ -122,7 +148,21 @@ waiting for the final dataset.
 -   A-03 Greenhouse Batch 01 snapshot.
 -   A-04 demo snapshot provider boundary.
 
-## Current priority: A-05 UI Data Access Boundary
+## Current priority: AI Runtime & Intelligence Integration
+
+**Branch:** `feature/ai-runtime-marco`.
+
+**Owns:** provider abstraction; LLM runtime integration; candidate
+extraction; job requirement extraction; evidence-backed outputs;
+extraction provenance; prompt versioning; runtime decision support.
+
+**Does not own:** eligibility (Giorgio G); ranking (Giorgio M); UI
+(Pierpaolo); contract changes without approval.
+
+## Previous assignment: A-05 UI Data Access Boundary
+
+Superseded by the coding redistribution; kept for reference. Check the
+repository for its actual status.
 
 **Objective:** provide a thin UI-facing access layer over the existing
 `JobSnapshot` boundary so Pierpaolo can build UI components using real
@@ -147,7 +187,7 @@ waiting for the final dataset.
 ## Historical completed work - original J-01/A-01 steps
 
 Kept for reference only; these steps are complete. Current work is
-A-05 above.
+the AI runtime priority above.
 
 1.  **Open the actual repository/environment** and record the Python
     version and operating system used.
@@ -201,15 +241,27 @@ acceptance checks.
 
 ------------------------------------------------------------------------
 
-# Giorgio M - Group A: Source Coverage & Data Quality
+# Giorgio M - Ranking Engine
 
 ## Your mission
 
-Determine whether **Greenhouse alone can provide a useful MVP job
-universe** for the agreed candidate segment, role domain and
-geographies. Your work decides whether a second ATS is worth the time.
+Build the **ranking engine** on top of the shared contracts. Earlier
+A-02 source coverage work is kept below as historical context.
 
-## Start now
+## Current priority: Ranking Engine
+
+**Branch:** `feature/ranking-engine-giorgio-m`.
+
+**Owns:** ranking engine; embedding boundary; scoring configuration;
+ranking tests.
+
+## Historical assignment - A-02 source coverage
+
+Original mission: determine whether **Greenhouse alone can provide a
+useful MVP job universe** for the agreed candidate segment, role domain
+and geographies, and whether a second ATS is worth the time.
+
+## Original task (historical)
 
 **Task:** A-02 source/market coverage test.\
 **Deadline:** first recommendation by 19 September; final source
@@ -285,13 +337,21 @@ wording that matters for eligibility extraction.
 
 ------------------------------------------------------------------------
 
-# Tommaso - Group A: Acceptance & Integration Testing
+# Tommaso - Clarification Engine & Acceptance
 
 ## Your mission
 
-Execute the agreed product-behavior tests against a specific application
-build without changing the expected outcomes after seeing implementation
-behavior.
+Build the **clarification engine** (clarification logic, structured
+answers, profile updates, recomputation tests), then execute the agreed
+product-behavior tests against a specific integrated build without
+changing the expected outcomes after seeing implementation behavior.
+
+## Current priority: Clarification Engine
+
+**Branch:** `feature/clarification-engine-tommaso`.
+
+**Owns:** clarification logic; structured answers; profile updates;
+recomputation tests; acceptance execution after integration.
 
 ## Current status - 23 September
 
@@ -299,11 +359,11 @@ behavior.
 21 planned cases mapped across FR-01 to FR-12. All 21 remain `Not run`;
 no application build was executed and no PASS/FAIL evidence exists yet.
 
-## Current priority
+## Acceptance priority - after integration
 
 **Task:** prepare and execute the first acceptance/integration run as
-soon as Marco/Pierpaolo supply the identified build and minimum test
-materials.
+soon as the feature owners supply the identified integrated build and
+minimum test materials.
 
 ## Dependencies before execution
 
@@ -383,31 +443,36 @@ boundary appears responsible without guessing at the root cause.
 
 ------------------------------------------------------------------------
 
-# Pierpaolo - Group B: Intelligence, Runtime AI & UI
+# Pierpaolo - UI Production Integration
 
 ## Your mission
 
-Build the **intelligence and user-facing path**: structured extraction,
-profiling, clarification, eligibility, ranking, gaps/explanations and
-Streamlit UI, while keeping deterministic decisions separate from LLM
-interpretation.
+Build the **production user-facing path** in Streamlit around the shared
+engine, while keeping business logic out of the UI. Intelligence,
+eligibility, ranking and clarification logic are now owned by Marco,
+Giorgio G, Giorgio M and Tommaso respectively.
 
-## Current priority
+## Current priority: UI Production Integration
 
-**Current focus:**
+**Branch:** `feature/ui-production-pierpaolo`.
 
--   UI/design implementation;
--   connect UI components to existing A-side data boundaries;
--   continue intelligence pipeline implementation.
+**Owns:** onboarding; profile screens; opportunities list; opportunity
+details; clarification screens; loading/error states; UI integration.
 
-**Dependency - Marco provides:**
+**Does not own:** business logic; duplicate ranking; duplicate
+eligibility engine.
 
--   `JobSnapshot` 0.2.1-draft;
--   the `get_demo_snapshot()` boundary;
--   real `JobRecord` inputs.
+**Dependencies:**
 
-Do not create duplicate snapshot loading or ingestion logic. Consume
-jobs through the A-side boundaries.
+-   canonical shared contracts (`JobSnapshot`, `JobRecord` and related
+    contracts) and the existing `get_demo_snapshot()` boundary;
+-   intelligence/extraction interfaces from Marco;
+-   eligibility rule interfaces from Giorgio G;
+-   ranking interfaces from Giorgio M;
+-   clarification interfaces from Tommaso.
+
+Do not create duplicate snapshot loading, ingestion or business logic.
+Consume jobs and results through these canonical interfaces.
 
 **The UI must support the pre-intelligence state:**
 
@@ -495,15 +560,28 @@ testing.
 
 ------------------------------------------------------------------------
 
-# Giorgio G - Group B: Eligibility Taxonomy & Synthetic Scenarios
+# Giorgio G - Eligibility Engine
 
 ## Your mission
 
-Define the **closed hard-constraint language** that the engine can
-safely use, and provide synthetic scenarios that force the rules to
-behave correctly.
+Implement the **eligibility engine** over the closed hard-constraint
+language. Earlier B-01 taxonomy and persona work is kept below as
+historical context.
 
-## Start now
+## Current priority: Eligibility Engine
+
+**Branch:** `feature/eligibility-engine-giorgio-g`.
+
+**Owns:** `RuleCatalogue`; hard constraint evaluation;
+`MET / CONFLICT / UNKNOWN / NOT_APPLICABLE` handling; eligibility tests.
+
+## Historical assignment - B-01 taxonomy & synthetic scenarios
+
+Original mission: define the **closed hard-constraint language** that
+the engine can safely use, and provide synthetic scenarios that force
+the rules to behave correctly.
+
+## Original task (historical)
 
 **Task:** B-01 hard-constraint catalogue + persona/scenario packet.\
 **Deadline:** initial version by 19 September; refine/freeze with
@@ -679,9 +757,11 @@ execution.
 
 ## Handoff to
 
-**Pierpaolo** for system execution/run manifests; **Anastasia + Madda**
-for independent rating; **Marco/Giorgio/Pierpaolo** where rule or
-frozen-input ownership applies; then back to **Nils** for metrics and
+The five technical owners (**Marco**, **Pierpaolo**, **Giorgio G**,
+**Giorgio M**, **Tommaso**) for system execution/run manifests, each
+within their feature area; **Anastasia + Madda** for independent rating;
+**Marco/Giorgio G/Giorgio M/Tommaso** where rule, ranking, clarification
+or frozen-input ownership applies; then back to **Nils** for metrics and
 audits.
 
 ------------------------------------------------------------------------
@@ -804,16 +884,37 @@ rehearsal.
 
 ------------------------------------------------------------------------
 
+# Feature branch workflow
+
+-   Each feature owner works on their dedicated feature branch listed in
+    "Repository implementation ownership". Do not implement another
+    owner's feature area on your branch.
+-   Changes reach `main` only through a pull request.
+-   Run the relevant verification (tests, lint and any task-specific
+    checks) before requesting review; a pull request is not merged
+    until verification passes and the results are recorded.
+-   Every pull request handoff states:
+    -   branch;
+    -   base commit;
+    -   changed files;
+    -   verification commands and observed results;
+    -   unresolved issues.
+
+------------------------------------------------------------------------
+
 # Team gates everyone should know
 
 -   **18 Sep:** shared contract freeze + first real cloud-model spike +
     repository skeleton.
--   **21 Sep:** Group A data/input path and Group B UI/intelligence path
-    work separately and pass a small contract smoke test.
+-   **21 Sep (historical milestone, superseded by the five-owner
+    redistribution):** Group A data/input path and Group B
+    UI/intelligence path work separately and pass a small contract
+    smoke test.
 -   **22-23 Sep:** end-to-end flow works, including the clarification
     loop.
--   **24 Sep:** feature freeze; evaluation running; no new feature scope
-    after this point.
+-   **24 Sep (historical milestone, original plan; not a current
+    instruction):** feature freeze; evaluation running; no new feature
+    scope after this point.
 -   **27 Sep:** report v1 + walkthrough v1 + presentation v1.
 -   **28 Sep:** fixes, evidence checks, final recording, backup
     environment and rehearsal.
