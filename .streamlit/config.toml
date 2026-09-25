@@ -1,0 +1,27 @@
+# Applicable.ai theme.
+# The approved mockups (Inter, light glass) are the source of truth. The CSS
+# that paints them is ui/css/*.css, published by ui/theme.py; these keys only
+# keep Streamlit's own widgets (inputs, popovers, dialogs) in the same family.
+
+[server]
+enableStaticServing = true          # serves ./static/ (fonts, stylesheets, logos) under /app/static/
+
+[client]
+showSidebarNavigation = false
+toolbarMode = "minimal"
+
+[theme]
+base = "light"
+primaryColor = "#F26A3D"            # brand orange (mockup blue, mapped)
+backgroundColor = "#F5F6F8"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#1D1D1F"
+linkColor = "#F26A3D"
+borderColor = "#E5E5EA"
+baseRadius = "16px"
+font = "Inter"
+
+[[theme.fontFaces]]
+family = "Inter"
+url = "app/static/inter-latin-wght-normal.woff2"
+weight = "100 900"

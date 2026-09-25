@@ -1,0 +1,39 @@
+/* Applications — no mockup; built from the shared mockup vocabulary
+ * (glass sections, tiles, side panel) so it reads as the same product. */
+
+.st-key-ap-strip{margin-top:18px}
+.astrip{display:flex;align-items:center;gap:24px;padding:16px 22px;border-radius:22px}
+.astrip .s-t{font-size:13px;font-weight:650;white-space:nowrap}
+.abar{flex:1;display:flex;gap:3px;height:12px}.abar i{display:block;border-radius:4px}
+.aleg{display:flex;gap:16px;font-size:12px;color:var(--t2);white-space:nowrap}.aleg span{display:flex;align-items:center;gap:6px}.aleg b{color:var(--t1);font-weight:650}.aleg i{width:8px;height:8px;border-radius:50%;display:block}
+
+.st-key-ap-main{display:grid!important;grid-template-columns:1fr 420px;gap:20px!important;margin-top:16px;min-height:716px}
+.st-key-ap-main > div{width:auto!important;min-width:0}
+.st-key-lanes{display:grid!important;grid-template-columns:repeat(4,1fr);gap:14px!important;align-items:start}
+.st-key-lanes > div{width:auto!important;min-width:0}
+[class*="st-key-gl-lane-"]{padding:14px!important;display:flex;flex-direction:column;gap:8px!important;min-height:716px}
+.lh{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:650;padding:2px 4px 6px}
+.lh i{width:8px;height:8px;border-radius:50%;display:block}.lh span{margin-left:auto;font-size:12px;color:var(--t3);font-weight:560}
+.ac{padding:12px;display:flex;flex-direction:column;gap:8px;cursor:pointer}
+.ac .h{display:flex;align-items:center;gap:10px}
+.ac .lg{width:32px;height:32px;border-radius:9px;font-size:12px}
+.ac .t{font-size:13px;font-weight:620;letter-spacing:-0.01em;line-height:1.25}
+.ac .m{font-size:11.5px;color:var(--t2);margin-top:1px}
+.ac .n{font-size:11.5px;color:var(--t2);line-height:1.4}
+.ac .pb{height:4px;border-radius:2px;background:rgba(0,0,0,.06);overflow:hidden}.ac .pb i{display:block;height:100%;background:var(--blue);border-radius:2px}
+.ac .f{display:flex;justify-content:space-between;font-size:11px;color:var(--t3)}.ac .f .u{color:var(--amber);font-weight:600}
+
+.st-key-pan-a{min-height:716px;display:flex;flex-direction:column}
+.big2{display:flex;align-items:center;gap:14px}
+.big2 .lg{width:46px;height:46px;border-radius:12px;font-size:16px}
+.big2 .tt{font-size:18px;font-weight:680;letter-spacing:-0.02em}.big2 .mm{font-size:12.5px;color:var(--t2);margin-top:2px}
+.ckl .ck{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:13px;border-bottom:1px solid rgba(0,0,0,.05)}.ckl .ck:last-child{border:0}
+.ckl .ck .s{margin-left:auto;font-size:11.5px;color:var(--t3);font-weight:560}
+.tlv{padding:6px 14px}
+.tlv div{display:flex;gap:10px;font-size:12.5px;padding:7px 0;color:#3A3A3C}.tlv b{width:62px;flex:none;color:var(--t3);font-weight:560}
+.st-key-stage label,.st-key-anote label{display:none}
+.st-key-stage [data-baseweb="select"] > div{border-radius:999px;background:rgba(255,255,255,.8);border:0;box-shadow:0 0 0 .5px rgba(0,0,0,.12);font-size:13px}
+.st-key-anote textarea{min-height:70px;resize:none;padding:12px 14px}
+.st-key-ap-foot{display:flex!important;flex-direction:row!important;gap:8px!important;flex-wrap:nowrap!important}
+.st-key-ap-foot > *{flex:1!important;width:auto!important}
+.st-key-ap-foot button{width:100%}

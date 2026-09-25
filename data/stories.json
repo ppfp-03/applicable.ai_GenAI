@@ -1,0 +1,147 @@
+{
+ "_comment": "Day-in-the-life stories for the Explore step of onboarding (00_Onboarding.html). Each swipe nudges the work-design sliders by the story lean, deterministically.",
+ "total": 12,
+ "start": 8,
+ "stories": [
+  {
+   "tags": [
+    "Product analytics",
+    "Fintech"
+   ],
+   "time": "A Tuesday, 10:40",
+   "h": "Conversion dropped overnight. You’re the first to notice.",
+   "p": "You write a quick SQL query and find the drop is Android-only. By 2 pm you brief the PM with one chart and a clear next step.",
+   "sk": [
+    "SQL",
+    "Data analysis",
+    "Clear communication"
+   ],
+   "why": "your CV mentions <b>SQL</b> and a <b>fintech product internship</b>",
+   "title": "Conversion drop",
+   "viz": "<div style=\"display:flex;justify-content:space-between;font-size:11.5px;color:var(--t2)\"><span>Checkout conversion · last 7 days</span><span style=\"color:#C4302B;font-weight:600\">−4.1% · Android only</span></div>\n<svg width=\"100%\" height=\"70\" viewBox=\"0 0 480 70\" preserveAspectRatio=\"none\" style=\"margin-top:8px\"><polyline points=\"0,22 70,20 140,24 210,19 280,21 350,23 400,52 480,50\" fill=\"none\" stroke=\"#AEAEB2\" stroke-width=\"2\"/><polyline points=\"0,30 70,28 140,31 210,27 280,29 350,30 400,30 480,29\" fill=\"none\" stroke=\"#0071E3\" stroke-width=\"2\"/><circle cx=\"400\" cy=\"52\" r=\"4\" fill=\"#fff\" stroke=\"#C4302B\" stroke-width=\"2\"/></svg>\n<div style=\"display:flex;gap:14px;font-size:11px;color:var(--t3);margin-top:4px\"><span style=\"display:flex;align-items:center;gap:5px\"><i style=\"width:10px;height:2px;background:#AEAEB2;display:block\"></i>Android</span><span style=\"display:flex;align-items:center;gap:5px\"><i style=\"width:10px;height:2px;background:#0071E3;display:block\"></i>iOS</span></div>",
+   "lean": [
+    4,
+    2,
+    3,
+    -2
+   ]
+  },
+  {
+   "tags": [
+    "Strategy",
+    "Fintech"
+   ],
+   "time": "A Thursday, 09:15",
+   "h": "Should the bank launch in Spain next year?",
+   "p": "You size the market from public data, build a simple model and present three scenarios to the leadership team on Friday.",
+   "sk": [
+    "Market sizing",
+    "Financial modelling",
+    "Storytelling"
+   ],
+   "why": "your CV mentions <b>financial modelling</b> at <b>Mediobanco</b>",
+   "title": "Market entry",
+   "viz": "<div style=\"display:flex;justify-content:space-between;font-size:11.5px;color:var(--t2)\"><span>Spain · digital banking market</span><span style=\"font-weight:600;color:var(--t1)\">3 scenarios</span></div><div style=\"display:flex;flex-direction:column;gap:7px;margin-top:10px;font-size:11.5px\"><div style=\"display:grid;grid-template-columns:70px 1fr 60px;align-items:center;gap:10px\"><span style=\"color:var(--t2)\">Market</span><span style=\"height:12px;border-radius:4px;background:#D6E7FB;width:100%\"></span><span style=\"text-align:right;font-weight:600\">€4.2B</span></div><div style=\"display:grid;grid-template-columns:70px 1fr 60px;align-items:center;gap:10px\"><span style=\"color:var(--t2)\">Reachable</span><span style=\"height:12px;border-radius:4px;background:#A9CDF7;width:46%\"></span><span style=\"text-align:right;font-weight:600\">€1.9B</span></div><div style=\"display:grid;grid-template-columns:70px 1fr 60px;align-items:center;gap:10px\"><span style=\"color:var(--t2)\">Year 1</span><span style=\"height:12px;border-radius:4px;background:#0071E3;width:9%\"></span><span style=\"text-align:right;font-weight:600\">€0.4B</span></div></div>",
+   "lean": [
+    -3,
+    1,
+    -2,
+    3
+   ]
+  },
+  {
+   "tags": [
+    "Operations",
+    "Payments"
+   ],
+   "time": "A Monday, 14:00",
+   "h": "A partner bank is delaying 2% of payouts.",
+   "p": "You map the process step by step, call the partner ops team and agree a fix with a clear owner and deadline.",
+   "sk": [
+    "Process mapping",
+    "Negotiation",
+    "Follow-through"
+   ],
+   "why": "your CV mentions a <b>product internship</b> in <b>payments</b>",
+   "title": "Payout issue",
+   "viz": "<div style=\"font-size:11.5px;color:var(--t2)\">Payout flow · where 2% get stuck</div><div style=\"display:flex;align-items:center;gap:6px;margin-top:12px;font-size:11.5px;font-weight:560\"><span style=\"flex:1;text-align:center;border-radius:8px;padding:9px 4px;background:#fff;border:1px solid var(--line)\">Request</span><span style=\"color:#C7C7CC\">→</span><span style=\"flex:1;text-align:center;border-radius:8px;padding:9px 4px;background:#fff;border:1px solid var(--line)\">Checks</span><span style=\"color:#C7C7CC\">→</span><span style=\"flex:1;text-align:center;border-radius:8px;padding:9px 4px;background:#FCEDEC;border:1px solid #F3C9C5;color:#C4302B\">Partner bank</span><span style=\"color:#C7C7CC\">→</span><span style=\"flex:1;text-align:center;border-radius:8px;padding:9px 4px;background:#fff;border:1px solid var(--line)\">Paid</span></div><div style=\"font-size:11px;color:var(--t3);margin-top:8px\">Average delay 26 h · owner needed</div>",
+   "lean": [
+    2,
+    3,
+    4,
+    1
+   ]
+  },
+  {
+   "tags": [
+    "Consulting",
+    "Client-facing"
+   ],
+   "time": "A Wednesday, 18:30",
+   "h": "The client wants the deck rewritten by tomorrow.",
+   "p": "You restructure 40 slides overnight with your manager, then present the new storyline at 9 am.",
+   "sk": [
+    "Slide writing",
+    "Client handling",
+    "Pace"
+   ],
+   "why": "your CV mentions <b>Mediobanco</b> and <b>business analysis</b>",
+   "title": "Client deck",
+   "viz": "<div style=\"display:flex;justify-content:space-between;font-size:11.5px;color:var(--t2)\"><span>Tonight</span><span style=\"font-weight:600;color:var(--t1)\">40 slides → 18</span></div><div style=\"display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:10px\"><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#0071E3;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i><i style=\"height:22px;border-radius:3px;background:#E5E5EA;display:block\"></i></div><div style=\"font-size:11px;color:var(--t3);margin-top:8px\">Review with manager 23:00 · client call 09:00</div>",
+   "lean": [
+    -2,
+    4,
+    2,
+    2
+   ]
+  }
+ ],
+ "history": [
+  [
+   "y",
+   "Pricing analysis"
+  ],
+  [
+   "n",
+   "Client audit"
+  ],
+  [
+   "y",
+   "Launch review"
+  ],
+  [
+   "n",
+   "Cold-call sales"
+  ],
+  [
+   "y",
+   "Market sizing"
+  ]
+ ],
+ "sliders": [
+  [
+   "Structured",
+   "Open-ended",
+   70,
+   "r"
+  ],
+  [
+   "Solo focus",
+   "Team",
+   58,
+   ""
+  ],
+  [
+   "Steady pace",
+   "Fast feedback",
+   78,
+   "r"
+  ],
+  [
+   "Depth",
+   "Variety",
+   34,
+   "l"
+  ]
+ ]
+}

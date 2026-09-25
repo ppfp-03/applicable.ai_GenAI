@@ -1,0 +1,213 @@
+/* Applicable.ai — base stylesheet.
+ *
+ * Three layers, in this order:
+ *   1. Streamlit reset: remove the framework chrome and lay the page out on
+ *      the mockups' 1600 px stage.
+ *   2. The classes every mockup shares (.gl, .btn, .chip, .tile, .pan ...),
+ *      copied from the approved HTML so the markup can be pasted across.
+ *   3. Native widget skins: st.button, st.page_link, st.popover, inputs and
+ *      toasts restyled to look like the mockup controls they stand in for.
+ *
+ * Colours are written exactly as the mockups have them. ui/palette.py maps
+ * every blue to the orange scale when the file is published, so this file
+ * never needs to be edited to follow the palette.
+ */
+
+@font-face{font-family:"Inter";src:url("inter-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Inter";src:url("inter-latin-ext-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+:root{--blue:#0071E3;--blueBg:#EAF3FE;--green:#248A3D;--greenBg:#EAF6EC;--amber:#B25E09;--amberBg:#FDF3E4;--red:#C4302B;--redBg:#FCEDEC;--t1:#1D1D1F;--t2:#6E6E73;--t3:#8E8E93;--line:#E5E5EA;--line2:#EFEFF2}
+
+/* ───────────────────────── 1 · Streamlit reset ───────────────────────── */
+
+html,body,.stApp{font-family:"Inter",-apple-system,sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
+.stApp{background:#F5F6F8}
+header[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecoration"],[data-testid="stSidebar"],[data-testid="stSidebarCollapsedControl"],footer,#MainMenu{display:none!important}
+[data-testid="stStatusWidget"]{opacity:.6}
+.stMain{overflow-x:hidden}
+.stMain .block-container,.stMainBlockContainer{position:relative;width:1600px!important;max-width:1600px!important;min-width:1600px;padding:18px 40px 26px!important;margin:0 auto}
+/* The mockups space everything themselves: no framework gaps. */
+.stMainBlockContainer [data-testid="stVerticalBlock"],.stMainBlockContainer [data-testid="stHorizontalBlock"]{gap:0}
+.stMainBlockContainer [data-testid="stElementContainer"]{margin:0}
+/* Layout wrappers get out of the way, so a keyed container is a direct
+ * child of its parent and flex/absolute rules apply as written. */
+.stMainBlockContainer [data-testid="stLayoutWrapper"]{display:contents}
+.stMainBlockContainer [data-testid="stVerticalBlock"] [data-testid="stVerticalBlock"]{flex:0 0 auto;min-width:0}
+[data-testid="stMarkdownContainer"],.stMarkdown{font-family:inherit;font-size:inherit;line-height:normal;color:inherit;letter-spacing:normal}
+[data-testid="stMarkdownContainer"] p{margin:0;font-size:inherit;line-height:inherit}
+/* Streamlit pulls every Markdown block up by 1rem; our markup spaces itself. */
+.stMainBlockContainer [data-testid="stMarkdownContainer"]{margin-bottom:0!important}
+.stMarkdown [data-testid="stMarkdownContainer"] > div{margin:0}
+.x,.x *{box-sizing:border-box;margin:0;padding:0}
+.x{font-size:16px;line-height:normal}
+
+.x i{font-style:normal}
+.x mark{background:#FFF1D6;color:var(--t1);border-radius:4px;padding:0 3px}
+/* Invisible helpers: scripts and zero-height anchors. */
+[class*="st-key-aa-js"],[class*="st-key-aa-js"] *{height:0!important;min-height:0!important;overflow:hidden;margin:0!important;padding:0!important}
+
+/* Background glow, pinned to the stage like the mockups' .bg layer. */
+.bgx{position:absolute;left:0;top:0;width:1600px;height:1000px;overflow:hidden;z-index:0;pointer-events:none}
+.bgx i{position:absolute;border-radius:50%;filter:blur(90px);display:block}
+.stMainBlockContainer [data-testid="stElementContainer"]:has(> .stMarkdown .bgx){position:absolute!important;left:0;top:0;width:1600px!important;height:0}
+.stMainBlockContainer > div > [data-testid="stVerticalBlock"]{position:relative;z-index:1}
+
+/* ───────────────────────── 2 · Shared mockup classes ───────────────────────── */
+
+.gl{background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.85);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 8px 28px rgba(28,40,64,.07),0 0 0 .5px rgba(0,0,0,.05)}
+.brand{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:650;letter-spacing:-0.015em;width:260px}
+.mark{width:28px;height:28px;border-radius:8px;background:#1D1D1F;display:grid;place-items:center}
+.av{width:38px;height:38px;border-radius:50%;background:#1D1D1F;color:#fff;font-size:13px;font-weight:650;display:grid;place-items:center}
+.hi-l h1{font-size:30px;font-weight:700;letter-spacing:-0.035em;line-height:1.2;color:var(--t1);padding:0}
+.hi-l .m{font-size:13px;color:var(--t2);margin-top:4px}
+.hi-l .m b{color:var(--t1);font-weight:600}
+.syn{font-size:10px;font-weight:650;letter-spacing:.06em;color:var(--t3);border:1px solid #D1D1D6;border-radius:5px;padding:1px 5px;margin-right:8px}
+.btn{height:36px;padding:0 18px;border-radius:999px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,.9);box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.05);white-space:nowrap}
+.btn.p{background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(0,113,227,.28)}
+.chip{font-size:12px;font-weight:600;border-radius:999px;padding:6px 12px;background:rgba(0,0,0,.045);white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.chip.u{background:var(--amberBg);color:var(--amber)}.chip.g{background:var(--greenBg);color:var(--green)}.chip.r{background:var(--redBg);color:var(--red)}.chip.b{background:var(--blueBg);color:var(--blue)}
+.kk{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:620;color:var(--t2)}
+.kk i{width:8px;height:8px;border-radius:50%;display:block}
+.card{border-radius:26px;background:rgba(255,255,255,.93);box-shadow:0 1px 0 #fff inset,0 20px 50px rgba(28,40,64,.12),0 0 0 .5px rgba(0,0,0,.06)}
+.sh{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sh b{font-size:14px;font-weight:650;letter-spacing:-0.012em}.sh div>span{font-size:12px;color:var(--t3);margin-left:8px}
+.tile{border-radius:18px;background:rgba(255,255,255,.8);box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05);transition:box-shadow .25s,background .25s}
+.tile.sel{background:#fff;box-shadow:0 0 0 2px var(--blue),0 12px 30px rgba(0,113,227,.14)}
+.lg{border-radius:10px;color:#fff;display:grid;place-items:center;font-weight:700;flex:none;letter-spacing:-0.02em}
+.lab{font-size:12px;color:var(--t3);font-weight:620;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.lab span{font-weight:500}
+.ci{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--greenBg);flex:none}.ci.a{background:var(--amberBg)}.ci.r{background:var(--redBg)}
+.srct{font-size:10px;font-weight:650;letter-spacing:.06em;color:var(--t3);border:1px solid #D1D1D6;border-radius:5px;padding:1px 5px}
+.pan h3{font-size:20px;font-weight:680;letter-spacing:-0.025em;display:flex;align-items:center;gap:10px;margin-top:6px;line-height:1.2;padding:0;color:var(--t1)}
+.box{border-radius:16px;background:rgba(255,255,255,.8);box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05);overflow:hidden}
+.lnk{color:var(--blue);font-weight:600;white-space:nowrap}
+.x code{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:11.5px;background:rgba(0,0,0,.05);border-radius:5px;padding:1px 5px;color:var(--t1)}
+
+/* Glass panels made of native containers. A keyed container whose key
+ * starts with "gl-" is a glass section; "pan-" a glass side panel; "card-"
+ * the white hero card. Their children are laid out by the page stylesheet. */
+[class*="st-key-gl-"],[class*="st-key-pan-"]{background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.85);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 8px 28px rgba(28,40,64,.07),0 0 0 .5px rgba(0,0,0,.05);border-radius:22px}
+[class*="st-key-gl-"]{padding:16px 20px}
+[class*="st-key-pan-"]{padding:20px 22px;gap:16px!important}
+/* A keyed container named "end-..." is pushed to the bottom of its column. */
+[class*="st-key-end-"]{margin-top:auto!important}
+[class*="st-key-card-"]{border-radius:26px;background:rgba(255,255,255,.97);box-shadow:0 1px 0 #fff inset,0 20px 50px rgba(28,40,64,.12),0 0 0 .5px rgba(0,0,0,.06)}
+
+/* ───────────────────────── Top bar and page header ───────────────────────── */
+
+.st-key-topbar{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;height:48px;flex-wrap:nowrap!important}
+.st-key-topbar > div{flex:none;width:auto!important}
+.st-key-topbar > [data-testid="stElementContainer"]:first-child{width:260px!important}
+/* The native capsule: tabs are st.page_link. With ui/js/nav.js running it is
+ * hidden (kept for layout and as the links the script clicks) and the
+ * floating .aa-nav below is what the user sees. */
+.st-key-cap{display:flex!important;flex-direction:row!important;gap:2px!important;padding:4px;border-radius:999px;flex-wrap:nowrap!important;width:auto!important;border:0;background:linear-gradient(180deg,rgba(255,255,255,.46),rgba(255,255,255,.24));backdrop-filter:blur(22px) saturate(200%) brightness(1.04);-webkit-backdrop-filter:blur(22px) saturate(200%) brightness(1.04);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.45),inset 0 0 14px rgba(255,255,255,.35),0 10px 30px rgba(28,40,64,.10),0 1px 3px rgba(28,40,64,.06),0 0 0 .5px rgba(0,0,0,.06)}
+html.aa-nav-float .st-key-cap{visibility:hidden}
+.st-key-cap [data-testid="stElementContainer"],[class*="st-key-nav"]{width:auto!important;flex:none}
+.st-key-cap .stPageLink a{font-family:inherit;font-size:13px;font-weight:560;color:#3A3A3C;padding:8px 18px;border-radius:999px;display:flex;align-items:center;gap:6px;transition:background .2s,box-shadow .2s;background:transparent;margin:0;line-height:normal;height:auto;text-decoration:none}
+.st-key-cap .stPageLink a:hover{background:rgba(255,255,255,.55)}
+.st-key-cap .stPageLink,.st-key-cap .stPageLink > div,.st-key-cap .stPageLink a span{overflow:visible;max-width:none;width:auto}
+.st-key-cap .stPageLink a span,.st-key-cap .stPageLink a p{font-size:13px;font-weight:560;color:inherit;line-height:normal}
+.st-key-cap .stPageLink a em{font-style:normal;font-size:11px;color:var(--t3);font-weight:560;margin-left:6px}
+[class*="st-key-nav-on"] .stPageLink a{background:#fff!important;color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.08),0 0 0 .5px rgba(0,0,0,.05)}
+
+/* The floating capsule (ui/js/nav.js): liquid glass, a thin bright sheet over
+ * a strong blur, lit on its rim. It follows the page, then sticks and compacts. */
+.aa-nav{position:fixed;z-index:990;transform:translateX(-50%);transform-origin:top center;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s;font-family:"Inter",sans-serif}
+.aa-nav.stuck{transform:translateX(-50%) scale(.94)}
+.aa-nav.gone{opacity:0;pointer-events:none}
+.aa-cap{position:relative;isolation:isolate;display:flex;gap:2px;padding:4px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.46),rgba(255,255,255,.24));backdrop-filter:blur(22px) saturate(200%) brightness(1.04);-webkit-backdrop-filter:blur(22px) saturate(200%) brightness(1.04);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.45),inset 0 0 14px rgba(255,255,255,.35),0 10px 30px rgba(28,40,64,.10),0 1px 3px rgba(28,40,64,.06),0 0 0 .5px rgba(0,0,0,.06);transition:background .35s,box-shadow .35s,backdrop-filter .35s}
+.aa-nav.stuck .aa-cap{background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.5));backdrop-filter:blur(30px) saturate(210%) brightness(1.05);-webkit-backdrop-filter:blur(30px) saturate(210%) brightness(1.05);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.45),inset 0 0 14px rgba(255,255,255,.35),0 14px 36px rgba(28,40,64,.16),0 2px 6px rgba(28,40,64,.08),0 0 0 .5px rgba(0,0,0,.08)}
+.aa-cap::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:2;background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(255,255,255,0) 38%,rgba(255,255,255,0) 62%,rgba(255,255,255,.55));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.aa-tab{position:relative;z-index:1;font-size:13px;font-weight:560;line-height:normal;color:#3A3A3C;padding:8px 18px;border-radius:999px;display:flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap;user-select:none;-webkit-user-drag:none;transition:color .25s}
+.aa-tab:hover,.aa-tab.on{color:var(--t1)}
+.aa-tab:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.aa-tab em{font-style:normal;font-size:11px;color:var(--t3);font-weight:560;margin-left:6px}
+.aa-lens{position:absolute;z-index:0;border-radius:999px;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.8));box-shadow:inset 0 1px 0 #fff,inset 0 -1px 1px rgba(0,0,0,.04),0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(28,40,64,.08),0 0 0 .5px rgba(0,0,0,.05);transform:scale(1);transition:transform .4s cubic-bezier(.34,1.56,.64,1),background .25s,box-shadow .25s,opacity .2s}
+/* Pressed or dragged, the lens swells and clears, like a drop of glass. */
+.aa-lens.press{transform:scale(1.12,1.18);background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.22));backdrop-filter:blur(1.5px) saturate(220%) brightness(1.06);-webkit-backdrop-filter:blur(1.5px) saturate(220%) brightness(1.06);box-shadow:inset 0 1px 1px rgba(255,255,255,.95),inset 0 -1px 2px rgba(255,255,255,.6),inset 0 0 10px rgba(255,255,255,.55),0 8px 22px rgba(28,40,64,.14),0 0 0 .5px rgba(0,0,0,.08)}
+
+/* The tab host (ui/tabs.py): nav.js names the tab in front on <html>. */
+html[data-tab]:not([data-tab="home"]) .st-key-tab-home{display:none!important}
+html[data-tab]:not([data-tab="matches"]) .st-key-tab-matches{display:none!important}
+html[data-tab]:not([data-tab="applications"]) .st-key-tab-applications{display:none!important}
+html[data-tab]:not([data-tab="explore"]) .st-key-tab-explore{display:none!important}
+html[data-tab]:not([data-tab="profile"]) .st-key-tab-profile{display:none!important}
+.stMainBlockContainer [data-testid="stElementContainer"]:has(> .stMarkdown .aa-tabs){display:none}
+
+/* Changing page: the content fades out, and back in once the new page has
+ * finished drawing. The background glow stays. */
+.stMainBlockContainer > [data-testid="stVerticalBlock"] > [data-testid="stLayoutWrapper"] > :not(.st-key-topbar),.stMainBlockContainer > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"]:not(:has(.bgx)){transition:opacity .32s ease,transform .45s cubic-bezier(.2,.8,.2,1)}
+html.aa-leaving .stMainBlockContainer > [data-testid="stVerticalBlock"] > [data-testid="stLayoutWrapper"] > :not(.st-key-topbar),html.aa-leaving .stMainBlockContainer > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"]:not(:has(.bgx)){opacity:0;transform:translateY(8px);transition:opacity .14s ease,transform .14s ease}
+/* While anything is dragged (lens, carousel, strips): no text selection. */
+html.aa-dragging,html.aa-dragging *{user-select:none!important;-webkit-user-select:none!important;cursor:grabbing!important}
+.st-key-tr{display:flex!important;flex-direction:row!important;align-items:center;gap:10px!important;width:260px!important;justify-content:flex-end;flex-wrap:nowrap!important}
+.st-key-tr [data-testid="stElementContainer"],.st-key-tr .stPopover{width:auto!important;flex:none}
+
+.st-key-hi,[class*="st-key-hi--"]{display:flex!important;flex-direction:row!important;align-items:flex-end;justify-content:space-between;margin-top:22px;flex-wrap:nowrap!important}
+.st-key-hi > div,[class*="st-key-hi--"] > div{width:auto!important}
+.st-key-acts,[class*="st-key-acts--"]{margin-left:auto;flex:none!important;display:flex!important;flex-direction:row!important;gap:8px!important;align-items:center;width:auto!important;flex-wrap:nowrap!important}
+.st-key-acts [data-testid="stElementContainer"],[class*="st-key-acts--"] [data-testid="stElementContainer"]{width:auto!important}
+
+/* ───────────────────────── 3 · Native widget skins ───────────────────────── */
+
+/* Buttons are the mockup .btn: white pill, orange when primary. */
+.stButton button,.stPopover > div > button,.stPopover button[data-testid^="stBaseButton"],.stDownloadButton button,.stLinkButton a,.stFormSubmitButton button{font-family:inherit;height:36px;min-height:36px;padding:0 18px;border-radius:999px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,.9);border:0;box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.05);white-space:nowrap;color:var(--t1);line-height:normal;transition:opacity .2s,background .2s,color .2s,filter .2s}
+.stButton button p,.stPopover button p,.stDownloadButton button p,.stLinkButton a p,.stFormSubmitButton button p{font-size:inherit;font-weight:inherit;line-height:inherit;margin:0}
+.stButton button:hover,.stPopover button:hover,.stLinkButton a:hover{background:#fff;color:var(--t1);border:0}
+.stButton button:focus:not(:active),.stPopover button:focus:not(:active){border:0;color:var(--t1)}
+.stButton button:focus-visible,.stPopover button:focus-visible{box-shadow:0 0 0 2px var(--blue)}
+.stButton button[data-testid="stBaseButton-primary"],.stPopover button[kind="primary"],.stPopover button[data-testid="stBaseButton-primary"],.stFormSubmitButton button[data-testid="stBaseButton-primaryFormSubmit"]{background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(0,113,227,.28)}
+.stButton button[data-testid="stBaseButton-primary"]:hover,.stPopover button[kind="primary"]:hover,.stPopover button[kind="primary"]:focus:not(:active),.stPopover button[data-testid="stBaseButton-primary"]:hover{background:var(--blue);color:#fff;filter:brightness(.96)}
+.stButton button[data-testid="stBaseButton-primary"]:focus:not(:active){color:#fff}
+.stButton button:disabled,.stButton button[disabled]{opacity:.45;background:rgba(255,255,255,.9);color:var(--t1);cursor:default}
+.stButton button[data-testid="stBaseButton-primary"]:disabled{background:var(--blue);color:#fff}
+.stButton button[data-testid="stBaseButton-tertiary"]{background:transparent;box-shadow:none;padding:0;height:auto;min-height:0;color:var(--blue);font-weight:600}
+/* Streamlit prints a shortcut's key after the label; the mockups draw their own. */
+.stButton button kbd{display:none}
+/* Popover chevrons are not part of the mockups. */
+.stPopover button [data-testid="stIconMaterial"]:last-child{display:none}
+/* Keyboard hints drawn after a button label, as in the mockups (.kbd). */
+.kbd{font-size:11px;font-weight:600;color:var(--t3);border-radius:6px;min-width:22px;height:22px;display:inline-grid;place-items:center;padding:0 6px;background:rgba(0,0,0,.05)}
+
+/* Invisible click targets. A keyed button whose key starts with "ov-"
+ * covers its whole parent container (keyed "hit-..."): the markup shows the
+ * tile, the native button does the work. */
+[class*="st-key-hit-"]{position:relative;cursor:pointer}
+[class*="st-key-ov-"]{position:absolute!important;inset:0;width:100%!important;height:100%!important;z-index:4;margin:0!important}
+[class*="st-key-ov-"] > div,[class*="st-key-ov-"] .stButton{width:100%!important;height:100%!important}
+[class*="st-key-ov-"] button{width:100%!important;height:100%!important;opacity:0;padding:0;border-radius:inherit;cursor:pointer}
+
+/* Circular glass icon buttons (search, notifications, carousel arrows). */
+[class*="st-key-ib-"] button{width:38px;height:38px;min-height:38px;padding:0;border-radius:50%;background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.85);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 8px 28px rgba(28,40,64,.07),0 0 0 .5px rgba(0,0,0,.05)}
+[class*="st-key-ib-"] button img{width:15px!important;height:15px!important;max-width:none!important;display:block}
+[class*="st-key-ib-"] button [data-testid="stMarkdownContainer"],[class*="st-key-ib-"] button p{display:flex;align-items:center;justify-content:center}
+[class*="st-key-ib-"] button:hover{background:rgba(255,255,255,.85)}
+.st-key-ib-av button{background:#1D1D1F;border:0;color:#fff;font-size:13px;font-weight:650;box-shadow:none}
+.st-key-ib-av button:hover,.st-key-ib-av button:focus:not(:active){background:#1D1D1F;color:#fff}
+
+/* Text inputs and areas: soft white wells, orange focus ring. */
+.stTextArea textarea,.stTextInput input{font-family:inherit;font-size:12.5px;color:var(--t1);background:rgba(255,255,255,.8);border-radius:16px}
+.stTextArea [data-baseweb="textarea"],.stTextInput [data-baseweb="input"]{border:0;border-radius:16px;background:rgba(255,255,255,.8);box-shadow:0 0 0 .5px rgba(0,0,0,.07)}
+.stTextArea [data-baseweb="textarea"]:focus-within,.stTextInput [data-baseweb="input"]:focus-within{box-shadow:0 0 0 2px var(--blue);border:0}
+.stTextArea label,.stTextInput label,.stSelectbox label,.stFileUploader label{font-family:inherit}
+
+/* Popovers open as glass sheets. */
+[data-testid="stPopoverBody"]{border-radius:18px;border:0;box-shadow:0 20px 50px rgba(28,40,64,.16),0 0 0 .5px rgba(0,0,0,.08);background:rgba(255,255,255,.97);font-family:"Inter",sans-serif}
+
+/* Toasts are the mockups' dark pill, bottom centre. */
+[data-testid="stToastContainer"]{left:50%!important;right:auto!important;top:auto!important;bottom:36px!important;transform:translateX(-50%);align-items:center}
+[data-testid="stToast"]{background:rgba(29,29,31,.88)!important;color:#fff!important;border-radius:999px!important;padding:10px 18px!important;backdrop-filter:blur(20px);box-shadow:none!important;min-width:0!important;width:auto!important;max-width:none!important}
+[data-testid="stToast"] *{color:#fff!important;font-family:"Inter",sans-serif;font-size:13px!important;font-weight:560}
+[data-testid="stToast"] [data-testid="stToastDynamicIcon"],[data-testid="stToast"] button{display:none}
+
+/* Dialogs follow the glass card. */
+[data-testid="stDialog"] [role="dialog"]{border-radius:26px;font-family:"Inter",sans-serif}
+
+/* Pills and segmented controls: the mockups' chips and .seg capsules. */
+.stPills label,.stSegmentedControl label{display:none}
+.stPills [role="radiogroup"],.stPills [role="group"]{gap:8px}
+[data-testid="stButtonGroup"] button[data-variant="pills"]{font-family:inherit;font-size:12px;font-weight:600;border-radius:999px;padding:6px 12px;height:auto;min-height:0;background:rgba(0,0,0,.045);border:0;color:var(--t1);box-shadow:none}
+[data-testid="stButtonGroup"] button[data-variant="pills"] p{font-size:inherit;font-weight:inherit}
+[data-testid="stButtonGroup"] button[aria-checked="true"],[data-testid="stButtonGroup"] button[aria-pressed="true"],[data-testid="stButtonGroup"] button[data-selected="true"]{background:var(--blue);color:#fff}
+[data-testid="stButtonGroup"] button[aria-checked="true"] p,[data-testid="stButtonGroup"] button[aria-pressed="true"] p,[data-testid="stButtonGroup"] button[data-selected="true"] p{color:#fff}

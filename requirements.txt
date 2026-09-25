@@ -1,6 +1,9 @@
-streamlit
+streamlit>=1.46
 pydantic
 pypdf
+pytesseract
+pdf2image
+Pillow
 python-dotenv
-google-genai
+openai
 pytest
