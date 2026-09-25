@@ -149,6 +149,70 @@ def init() -> None:
     st.session_state.setdefault(EXTRACTION_ERROR, None)
 
 
+# ───────────────────────── Access (demo only) ─────────────────────────
+#
+# Sign-up and log-in are staged: nothing leaves the session and any input is
+# accepted. `stage` says where a visitor is in the first-run flow:
+# landing | signup | login → onboarding → tour → app.
+
+STAGE = "stage"
+USER = "user"
+
+#: The pages each stage may open (app.py sends everything else to the first).
+STAGE_PAGES = {
+    "landing": ("welcome",),
+    "signup": ("welcome",),
+    "login": ("welcome",),
+    "onboarding": ("onboarding",),
+}
+
+
+def stage() -> str:
+    """Where the visitor is in the first-run flow."""
+    return st.session_state.get(STAGE, "landing")
+
+
+def set_stage(name: str) -> None:
+    st.session_state[STAGE] = name
+
+
+def user() -> dict:
+    """The signed-in user: {"name", "email"}. The persona's until sign-up names one."""
+    p = data().profile
+    return st.session_state.get(USER) or {"name": p["name"], "email": ""}
+
+
+def initials(name: str) -> str:
+    """"Giulia Rossi" → "GR"."""
+    return "".join(w[0] for w in name.split()[:2]).upper() or "?"
+
+
+def _fresh() -> None:
+    """Forget the whole session, then set the defaults again."""
+    st.session_state.clear()
+    init()
+
+
+def sign_up(name: str, email: str) -> None:
+    """A new account: no answers, no applications, straight into onboarding."""
+    _fresh()
+    st.session_state[USER] = {"name": name.strip(), "email": email.strip()}
+    st.session_state[ANSWERS] = {"uk_work": None}
+    st.session_state[APPS] = []
+    set_stage("onboarding")
+
+
+def log_in() -> None:
+    """A returning user: the demo profile, already set up. No tour."""
+    _fresh()
+    set_stage("app")
+
+
+def log_out() -> None:
+    _fresh()
+    set_stage("landing")
+
+
 def answers() -> dict:
     """The user's current answers to our questions."""
     return st.session_state.get(ANSWERS, {"uk_work": "yes"})
