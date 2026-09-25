@@ -1,0 +1,197 @@
+{
+  "catalogue_version": "0.1-internal",
+  "contract_status": "internal-not-frozen",
+  "constraints": [
+    {
+      "constraint_id": "HC_LOCATION",
+      "label": "Location",
+      "hard_only_when": "the job location and candidate restriction are sufficiently explicit",
+      "trigger": "job_location",
+      "answer_keys": [],
+      "parameter_kind": null,
+      "settings": {},
+      "rule_version": "0.1"
+    },
+    {
+      "constraint_id": "HC_WORK_AUTH",
+      "label": "Work authorization",
+      "hard_only_when": "the job explicitly requires work authorization and the candidate declared a country-specific fact",
+      "trigger": "requirement",
+      "answer_keys": [],
+      "parameter_kind": "work_auth",
+      "settings": {},
+      "rule_version": "0.1"
+    },
+    {
+      "constraint_id": "HC_STUDENT_STATUS",
+      "label": "Student status",
+      "hard_only_when": "the programme explicitly requires a defined status",
+      "trigger": "requirement",
+      "answer_keys": [
+        {
+          "answer_key": "current_status",
+          "answer_type": "single_choice",
+          "allowed_values": ["enrolled_student", "recent_graduate", "neither"],
+          "description": "Whether the candidate is currently enrolled, a recent graduate, or neither.",
+          "approval_ref": null
+        }
+      ],
+      "parameter_kind": "student_status",
+      "settings": {},
+      "rule_version": "0.1"
+    },
+    {
+      "constraint_id": "HC_GRAD_WINDOW",
+      "label": "Graduation window",
+      "hard_only_when": "the posting states a mandatory graduation window",
+      "trigger": "requirement",
+      "answer_keys": [
+        {
+          "answer_key": "expected_graduation_date",
+          "answer_type": "date",
+          "allowed_values": null,
+          "description": "Actual or expected graduation date of the relevant degree.",
+          "approval_ref": null
+        }
+      ],
+      "parameter_kind": "grad_window",
+      "settings": {},
+      "rule_version": "0.1"
+    },
+    {
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "label": "Degree level",
+      "hard_only_when": "the posting makes a level mandatory, not preferred",
+      "trigger": "requirement",
+      "answer_keys": [
+        {
+          "answer_key": "degree_level",
+          "answer_type": "single_choice",
+          "allowed_values": ["bachelor", "master", "phd"],
+          "description": "Highest degree level held or currently being pursued.",
+          "approval_ref": null
+        },
+        {
+          "answer_key": "degree_status",
+          "answer_type": "single_choice",
+          "allowed_values": ["completed", "in_progress"],
+          "description": "Whether that degree is completed or still in progress.",
+          "approval_ref": null
+        }
+      ],
+      "parameter_kind": "degree_level",
+      "settings": {
+        "in_progress_policy": "undecided"
+      },
+      "rule_version": "0.1"
+    },
+    {
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "label": "Field of study",
+      "hard_only_when": "the posting makes the field mandatory, not merely preferred",
+      "trigger": "requirement",
+      "answer_keys": [
+        {
+          "answer_key": "field_of_study",
+          "answer_type": "single_choice",
+          "allowed_values": [
+            "economics",
+            "finance",
+            "management",
+            "business_administration",
+            "accounting",
+            "mathematics",
+            "statistics",
+            "engineering",
+            "computer_science",
+            "law",
+            "other"
+          ],
+          "description": "Field of the highest degree held or being pursued.",
+          "approval_ref": null
+        }
+      ],
+      "parameter_kind": "field_of_study",
+      "settings": {},
+      "rule_version": "0.1"
+    },
+    {
+      "constraint_id": "HC_LANGUAGE",
+      "label": "Language",
+      "hard_only_when": "the posting states a required language and proficiency level clearly",
+      "trigger": "requirement",
+      "answer_keys": [
+        {
+          "answer_key": "level_en",
+          "answer_type": "single_choice",
+          "allowed_values": ["A1", "A2", "B1", "B2", "C1", "C2", "native"],
+          "description": "English proficiency (CEFR or native).",
+          "approval_ref": null
+        },
+        {
+          "answer_key": "level_it",
+          "answer_type": "single_choice",
+          "allowed_values": ["A1", "A2", "B1", "B2", "C1", "C2", "native"],
+          "description": "Italian proficiency (CEFR or native).",
+          "approval_ref": null
+        },
+        {
+          "answer_key": "level_de",
+          "answer_type": "single_choice",
+          "allowed_values": ["A1", "A2", "B1", "B2", "C1", "C2", "native"],
+          "description": "German proficiency (CEFR or native).",
+          "approval_ref": null
+        },
+        {
+          "answer_key": "level_fr",
+          "answer_type": "single_choice",
+          "allowed_values": ["A1", "A2", "B1", "B2", "C1", "C2", "native"],
+          "description": "French proficiency (CEFR or native).",
+          "approval_ref": null
+        },
+        {
+          "answer_key": "level_es",
+          "answer_type": "single_choice",
+          "allowed_values": ["A1", "A2", "B1", "B2", "C1", "C2", "native"],
+          "description": "Spanish proficiency (CEFR or native).",
+          "approval_ref": null
+        },
+        {
+          "answer_key": "level_nl",
+          "answer_type": "single_choice",
+          "allowed_values": ["A1", "A2", "B1", "B2", "C1", "C2", "native"],
+          "description": "Dutch proficiency (CEFR or native).",
+          "approval_ref": null
+        }
+      ],
+      "parameter_kind": "language",
+      "settings": {},
+      "rule_version": "0.1"
+    },
+    {
+      "constraint_id": "HC_MIN_EXPERIENCE",
+      "label": "Minimum experience",
+      "hard_only_when": "a numeric or clearly bounded minimum is explicitly mandatory and approved semantics exist",
+      "trigger": "requirement",
+      "answer_keys": [
+        {
+          "answer_key": "has_corporate_finance_experience",
+          "answer_type": "boolean",
+          "allowed_values": null,
+          "description": "Whether the candidate has Corporate Finance experience.",
+          "approval_ref": "D-040"
+        },
+        {
+          "answer_key": "prior_experience_months",
+          "answer_type": "integer",
+          "allowed_values": null,
+          "description": "Total months of prior professional experience, internships included.",
+          "approval_ref": null
+        }
+      ],
+      "parameter_kind": "min_experience",
+      "settings": {},
+      "rule_version": "0.1"
+    }
+  ]
+}
