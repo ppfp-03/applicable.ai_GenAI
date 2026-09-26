@@ -491,6 +491,8 @@
 .p-hl .tg{border:0;border-radius:999px;padding:2px 8px;box-shadow:0 0 0 .5px rgba(0,0,0,.1)}
 .p-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .p-edit{gap:6px;flex:none}
+/* One-line entries must not widen their column: cut them, the tooltip has the rest. */
+.p-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .p-e{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .p-e + .p-e{margin-top:4px}
 /* 3a preferences */
