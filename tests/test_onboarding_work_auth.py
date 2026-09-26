@@ -4,6 +4,7 @@ They are declared by the user in the Edit profile dialog, for the countries
 listed in config/markets.json. Until they are, no later step opens.
 """
 
+import json
 from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
@@ -14,6 +15,7 @@ from tests.test_candidate_extraction import FakeModelClient, make_cv, make_field
 
 ONBOARDING = str(Path(__file__).resolve().parents[1] / "views" / "onboarding.py")
 EU = ["IT", "ES", "FR", "DE", "NL", "LU", "DK", "IE"]
+STORIES = json.loads((Path(__file__).resolve().parents[1] / "data" / "stories.json").read_text("utf-8"))["stories"]
 
 
 def at_step2(declared=None, cv=False, step="2"):
@@ -157,7 +159,7 @@ def test_confirming_after_the_declaration_moves_on() -> None:
     at = at_step2(declared={"authorized": ["GB"], "sponsorship": []})
     at.button(key="next").click().run()
     assert not at.exception
-    assert at.session_state["ob_step"] == "3a"
+    assert at.session_state["ob_step"] == "3b"  # Explore is the first step 3 screen
 
 
 def test_the_editor_reopens_on_the_saved_declaration() -> None:
@@ -242,7 +244,7 @@ def test_returning_after_save_and_exit_still_requires_the_declaration() -> None:
     assert not at.exception
     assert at.session_state["ob_step"] == "2"
     assert at.button(key="next").disabled
-    at.button(key="oo-st5").click().run()
+    at.button(key="oo-st3").click().run()  # later pills stay hidden until Explore is done
     assert at.session_state["ob_step"] == "2"
 
 
@@ -258,6 +260,7 @@ def at_step(step, authorized, sponsorship):
     answer(editor(at), authorized, sponsorship)
     at.session_state["ob_step"] = step
     at.session_state["ob_tick"] = 5  # the shortlist animation has finished
+    at.session_state["ob_swipes"] = ["r"] * len(STORIES)  # Explore done: every step pill is shown
     at.run()
     assert not at.exception
     return at

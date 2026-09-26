@@ -114,6 +114,24 @@ class ExtractedFact(BaseModel):
     )
 
 
+class ExtractedLanguage(BaseModel):
+    """One human language the CV states, with the level as the CV writes it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    language: str = Field(
+        description="ISO 639-1 code of the language, in lower case, e.g. 'en' or 'zh'."
+    )
+    level: str = Field(
+        description="The proficiency exactly as the CV states it, e.g. 'C1', "
+        "'HSK 4', 'JLPT N2', 'Fluent' or 'Native'; empty when none is stated."
+    )
+    quote: str = Field(
+        description="A passage copied verbatim from the CV that states the "
+        "language and its level."
+    )
+
+
 class ExtractedFields(BaseModel):
     """What a model is asked to produce from a CV -- and nothing more.
 
@@ -128,6 +146,7 @@ class ExtractedFields(BaseModel):
     skills: list[ExtractedFact]
     education: list[ExtractedFact]
     experience: list[ExtractedFact]
+    languages: list[ExtractedLanguage]
 
 
 class ExtractedJobFact(BaseModel):

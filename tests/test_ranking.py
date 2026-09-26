@@ -9,6 +9,8 @@ the mockups assumed a permit nobody declared: sponsoring Singapore roles are
 
 from __future__ import annotations
 
+import pytest
+
 from core import ranking, store
 
 
@@ -66,3 +68,43 @@ def test_movement_after_yes():
 def test_excluded_roles_are_never_ranked():
     ids = {v.id for v in store.ranked({"uk_work": "yes"}, include_new=True)}
     assert "deutsch-shanghai" not in ids
+
+
+# --- preference fit from confirmed preferences (D-045) ----------------------
+
+PREFS = [
+    {"field": "role_family", "values": ["Product analytics"], "level": "important"},
+    {"field": "industry", "values": ["Fintech"], "level": "must"},
+    {"field": "city", "values": ["London", "Singapore"], "level": "nice"},
+    {"field": "mode", "values": ["Hybrid"], "level": "none"},
+]
+
+
+def test_preference_fit_weighs_each_level():
+    role = {"role_family": "Product analytics", "industry": "Banking", "city": "London", "mode": "Hybrid"}
+    # (1 + 0.5) / (1 + 1.5 + 0.5 + 0): "Don't mind" weighs nothing, even when met.
+    assert ranking.preference_fit(role, PREFS) == (50, "Product analytics · London")
+
+
+def test_a_missed_must_have_lowers_the_fit_but_never_excludes():
+    miss = {"role_family": "Strategy", "industry": "Banking", "city": "Basel", "mode": "Onsite"}
+    assert ranking.preference_fit(miss, PREFS) == (0, "None of your preferences")
+    hit = {"role_family": "Strategy", "industry": "Fintech", "city": "Basel", "mode": "Onsite"}
+    assert ranking.preference_fit(hit, PREFS)[0] == 50  # 1.5 / 3
+
+
+def test_preference_fit_needs_a_preference_with_weight():
+    with pytest.raises(ValueError):
+        ranking.preference_fit({}, [dict(p, level="none") for p in PREFS])
+
+
+def test_confirmed_preferences_replace_the_roles_own_preference_fit(monkeypatch):
+    role = store.data().role("replai-pa")
+    before = store.view(role, {"uk_work": "yes"})
+    monkeypatch.setattr(store, "preferences", lambda: PREFS)
+    after = store.view(role, {"uk_work": "yes"})
+
+    assert before.factors["preference"] == [88, "Product role · London · hybrid"]
+    assert after.factors["preference"] == [100, "Product analytics · Fintech · London"]
+    assert after.factors["profile"] == before.factors["profile"]
+    assert round(after.raw - before.raw, 2) == round(0.25 * (100 - 88), 2)

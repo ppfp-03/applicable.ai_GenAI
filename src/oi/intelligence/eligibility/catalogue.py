@@ -9,6 +9,7 @@ itself lives in `rules/`; this file only describes it.
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
@@ -29,10 +30,61 @@ DEFAULT_CATALOGUE_PATH = (
 # Closed vocabularies shared by answer keys and job parameters.
 DEGREE_LEVELS = ("bachelor", "master", "phd")
 DEGREE_STATUSES = ("completed", "in_progress")
-CEFR_LEVELS = ("A1", "A2", "B1", "B2", "C1", "C2")
-LANGUAGE_LEVELS = CEFR_LEVELS + ("native",)
 STUDENT_STATUSES = ("enrolled_student", "recent_graduate", "neither")
 IN_PROGRESS_POLICIES = ("counts", "does_not_count", "undecided")
+
+#: Language proficiency scales, each ordered from lowest to highest level. A
+#: level keeps the scale it was stated on; scales are never converted.
+LanguageScale = Literal["CEFR", "HSK", "JLPT", "SELF"]
+LANGUAGE_SCALES: dict[str, tuple[str, ...]] = {
+    "CEFR": ("A1", "A2", "B1", "B2", "C1", "C2"),
+    "HSK": ("1", "2", "3", "4", "5", "6"),
+    "JLPT": ("N5", "N4", "N3", "N2", "N1"),
+    "SELF": ("fluent", "native"),
+}
+#: The constraint that language levels feed.
+LANGUAGE_CONSTRAINT_ID = "HC_LANGUAGE"
+
+
+def language_level_key(language: str) -> str:
+    """The HC_LANGUAGE answer key for one ISO 639-1 language code."""
+
+    return f"level_{language}"
+
+
+@dataclass(frozen=True)
+class LanguageLevel:
+    """One level on one scale, stored as "<SCALE>:<LEVEL>", e.g. "HSK:4"."""
+
+    scale: str
+    level: str
+
+    @classmethod
+    def parse(cls, value: object) -> "LanguageLevel | None":
+        """The level `value` encodes, or None when it is not a known level."""
+
+        if not isinstance(value, str):
+            return None
+        scale, _, level = value.partition(":")
+        if level not in LANGUAGE_SCALES.get(scale, ()):
+            return None
+        return cls(scale, level)
+
+    @property
+    def code(self) -> str:
+        return f"{self.scale}:{self.level}"
+
+    @property
+    def rank(self) -> int:
+        return LANGUAGE_SCALES[self.scale].index(self.level)
+
+    @property
+    def label(self) -> str:
+        """How the level reads in a reason: "C1", "HSK 4", "JLPT N2", "native"."""
+
+        return {"HSK": f"HSK {self.level}", "JLPT": f"JLPT {self.level}"}.get(
+            self.scale, self.level
+        )
 
 #: Rule-level settings each constraint accepts, with their allowed values.
 ALLOWED_SETTINGS: dict[str, dict[str, tuple[str, ...]]] = {

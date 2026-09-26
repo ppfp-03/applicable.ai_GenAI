@@ -17,13 +17,17 @@ from typing import Annotated, Literal, Union
 from pydantic import Field, Strict, model_validator
 
 from oi.contracts import ContractModel, CountryCode, NonEmptyStr
+from oi.intelligence.eligibility.catalogue import (
+    LANGUAGE_SCALES,
+    LanguageLevel,
+    LanguageScale,
+)
 
 DEFAULT_PARAMETERS_PATH = (
     Path(__file__).resolve().parents[4] / "config" / "eligibility" / "job_parameters.json"
 )
 
 DegreeLevel = Literal["bachelor", "master", "phd"]
-CefrLevel = Literal["A1", "A2", "B1", "B2", "C1", "C2"]
 StudentStatus = Literal["enrolled_student", "recent_graduate", "neither"]
 InProgressPolicy = Literal["counts", "does_not_count", "undecided"]
 EmployerSponsorship = Literal["offered", "not_offered", "not_stated"]
@@ -80,11 +84,22 @@ class FieldOfStudyParams(ContractModel):
 
 
 class LanguageParams(ContractModel):
-    """One required language (ISO 639-1) at a minimum CEFR level."""
+    """One required language (ISO 639-1) at a minimum level on one scale."""
 
     kind: Literal["language"]
     language: str = Field(pattern=r"^[a-z]{2}$")
-    min_level: CefrLevel
+    scale: LanguageScale
+    min_level: NonEmptyStr
+
+    @model_validator(mode="after")
+    def validate_level(self) -> "LanguageParams":
+        if self.min_level not in LANGUAGE_SCALES[self.scale]:
+            raise ValueError(f"'{self.min_level}' is not a level on the {self.scale} scale")
+        return self
+
+    @property
+    def required(self) -> LanguageLevel:
+        return LanguageLevel(self.scale, self.min_level)
 
 
 class MinExperienceParams(ContractModel):

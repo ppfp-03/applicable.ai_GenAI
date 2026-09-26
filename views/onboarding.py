@@ -1,6 +1,6 @@
 """Onboarding — seven steps from CV to a first shortlist (00_Onboarding.html).
 
-Upload CV → Profile → Preferences (describe, then explore by swiping) →
+Upload CV → Profile → Preferences (explore by swiping, then fine-tune) →
 Analysis → Shortlist → Clarify → Updated ranking.
 
 Every step renders the mockup's own markup (ui/onboarding_markup.py) with the
@@ -21,7 +21,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from core import clock, explore, store
+from core import clock, explore, ranking, store
 from oi.intelligence.extraction import extract_candidate
 from oi.io.pdf import PdfExtractionError, extract_pdf_text
 from oi.providers.kimi import KimiClient
@@ -41,8 +41,8 @@ SWIPE_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "swipe.js").read
 FLOW = [
     ("1", 1, "<b>Step 1 of 7</b> · Upload your CV", "Continue"),
     ("2", 2, "<b>Step 2 of 7</b> · Every field links back to your CV", "Confirm profile"),
-    ("3a", 3, "<b>Step 3 of 7</b> · Change anytime — your ranking updates instantly", "Find my roles"),
     ("3b", 3, "<b>Step 3 of 7</b> · Swipe or use ← ↑ → on your keyboard", "Continue"),
+    ("3a", 3, "<b>Step 3 of 7</b> · Only what you confirm here shapes your ranking", "Find my roles"),
     ("4", 4, "<b>Step 4 of 7</b> · Ranking your roles…", "View shortlist"),
     ("5", 5, "<b>Step 5 of 7</b> · Some of your top matches need one answer", "Answer 1 question"),
     ("6", 6, "<b>Step 6 of 7</b> · One answer updates one field", "Save answer"),
@@ -55,11 +55,12 @@ STEP_NAMES = ["Upload CV", "Profile", "Preferences", "Analysis", "Shortlist", "C
 #: step body (x, y, w, h). Measured from 00_Onboarding.html.
 TOP = [(355, 6, 119, 36), (476, 6, 93, 36), (570, 6, 128, 36), (700, 6, 105, 36),
        (807, 6, 104, 36), (914, 6, 93, 36), (1009, 6, 156, 36)]
-SEG_3A = [(33, 27, 104, 28), (139, 27, 98, 28)]
-IMP_Y = [391, 439, 487, 535, 583, 631, 680]
+SEG_3A = [(33, 27, 95, 28), (130, 27, 112, 28)]
+#: The Fine-tune table: first row's segment top, row pitch, segment lefts.
+IMP_Y0, IMP_DY = 189, 48
 IMP_X = [588, 697, 806, 915]
 ACTS_3B = [(422, 645, 61, 104), (505, 652, 49, 90), (576, 645, 72, 104)]
-SEG_3B = [(24, 4, 104, 26)]
+SEG_3B = [(24, 4, 95, 26), (121, 4, 111, 26)]
 OPTS_6 = [(230, 375, 600, 68), (230, 453, 600, 68), (230, 531, 600, 68)]
 FILT_7 = [(33, 107, 56, 26), (91, 107, 157, 26), (249, 107, 75, 26)]
 #: Where a CV reading error sits: in the file card's place, below the drop zone.
@@ -75,7 +76,7 @@ IMPORTANCE = ["Must have", "Important", "Nice to have", "Don’t mind"]
 
 S = st.session_state
 S.setdefault("ob_step", "1")
-S.setdefault("ob_imp", [0, 1, 1, 1, 2, 2, 3])
+S.setdefault("ob_prefs", None)  # the Fine-tune rows being edited (see pref_rows)
 S.setdefault("ob_swipes", [])  # one verdict per story seen, in story order: "r" | "l" | "u"
 S.setdefault("ob_tick", 0)
 S.setdefault("ob_uk", "yes")
@@ -129,6 +130,17 @@ def go(k: str) -> None:
     S["ob_step"] = k = resolve_step(k)
     if k == "5":
         S["ob_tick"] = 0
+
+
+def explored() -> bool:
+    """Whether every Explore story has a verdict: Fine-tune waits for it."""
+    return len(S["ob_swipes"]) >= len(STORIES["stories"])
+
+
+def to_fine_tune() -> None:
+    """From Explore to Fine-tune, with the rows the swipes now suggest."""
+    S["ob_prefs"] = pref_rows()
+    go("3a")
 
 
 #: The answers the shortlist is first ranked with. A UK answer declared in
@@ -597,27 +609,122 @@ def edit_profile() -> None:
         st.button("Save changes", key="ed-save", type="primary", on_click=save_editor)
 
 
+#: Fine-tune weight bar shades, strongest first: (fill, ink). Mockup blues,
+#: mapped to the palette on the way out like every other colour.
+SHADES = [("#0071E3", "#fff"), ("#5AA2F0", "#fff"), ("#A9CDF7", "#0B3F7A"),
+          ("#D6E7FB", "#0B3F7A"), ("#EEF4FC", "#0B3F7A"), ("#F7FAFF", "#0B3F7A")]
+SUGGESTED = "Suggested by your swipes"
+NO_MATCH = ('<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="#AEAEB2" '
+            'stroke-width="1.8" stroke-linecap="round"/></svg>')
+
+
+def pref_rows() -> list[dict]:
+    """The Fine-tune rows (D-045): the role families and industries the likes
+    suggest, then the profile's cities and hybrid work. A row the candidate
+    already set keeps its level."""
+    stories, verdicts = STORIES["stories"], S["ob_swipes"]
+    fams, _ = explore.direction(stories, verdicts)
+    cities = list(d.profile["preferred_cities"])
+    rows = [{"field": "role_family", "values": [f], "label": f"{f} roles", "hint": SUGGESTED, "level": "important"} for f in fams]
+    rows += [{"field": "industry", "values": [i], "label": i, "hint": SUGGESTED, "level": "important"}
+             for i in explore.industries(stories, verdicts)]
+    rows.append({"field": "city", "values": cities, "label": ", ".join(cities[:-1]) + " or " + cities[-1] if len(cities) > 1 else cities[0],
+                 "hint": "From your profile", "level": "important"})
+    rows.append({"field": "mode", "values": ["Hybrid"], "label": "Hybrid work", "hint": "Some days in the office", "level": "nice"})
+    before = {(r["field"], tuple(r["values"])): r["level"] for r in (S["ob_prefs"] or store.preferences() or [])}
+    return [dict(r, level=before.get((r["field"], tuple(r["values"])), r["level"])) for r in rows]
+
+
+def weight(r: dict) -> float:
+    return ranking.IMPORTANCE_WEIGHT[r["level"]]
+
+
+def pref_row(r: dict) -> str:
+    on = ranking.IMPORTANCE.index(r["level"])
+    spans = "".join(
+        f'<span class="{"on" + (" must" if i == 0 else " imp" if i == 1 else "") if i == on else ""}">{t}</span>'
+        for i, t in enumerate(IMPORTANCE)
+    )
+    return f'<div class="v3-r"><div class="k">{esc(r["label"])}<small>{esc(r["hint"])}</small></div><div class="v3-seg">{spans}</div></div>'
+
+
+def short(r: dict) -> str:
+    """A row's name in the two-column weight legend."""
+    return {"city": "Location", "mode": "Hybrid work"}.get(r["field"], r["values"][0])
+
+
+def weights_box(rows: list[dict], total: float) -> str:
+    """How preference fit splits between the rows that carry weight."""
+    if not total:
+        return '<div class="v3-nt">Mark at least one preference to see how your fit is built.</div>'
+    held = [(r, 100 * weight(r) / total) for r in rows if weight(r)]
+    bar = "".join(
+        f'<i style="flex:{s:.1f};background:{SHADES[i][0]};color:{SHADES[i][1]}">{f"{s:.0f}%" if s >= 9 else ""}</i>'
+        for i, (_, s) in enumerate(held)
+    )
+    legend = "".join(
+        f'<span><i style="background:{SHADES[i][0]}{";border:1px solid #D6E7FB" if i >= 4 else ""}"></i>'
+        f'{esc(short(r))}<b>{s:.0f}%</b></span>'
+        for i, (r, s) in enumerate(held)
+    )
+    return f'<div class="v3-wb">{bar}</div>\n<div class="v3-wl">{legend}</div>'
+
+
+def example_box(rows: list[dict], total: float) -> str:
+    """The demo role these rows fit best, and which of them it meets."""
+    head = '<div class="v3-box"><div class="w-lab">Example · how a role reads you<span>Preference fit</span></div>'
+    if not total:
+        return head + '<div class="v3-nt">No preference carries weight yet.</div></div>'
+    roles = [v for v in store.views(None, AS_OF) if v.standing != "excluded"]
+    fit = {v.id: ranking.preference_fit(v.role.raw, rows)[0] for v in roles}
+    v = ranking.order(roles, lambda v: fit[v.id])[0]
+    checks = "".join(
+        f'<div>{CK12 if v.get(r["field"]) in r["values"] else NO_MATCH}{esc(r["label"])}'
+        f'<span>{100 * weight(r) / total:.0f}%</span></div>'
+        for r in rows if weight(r)
+    )
+    return (
+        head + '<div style="display:flex;align-items:center;gap:12px">'
+        f'<span class="w-logo" style="background:{v.bg};width:34px;height:34px">{v.mono}</span>'
+        f'<div style="flex:1"><div style="font-size:13.5px;font-weight:600">{esc(v.title)}</div>'
+        f'<div style="font-size:12px;color:var(--t2)">{esc(v.company)} · {esc(v.city)} · {esc(v.mode)}</div></div>'
+        f'<span style="font-size:24px;font-weight:700;letter-spacing:-0.03em">{fit[v.id]}</span></div>'
+        f'<div class="v3-ck">{checks}</div></div>'
+    )
+
+
 def step3a() -> str:
+    """Fine-tune: how much each suggested or declared preference matters."""
+    rows = S["ob_prefs"]
+    total = sum(weight(r) for r in rows)
     body = M.S_3A
-    rows = iter(S["ob_imp"])
-
-    def seg(_m: re.Match) -> str:
-        on = next(rows)
-        spans = "".join(
-            f'<span class="{"on" + (" must" if i == 0 else " imp" if i == 1 else "") if i == on else ""}">{t}</span>'
-            for i, t in enumerate(IMPORTANCE)
-        )
-        return f'<div class="v3-seg">{spans}</div>'
-
-    body = re.sub(r'<div class="v3-seg">.*?</div>', seg, body, flags=re.S)
-    # The demo roles carry no pay data, so nothing is filtered: say so.
+    body = swap(
+        body, r'<span class="segm">.*?</span></span>',
+        '<span class="segm"><span data-go="3b" style="cursor:pointer">1 · Explore</span><span class="on">2 · Fine-tune</span></span>',
+    )
+    body = swap(
+        body, re.escape("Describe it in your own words. We turn it into preferences you can see and adjust."),
+        "Your swipes suggested the first rows. Set how much each one matters: only what you confirm here shapes your ranking.",
+    )
+    # The free-text description is gone: Explore is where preferences start.
+    body = swap(body, r'<div><div class="v3-sec"><span class="n">1</span>Your ideal internship.*?(?=<div><div class="v3-sec"><span class="n">2</span>)', "")
+    body = swap(
+        body, re.escape('<span class="n">2</span>How much each one matters<span>Must-haves filter roles · the rest shape your ranking</span>'),
+        '<span class="n">1</span>How much each one matters<span>Preferences order your roles · they never filter them</span>',
+    )
+    note = "" if any(r["hint"] == SUGGESTED for r in rows) else (
+        '<div class="v3-nt">Your swipes don’t point to a role type or industry yet. '
+        'Like a few stories in Explore to get suggestions.</div>'
+    )
+    body = swap(body, r'<div class="v3-tb">.*?(?=\n<div class="v3-el">)',
+                f'<div class="v3-tb">{"".join(pref_row(r) for r in rows)}</div>{note}</div>')
     body = swap(
         body, re.escape("<b>312</b><span>roles fit · 41 unpaid removed by your must-have</span>"),
-        f"<b>{len(store.views())}</b><span>demo roles · preferences shape your Preference fit</span>",
+        f"<b>{len(store.views(None, AS_OF))}</b><span>demo roles · your preferences only change their order</span>",
     )
-    if S["ob_imp"][0] != 0:  # "Paid internship" is no longer a must-have
-        body = body.replace('<span class="v3-p m"><small>Must</small>Paid</span>', '<span class="v3-p"><small>Value</small>Paid</span>')
-    return body
+    body = swap(body, r'<div class="v3-wb">.*?</div>\n<div class="v3-wl">.*?</span></div>', weights_box(rows, total))
+    return swap(body, r'<div class="v3-box"><div class="w-lab">Example · how a role reads you.*?(?=\n<div style="flex:1"></div>)',
+                example_box(rows, total))
 
 
 def story_card(s: dict) -> str:
@@ -648,7 +755,7 @@ def done_card(verdicts: list[str]) -> str:
         f'<div class="sw-card sw-done"><div class="cd-time">All {len(verdicts)} stories</div>'
         '<div class="cd-h">That’s every story for now.</div>'
         f'<div class="cd-p">You’d enjoy {n[explore.LIKE]}, passed on {n[explore.PASS]} and weren’t sure about '
-        f'{n[explore.UNSURE]}. What we learned is on the right. Continue to rank your roles.</div></div>'
+        f'{n[explore.UNSURE]}. What we learned is on the right. Continue to confirm what matters to you.</div></div>'
     )
 
 
@@ -752,10 +859,15 @@ def step3b() -> str:
     body = swap(body, r'<div class="hist">.*?</div>', f'<div class="hist">{hist}</div>')
     lab = '<div class="w-lab">Emerging direction<span>Updates each swipe</span></div>'
     body = swap(body, re.escape(lab) + r".*?</div></div>", lab + direction_box(*explore.direction(stories, verdicts)) + "</div>")
-    # The swipes shape this panel only; the ranking never reads them.
-    return swap(
+    # Likes only suggest preferences; they count once confirmed in Fine-tune (D-045).
+    body = swap(
         body, re.escape("This is for you, not employers. It adjusts your Preference fit only — you review it before it’s used."),
-        "Just for you: it never changes your ranking.",
+        "Just for you. Your likes suggest role types and industries: you confirm them next.",
+    )
+    tune = ' data-go="3a" style="cursor:pointer"' if done else ' class="off"'
+    return swap(
+        body, re.escape('<span class="segm"><span data-go="3a" style="cursor:pointer">1 · Describe</span><span class="on">2 · Explore</span></span>'),
+        f'<span class="segm"><span class="on">1 · Explore</span><span{tune}>2 · Fine-tune</span></span>',
     )
 
 
@@ -1038,6 +1150,8 @@ with st.container(key="otop"):
     with st.container(key="osteps"):
         html(f'<div class="w-steps gl">{"".join(pills)}</div>')
     for n, box in enumerate(TOP, start=1):
+        if n > 3 and not (explored() or store.preferences()):
+            continue  # Explore is not optional: no jumping past it
         target = next(k for k, s, _, _ in FLOW if s == n)
         overlay(f"st{n}", box, f"Go to step {n}: {STEP_NAMES[n - 1]}", on_click=go, args=(target,))
     with st.container(key="oexit"):
@@ -1081,18 +1195,21 @@ with st.container(key="obody"):
         if overlay("edit", (0, y, w, h), "Edit profile", on_click=open_editor):
             edit_profile()
     elif step == "3a":
+        if S["ob_prefs"] is None:  # reached without Explore, e.g. "Adjust preferences"
+            S["ob_prefs"] = pref_rows()
         html(f'<section class="w-sec">{step3a()}</section>')
-        overlay("to3b", SEG_3A[1], "2 · Explore", on_click=go, args=("3b",))
+        overlay("to3b", SEG_3A[0], "1 · Explore", on_click=go, args=("3b",))
 
-        def set_imp(r: int, i: int) -> None:
-            S["ob_imp"] = [i if j == r else v for j, v in enumerate(S["ob_imp"])]
+        def set_level(r: int, i: int) -> None:
+            S["ob_prefs"] = [dict(p, level=ranking.IMPORTANCE[i]) if j == r else p for j, p in enumerate(S["ob_prefs"])]
 
-        for r, y in enumerate(IMP_Y):
+        for r in range(len(S["ob_prefs"])):
             for i, x in enumerate(IMP_X):
-                overlay(f"imp{r}{i}", (x, y, 107, 25), IMPORTANCE[i], on_click=set_imp, args=(r, i))
+                overlay(f"imp{r}{i}", (x, IMP_Y0 + r * IMP_DY, 107, 25), IMPORTANCE[i], on_click=set_level, args=(r, i))
     elif step == "3b":
         html(f'<section class="w-sec">{step3b()}</section>')
-        overlay("to3a", SEG_3B[0], "1 · Describe", on_click=go, args=("3a",))
+        if explored():
+            overlay("to3a", SEG_3B[1], "2 · Fine-tune", on_click=to_fine_tune)
 
 
         def swipe(verdict: str) -> None:
@@ -1144,21 +1261,30 @@ with st.container(key="obody"):
                         tabs.go("applications", id=v.id)
                     tabs.go("role", id=v.id)
 
+if step == "3b" and not explored():
+    info = "<b>Step 3 of 7</b> · Swipe every story to continue — or use ← ↑ → on your keyboard"
+unweighted = step == "3a" and not any(weight(r) for r in S["ob_prefs"])
+if unweighted:
+    info = "<b>Step 3 of 7</b> · Mark at least one preference to continue"
 gated = step == "2" and not store.work_auth_complete()
 if gated:
     info = f"<b>Step 2 of 7</b> · {NEEDS_WORK_AUTH}"
 if step == "5" and uk_declared():
     info, cta = "<b>Step 5 of 7</b> · Your UK work authorization is already declared", "View shortlist"
+
 with st.container(key="ofoot"):
     html(f'<span class="i">{info}</span>')
     if idx > 0:
-        label = "Skip for now" if step == "3b" else "Back"
-        if st.button(label, key="back"):
-            back = KEYS[idx + 1] if step == "3b" else KEYS[idx - 1]
+        if st.button("Back", key="back"):
+            back = KEYS[idx - 1]
             go("5" if back == "6" and uk_declared() else back)  # step 6 is skipped both ways
             st.rerun()
-    waiting = step == "5" and S["ob_tick"] < 5
+    waiting = (step == "5" and S["ob_tick"] < 5) or (step == "3b" and not explored()) or unweighted
     if st.button(cta, type="primary", key="next", disabled=waiting or gated):
+        if step == "3b":
+            S["ob_prefs"] = pref_rows()
+        if step == "3a":
+            store.set_preferences(S["ob_prefs"])
         if step == "6":
             store.set_uk(S["ob_uk"])
             st.toast(f"Answer saved · Work authorization · UK = {store.UK_LABELS[S['ob_uk']]}")
