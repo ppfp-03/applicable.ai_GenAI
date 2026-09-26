@@ -15,12 +15,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from pathlib import Path
 
 import streamlit as st
 
-from core import clock, store
+from core import clock, explore, store
 from oi.intelligence.extraction import extract_candidate
 from oi.io.pdf import PdfExtractionError, extract_pdf_text
 from oi.providers.kimi import KimiClient
@@ -33,6 +34,7 @@ from ui.theme import page_css
 d = store.data()
 page_css("onboarding")
 STORIES = json.loads((Path(__file__).resolve().parent.parent / "data" / "stories.json").read_text("utf-8"))
+SWIPE_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "swipe.js").read_text(encoding="utf-8")
 
 #: (key, step number, footer info, call to action) — the mockup's own list.
 FLOW = [
@@ -70,10 +72,7 @@ IMPORTANCE = ["Must have", "Important", "Nice to have", "Don’t mind"]
 S = st.session_state
 S.setdefault("ob_step", "1")
 S.setdefault("ob_imp", [0, 1, 1, 1, 2, 2, 3])
-S.setdefault("ob_count", STORIES["start"])
-S.setdefault("ob_story", 0)
-S.setdefault("ob_hist", [list(h) for h in STORIES["history"]])
-S.setdefault("ob_sliders", [s[2] for s in STORIES["sliders"]])
+S.setdefault("ob_swipes", [])  # one verdict per story seen, in story order: "r" | "l" | "u"
 S.setdefault("ob_tick", 0)
 S.setdefault("ob_uk", "yes")
 S.setdefault("ob_filter", 0)
@@ -312,8 +311,15 @@ def step3a() -> str:
 
 
 def story_card(s: dict) -> str:
+    """The story on top of the stack. "Why" names the CV skills it uses, if any."""
     tags = "".join(f'<span class="w-b ne">{esc(t)}</span>' for t in s["tags"])
     sk = "".join(f'<span class="w-chip">{esc(t)}</span>' for t in s["sk"])
+    profile = store.candidate()
+    shared = explore.cv_overlap(s, [f.value for f in profile.skills]) if profile else []
+    why = (
+        "your CV mentions " + " and ".join(f"<b>{esc(k)}</b>" for k in shared[:2]) if shared
+        else f"it shows a day in <b>{esc(s['tags'][0])}</b>"
+    )
     return (
         f'<div class="sw-card"><span class="stamp">I’D ENJOY THIS</span><div class="cd-tags">{tags}</div>'
         f'<div class="cd-time">{esc(s["time"])}</div><div class="cd-h">{esc(s["h"])}</div>'
@@ -321,36 +327,126 @@ def story_card(s: dict) -> str:
         f'<div class="cd-sk"><span class="k">You’d use</span>{sk}</div>'
         '<div class="cd-why"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M8 2.2 9.3 6.7 13.8 8 9.3 9.3 8 '
         '13.8 6.7 9.3 2.2 8 6.7 6.7z" fill="#0071E3"/></svg>'
-        f'<span>Why this story: {s["why"]}</span></div></div>'
+        f'<span>Why this story: {why}</span></div></div>'
     )
+
+
+def done_card(verdicts: list[str]) -> str:
+    """What replaces the stack once every story has a verdict."""
+    n = {v: verdicts.count(v) for v in explore.VERDICTS}
+    return (
+        f'<div class="sw-card sw-done"><div class="cd-time">All {len(verdicts)} stories</div>'
+        '<div class="cd-h">That’s every story for now.</div>'
+        f'<div class="cd-p">You’d enjoy {n[explore.LIKE]}, passed on {n[explore.PASS]} and weren’t sure about '
+        f'{n[explore.UNSURE]}. What we learned is on the right. Continue to rank your roles.</div></div>'
+    )
+
+
+#: The RIASEC radar: centre, radius and label anchors, as the mockup draws it.
+RADAR_C, RADAR_R = (190.0, 122.0), 92.0
+RADAR_LABELS = [(190.0, 18.0, "middle"), (283.5, 72.0, "start"), (283.5, 180.0, "start"),
+                (190.0, 234.0, "middle"), (96.5, 180.0, "end"), (96.5, 72.0, "end")]
+
+
+def radar_xy(i: int, r: float) -> tuple[float, float]:
+    a = math.radians(-90 + 60 * i)
+    return RADAR_C[0] + r * math.cos(a), RADAR_C[1] + r * math.sin(a)
+
+
+def radar(values: list[float]) -> str:
+    """The RIASEC hexagon for `values` (shares of the radius); the strongest two in bold."""
+
+    def ring(r: float) -> str:
+        return " ".join(f"{x:.1f},{y:.1f}" for x, y in (radar_xy(i, r) for i in range(6)))
+
+    grid = "".join(f'<polygon points="{ring(RADAR_R * k / 3)}" fill="none" stroke="#E5E5EA" stroke-width="1"/>' for k in (1, 2, 3))
+    spokes = "".join(
+        f'<line x1="{RADAR_C[0]:g}" y1="{RADAR_C[1]:g}" x2="{x:.1f}" y2="{y:.1f}" stroke="#EFEFF2"/>'
+        for x, y in (radar_xy(i, RADAR_R) for i in range(6))
+    )
+    pts = [radar_xy(i, RADAR_R * v) for i, v in enumerate(values)]
+    shape = (
+        f'<polygon points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in pts)}" fill="rgba(0,113,227,.12)" '
+        'stroke="#0071E3" stroke-width="1.8" stroke-linejoin="round"/>'
+        + "".join(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3" fill="#0071E3"/>' for x, y in pts)
+    )
+    top = explore.top_interests(values)
+    labels = "".join(
+        f'<text x="{x}" y="{y}" text-anchor="{anchor}" font-size="11.5" font-weight="{700 if i in top else 500}" '
+        f'fill="{"#1D1D1F" if i in top else "#6E6E73"}" font-family="-apple-system,Inter,sans-serif">{name}</text>'
+        for i, ((x, y, anchor), name) in enumerate(zip(RADAR_LABELS, explore.RIASEC))
+    )
+    return f'<svg width="370" height="246" viewBox="0 0 380 246">{grid}{spokes}{shape}{labels}</svg>'
+
+
+def role_count(match: str) -> str:
+    n = sum(match.lower() in v.title.lower() for v in store.views())
+    return f"{n} demo role{'s' if n != 1 else ''}" if n else "no demo roles yet"
+
+
+def direction_box(dirs: list[str], role: dict | None) -> str:
+    if not dirs:
+        return (
+            '<div style="font-size:14px;font-weight:620;color:var(--t3)">Not clear yet</div>'
+            '<div style="font-size:12px;color:var(--t2);margin-top:3px">Swipe right on stories you’d enjoy to see where they point.</div>'
+        )
+    return (
+        f'<div style="font-size:14px;font-weight:620">{" · ".join(esc(d) for d in dirs)}</div>'
+        f'<div style="font-size:12px;color:var(--t2);margin-top:3px">Role type to consider: '
+        f'<b style="color:var(--blue);font-weight:600">{esc(role["role"])}</b> · {role_count(role["match"])}</div>'
+    )
+
+
+#: Roughly how long one story takes to read and swipe, in seconds.
+STORY_SECONDS = 8
+
+
+def time_left(remaining: int) -> str:
+    if remaining <= 0:
+        return "all done"
+    secs = remaining * STORY_SECONDS
+    return "less than a minute left" if secs < 60 else f"about {round(secs / 60)} minute{'s' if secs >= 90 else ''} left"
 
 
 def step3b() -> str:
+    """The story stack and, beside it, everything the verdicts so far say."""
+    stories, verdicts = STORIES["stories"], S["ob_swipes"]
+    total, seen = len(stories), len(verdicts)
+    done = seen >= total
     body = M.S_3B
-    count, total = S["ob_count"], STORIES["total"]
-    body = body.replace("<b>Story 8 of 12</b>", f"<b>Story {count} of {total}</b>")
-    bars = "".join(
-        f'<i class="{"d" if i < count - 1 else "c" if i == count - 1 else ""}"></i>' for i in range(total)
+    story_n = f"All {total} stories" if done else f"Story {seen + 1} of {total}"
+    body = swap(body, re.escape("<b>Story 8 of 12</b> · about 1 minute left"), f"<b>{story_n}</b> · {time_left(total - seen)}")
+    bars = "".join(f'<i class="{"d" if i < seen else "c" if i == seen else ""}"></i>' for i in range(total))
+    body = swap(body, r'<div class="sw-pb">.*?</div>', f'<div class="sw-pb">{bars}</div>')
+    behind = total - seen - 1  # cards still under the top one
+    backs = ('<div class="sw-cb b2"></div>' if behind >= 2 else "") + ('<div class="sw-cb b1"></div>' if behind >= 1 else "")
+    body = swap(
+        body, r'<div class="sw-stack">.*?</div></div>\s*<div class="acts">',
+        f'<div class="sw-stack">{backs}{done_card(verdicts) if done else story_card(stories[seen])}</div>\n<div class="acts{" off" if done else ""}">',
     )
-    body = re.sub(r'<div class="sw-pb">.*?</div>', f'<div class="sw-pb">{bars}</div>', body, count=1, flags=re.S)
-    story = STORIES["stories"][S["ob_story"] % len(STORIES["stories"])]
-    body = re.sub(
-        r'<div class="sw-card">.*?</div></div>\s*<div class="acts">',
-        story_card(story) + '</div>\n<div class="acts">', body, count=1, flags=re.S,
+    body = swap(body, re.escape("Live · from 7 swipes"), f"Live · from {seen} swipe{'s' if seen != 1 else ''}")
+    body = swap(body, r'<svg width="370" height="246".*?</svg>', radar(explore.interests(stories, verdicts)))
+
+    def bp(label: list[str], pos: float) -> str:
+        side = explore.leaning(pos)
+        lt = f"<b>{label[0]}</b>" if side == "l" else label[0]
+        rt = f"<b>{label[1]}</b>" if side == "r" else label[1]
+        return f'<div class="bp"><span>{lt}</span><span class="tr"><i style="left:{pos:.0f}%"></i></span><span>{rt}</span></div>'
+
+    rows = iter(zip(STORIES["sliders"], explore.sliders(stories, verdicts)))
+    body, n = re.subn(r'<div class="bp">.*?</span></div>', lambda _m: bp(*next(rows)), body, flags=re.S)
+    if n != len(STORIES["sliders"]):
+        raise RuntimeError(f"Step 3b mockup markup has changed: {n} work-design sliders, not {len(STORIES['sliders'])}.")
+    hist = "".join(f'<span class="{c}">{"✓" if c == "y" else "✕"} {esc(t)}</span>' for c, t in explore.history(stories, verdicts))
+    hist = hist or '<span class="e">Nothing yet</span>'
+    body = swap(body, r'<div class="hist">.*?</div>', f'<div class="hist">{hist}</div>')
+    lab = '<div class="w-lab">Emerging direction<span>Updates each swipe</span></div>'
+    body = swap(body, re.escape(lab) + r".*?</div></div>", lab + direction_box(*explore.direction(stories, verdicts)) + "</div>")
+    # The swipes shape this panel only; the ranking never reads them.
+    return swap(
+        body, re.escape("This is for you, not employers. It adjusts your Preference fit only — you review it before it’s used."),
+        "Just for you: it never changes your ranking.",
     )
-    body = body.replace("Live · from 7 swipes", f"Live · from {count - 1} swipes")
-    sliders = iter(zip(STORIES["sliders"], S["ob_sliders"]))
-
-    def bp(_m: re.Match) -> str:
-        (l, r, _, bold), pos = next(sliders)
-        lt = f"<b>{l}</b>" if bold == "l" else l
-        rt = f"<b>{r}</b>" if bold == "r" else r
-        return f'<div class="bp"><span>{lt}</span><span class="tr"><i style="left:{pos}%"></i></span><span>{rt}</span></div>'
-
-    body = re.sub(r'<div class="bp">.*?</span></div>', bp, body, flags=re.S)
-    hist = "".join(f'<span class="{c}">{"✓" if c == "y" else "✕"} {esc(t)}</span>' for c, t in S["ob_hist"][:5])
-    body = re.sub(r'<div class="hist">.*?</div>', f'<div class="hist">{hist}</div>', body, count=1, flags=re.S)
-    return body
 
 
 def funnel_row(label: str, small: str, width: float, n: int, color: str) -> str:
@@ -670,21 +766,19 @@ with st.container(key="obody"):
         html(f'<section class="w-sec">{step3b()}</section>')
         overlay("to3a", SEG_3B[0], "1 · Describe", on_click=go, args=("3a",))
 
-        def swipe(direction: str) -> None:
-            story = STORIES["stories"][S["ob_story"] % len(STORIES["stories"])]
-            if direction != "u":
-                S["ob_hist"] = [["y" if direction == "r" else "n", story["title"]], *S["ob_hist"]][:6]
-                sign = 1 if direction == "r" else -1
-                S["ob_sliders"] = [
-                    max(8, min(92, p + sign * lean)) for p, lean in zip(S["ob_sliders"], story["lean"])
-                ]
-            S["ob_count"] = min(STORIES["total"], S["ob_count"] + 1)
-            S["ob_story"] += 1
 
-        for i, (dirn, label, sc) in enumerate(
-            [("l", "Not for me", "ArrowLeft"), ("u", "Not sure", "ArrowUp"), ("r", "I’d enjoy this", "ArrowRight")]
-        ):
-            overlay(f"sw{dirn}", ACTS_3B[i], label, on_click=swipe, args=(dirn,), shortcut=sc)
+        def swipe(verdict: str) -> None:
+            if len(S["ob_swipes"]) < len(STORIES["stories"]):
+                S["ob_swipes"] = [*S["ob_swipes"], verdict]
+
+        if len(S["ob_swipes"]) < len(STORIES["stories"]):
+            for i, (dirn, label, sc) in enumerate(
+                [("l", "Not for me", "ArrowLeft"), ("u", "Not sure", "ArrowUp"), ("r", "I’d enjoy this", "ArrowRight")]
+            ):
+                overlay(f"sw{dirn}", ACTS_3B[i], label, on_click=swipe, args=(dirn,), shortcut=sc)
+        # Dragging the card: animates in the browser, then presses the button above.
+        with st.container(key="aa-js-swipe"):
+            st.html(f"<script>{SWIPE_JS}</script>", unsafe_allow_javascript=True)
     elif step == "4":
         html(f'<section class="w-sec">{step4()}</section>')
     elif step == "5":

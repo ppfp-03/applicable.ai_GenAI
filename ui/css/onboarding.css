@@ -402,6 +402,17 @@
 .sw-card.out-r{transform:translateX(420px) rotate(14deg)!important;opacity:0}
 .sw-card.out-l{transform:translateX(-420px) rotate(-14deg)!important;opacity:0}
 .sw-card.out-u{transform:translateY(-300px)!important;opacity:0}
+.sw-card:not(.sw-done){cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.sw-card.dragging{cursor:grabbing}
+.sw-card.in{animation:sw-in .32s cubic-bezier(.2,.8,.2,1)}
+@keyframes sw-in{from{opacity:0;transform:rotate(1.4deg) translateX(14px) scale(.95)}}
+.sw-done{justify-content:center;align-items:flex-start}
+.stamp{opacity:0;pointer-events:none;z-index:2}
+.stamp[data-d="l"]{right:auto;left:22px;border-color:#AEAEB2;color:#6E6E73;transform:rotate(8deg)}
+.stamp[data-d="u"]{right:auto;left:50%;border-color:#AEAEB2;color:#6E6E73;transform:translateX(-50%)}
+.acts.off{visibility:hidden}
+.hist .e{color:var(--t3)}
+.sw-r{gap:12px}
 .stamp{transition:opacity .2s}.act{cursor:pointer}.act .o{transition:transform .15s}.act:hover .o{transform:scale(1.06)}
 .o6,.v3-seg span,.w-chip,.segm span{cursor:pointer}
 .u-pb i{transition:width 1.6s ease}
