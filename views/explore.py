@@ -78,8 +78,8 @@ def card(v) -> str:
         f'<div class="h">{logo(v.mono, v.bg, 36, 13)}<div class="sc">{v.shown if v.standing != "excluded" else "—"}<small>{small}</small></div></div>'
         f'<div class="t">{esc(v.title)}</div><div class="m">{esc(v.company)} · {esc(v.city)}</div>'
         f'<div class="why">{esc(why)}</div><div class="b" style="margin-top:auto"><i style="width:{v.shown if v.standing != "excluded" else 0}%"></i></div>'
-        f'<div class="f"><span class="{"u" if hot else ""}">{esc(close)}</span>'
-        f'<span>{SIM if store.is_simulated(v) else "Verified today"}</span></div></div>'
+        + (f'<div class="f"><span>{SIM}</span></div></div>' if store.is_simulated(v) else
+           f'<div class="f"><span class="{"u" if hot else ""}">{esc(close)}</span><span>Verified today</span></div></div>')
     )
 
 
@@ -105,7 +105,8 @@ with st.container(key="ex-main"):
                 f'<h3>{esc(v.title)}<span class="chip {chip}">{label}</span></h3></div>'
             )
             if store.is_simulated(v):
-                html(f'<div class="kk"><b>{SIM}</b> · {esc(d.simulated_event["disclaimer"])}</div>')
+                html(f'<div style="font-size:12px;line-height:1.45;color:var(--t2)"><b>{SIM}</b> · '
+                     f'{esc(d.simulated_event["disclaimer"])}</div>')
             if v.standing != "excluded":
                 html(
                     f'<div><div class="hero2"><div class="n">{v.shown}<small> /100</small></div>'

@@ -316,8 +316,8 @@ def mcard(v) -> str:
         f'<div class="t">{esc(v.title)}</div><div class="m">{esc(v.company)} · {esc(v.city)}</div>'
         f'<div class="why">{mark} {esc(v.highlight)}</div>'
         f'<div class="b" style="margin-top:auto"><i style="width:{v.shown}%"></i></div>'
-        f'<div class="f"><span class="{"u" if urgent else ""}">{esc(foot)}</span>'
-        f'<span>{SIM if sim else "Verified today"}</span></div></div>'
+        + (f'<div class="f"><span>{SIM}</span></div></div>' if sim else
+           f'<div class="f"><span class="{"u" if urgent else ""}">{esc(foot)}</span><span>Verified today</span></div></div>')
     )
 
 
