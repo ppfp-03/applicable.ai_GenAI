@@ -100,3 +100,29 @@ def test_save_edits_replaces_the_stored_profile(session) -> None:
     store.save_edits({"skills": ["Python", "SQL"]})
 
     assert [v.value for v in store.candidate().skills] == ["Python", "SQL"]
+
+
+@pytest.mark.parametrize(
+    ("value", "parts"),
+    [
+        ("MSc in International Management · Fudan University · Sep 2025 – Jul 2027",
+         ("MSc in International Management", "Fudan University", "Sep 2025 – Jul 2027")),
+        ("Analyst · Acme", ("Analyst", "Acme", "")),
+        ("Analyst · 2024", ("Analyst", "", "2024")),
+        ("Analyst", ("Analyst", "", "")),
+        ("", ("", "", "")),
+        # Not in the format: kept whole, for the user to split.
+        ("Personal Consultant, UniCredit S.p.A., Apr 2025 – Jul 2025",
+         ("Personal Consultant, UniCredit S.p.A., Apr 2025 – Jul 2025", "", "")),
+        ("a · b · c · 2024", ("a · b · c · 2024", "", "")),
+    ],
+)
+def test_split_entry(value, parts) -> None:
+    assert store.split_entry(value) == parts
+
+
+def test_join_entry_leaves_out_parts_not_stated() -> None:
+    assert store.join_entry(" Analyst ", "", "2024") == "Analyst · 2024"
+    assert store.join_entry("", "", "  ") == ""
+    value = "MSc · Fudan University · Sep 2025 – Jul 2027"
+    assert store.join_entry(*store.split_entry(value)) == value

@@ -156,3 +156,75 @@ def test_the_edit_button_needs_a_profile() -> None:
     assert "Edit profile" in buttons(profile())
     assert "Edit profile" in step2(profile())
     assert "Edit profile" not in step2()
+
+
+# --- the Edit profile dialog ------------------------------------------------
+
+
+def open_editor(p):
+    at = AppTest.from_file(ONBOARDING, default_timeout=30)
+    at.session_state["ob_step"] = "2"
+    at.session_state[store.CANDIDATE] = p
+    at.run()
+    at.button(key="oo-edit").click().run()
+    assert not at.exception
+    return at
+
+
+def test_each_part_of_an_entry_has_its_own_field() -> None:
+    value = "MSc in International Management · Fudan University · Sep 2025 – Jul 2027"
+    at = open_editor(profile(education=[fact(value, "MSc Finance, Bocconi University, 2026")]))
+
+    fields = {t.label: t.value for t in at.text_input if t.key.startswith("ed-education-")}
+    assert fields == {"Degree": "MSc in International Management", "Institution": "Fudan University", "Dates": "Sep 2025 – Jul 2027"}
+
+
+def test_the_editor_starts_from_the_profile() -> None:
+    p = profile(experience=ROLES[:3])
+
+    at = open_editor(p)
+
+    entries = [t.value for t in at.text_input if t.key.startswith("ed-experience-")]
+    assert entries == ["Role 1", "", "", "Role 2", "", "", "Role 3", "", ""]
+    assert [t.value for t in at.text_input if t.key.startswith("ed-education-")] == ["MSc Finance, Bocconi University", "", ""]
+    assert [b.label for b in at.button if b.key.startswith("ed-chip-")] == ["Python"]
+
+
+def test_removing_and_adding_entries_changes_only_the_draft() -> None:
+    at = open_editor(profile(experience=ROLES[:3]))
+
+    # One run: after it the dialog is not drawn again, as nothing reopens it.
+    at.button(key=f"ed-del-experience-{at.session_state['ed_rev']}-0").click()
+    at.button(key="ed-add-education").click().run()
+
+    assert at.session_state["ed_draft"]["experience"] == ["Role 2", "Role 3"]
+    assert at.session_state["ed_draft"]["education"] == ["MSc Finance, Bocconi University", ""]
+    assert [f.value for f in at.session_state[store.CANDIDATE].experience] == ["Role 1", "Role 2", "Role 3"]
+
+
+def test_saving_applies_the_edits_with_their_provenance() -> None:
+    at = open_editor(profile())
+    rev = at.session_state["ed_rev"]
+
+    at.text_input(key=f"ed-experience-{rev}-0-1").input("Mediobanco")
+    at.text_input(key=f"ed-experience-{rev}-0-2").input("Jun 2025 – Aug 2025")
+    at.text_input(key="ed-skill-new").input("SQL")  # typed, never confirmed with Enter
+    at.button(key="ed-save").click().run()
+
+    saved = at.session_state[store.CANDIDATE]
+    assert [f.value for f in saved.experience] == ["Summer Analyst at Mediobanco · Mediobanco · Jun 2025 – Aug 2025"]
+    assert [f.value for f in saved.skills] == ["Python", "SQL"]
+    assert store.is_edited(saved, saved.experience[0])
+    assert not store.is_edited(saved, saved.skills[0])
+    assert "ed_draft" not in at.session_state
+
+
+def test_cancel_keeps_the_profile() -> None:
+    before = profile()
+    at = open_editor(before)
+
+    at.text_input(key=f"ed-experience-{at.session_state['ed_rev']}-0-0").input("Something else")
+    at.button(key="ed-cancel").click().run()
+
+    assert at.session_state[store.CANDIDATE] == before
+    assert "ed_draft" not in at.session_state

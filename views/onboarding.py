@@ -19,7 +19,6 @@ import math
 import re
 from pathlib import Path
 
-import pandas as pd
 import streamlit as st
 
 from core import clock, explore, store
@@ -317,29 +316,134 @@ def step2() -> str:
     return swap(body, r'<div class="p-page">.*?</div></div>$', f'<div class="p-page">{cv_page(profile)}</div></div>')
 
 
+#: The editor's tabs: title, CandidateProfile field, entry icon and add button
+#: label. Skills are chips; the other entries have one field per part.
+EDIT_TABS = [
+    ("Experience", "experience", ":material/work:", "Add experience"),
+    ("Education", "education", ":material/school:", "Add education"),
+    ("Skills", "skills", None, None),
+]
+#: Sections whose entries have their own fields, with the label of each part
+#: of the value (store.split_entry).
+EDIT_PARTS = {
+    "experience": ("Role", "Company", "Dates"),
+    "education": ("Degree", "Institution", "Dates"),
+}
+
+
+#: Placeholder examples for each part of an entry.
+EDIT_EXAMPLES = {
+    "experience": ("Strategy Consultant", "Accenture", "Jun 2026 – Aug 2026"),
+    "education": ("MSc in International Management", "Fudan University", "Sep 2025 – Jul 2027"),
+}
+
+
+def open_editor() -> None:
+    """Start a draft of the CV sections. The editor changes the draft only;
+    the profile changes on "Save changes", so Cancel or closing loses nothing."""
+    profile = store.candidate()
+    S["ed_draft"] = {field: [f.value for f in getattr(profile, field)] for _, field in CV_SECTIONS}
+    S["ed_rev"] = S.get("ed_rev", 0) + 1
+    S["ed-skill-new"] = ""
+
+
+def entry_key(field: str, i: int, part: int) -> str:
+    # The revision renumbers every field after a removal, so no field keeps
+    # the text of the entry that was above it.
+    return f"ed-{field}-{S['ed_rev']}-{i}-{part}"
+
+
+def sync_draft() -> None:
+    """Copy what was typed into the draft, before the draft changes shape."""
+    for field in EDIT_PARTS:
+        S["ed_draft"][field] = [
+            store.join_entry(*(S.get(entry_key(field, i, n), part) for n, part in enumerate(store.split_entry(v))))
+            for i, v in enumerate(S["ed_draft"][field])
+        ]
+
+
+def add_entry(field: str) -> None:
+    sync_draft()
+    S["ed_draft"][field].append("")
+
+
+def remove_entry(field: str, i: int) -> None:
+    sync_draft()
+    del S["ed_draft"][field][i]
+    S["ed_rev"] += 1
+
+
+def remove_skill(i: int) -> None:
+    sync_draft()
+    del S["ed_draft"]["skills"][i]
+    S["ed_rev"] += 1
+
+
+def take_skill() -> None:
+    """Add the skill typed in the skill field to the draft, once."""
+    value = " ".join(S.get("ed-skill-new", "").split())
+    if value and value not in S["ed_draft"]["skills"]:
+        S["ed_draft"]["skills"].append(value)
+
+
+def add_skill() -> None:
+    take_skill()
+    S["ed-skill-new"] = ""  # allowed here: callbacks run before the field is drawn
+
+
+def save_editor() -> None:
+    sync_draft()
+    take_skill()  # one typed but not yet added with Enter
+    store.save_edits(S.pop("ed_draft"))
+
+
+def cancel_editor() -> None:
+    S.pop("ed_draft", None)
+
+
 @st.dialog("Edit your profile", width="large")
 def edit_profile() -> None:
     """Change what was read from the CV: edit, add or remove entries.
 
-    Saved values the CV does not say are kept as the user's own statements,
-    apart from the CV quotes (store.apply_edits)."""
-    profile = store.candidate()
-    st.caption("One entry per row. Add a row for anything we missed; select a row and delete it to remove it. "
-               "What you change is saved as your own statement, not as read from your CV.")
-    edits = {}
-    for title, field in CV_SECTIONS:
-        rows = pd.DataFrame({title: [f.value for f in getattr(profile, field)]}, dtype="string")
-        table = st.data_editor(
-            rows, key=f"ed-{field}", num_rows="dynamic", hide_index=True, width="stretch",
-            column_config={title: st.column_config.TextColumn(title, width="large")},
-        )
-        edits[field] = [v for v in table[title] if isinstance(v, str)]
-    save, cancel = st.columns(2)
-    if save.button("Save changes", type="primary", key="ed-save", width="stretch"):
-        store.save_edits(edits)
+    Values the CV does not say are saved as the user's own statements, apart
+    from the CV quotes (store.apply_edits)."""
+    if "ed_draft" not in S:  # saved or cancelled: close
         st.rerun()
-    if cancel.button("Cancel", key="ed-cancel", width="stretch"):
-        st.rerun()
+    draft = S["ed_draft"]
+    st.markdown(
+        '<div class="ed-sub">Review what we read from your CV. What you change is saved as your own '
+        "statement, not as read from your CV.</div>",
+        unsafe_allow_html=True,
+    )
+    for tab, (title, field, icon, add) in zip(st.tabs([t for t, *_ in EDIT_TABS], key="ed-tabs"), EDIT_TABS):
+        with tab:
+            if icon is None:  # skills
+                with st.container(key="ed-chips", horizontal=True, gap="small"):
+                    for i, skill in enumerate(draft["skills"]):
+                        st.button(skill, icon=":material/close:", key=f"ed-chip-{S['ed_rev']}-{i}",
+                                  on_click=remove_skill, args=(i,), help="Remove")
+                st.text_input("Add a skill", key="ed-skill-new", placeholder="Add a skill and press Enter",
+                              label_visibility="collapsed", on_change=add_skill, icon=":material/add:")
+                continue
+            if not draft[field]:
+                st.markdown(f'<div class="ed-none">No {title.lower()} yet.</div>', unsafe_allow_html=True)
+            labels = EDIT_PARTS[field]
+            for i, value in enumerate(draft[field]):
+                parts = store.split_entry(value)
+                with st.container(key=f"ed-row-{field}-{i}"):
+                    with st.container(horizontal=True, vertical_alignment="bottom"):
+                        st.text_input(labels[0], value=parts[0], key=entry_key(field, i, 0), icon=icon,
+                                      placeholder=f"e.g. {EDIT_EXAMPLES[field][0]}")
+                        st.button("", icon=":material/delete:", key=f"ed-del-{field}-{S['ed_rev']}-{i}",
+                                  type="tertiary", on_click=remove_entry, args=(field, i), help="Remove")
+                    with st.container(horizontal=True):
+                        for n in (1, 2):
+                            st.text_input(labels[n], value=parts[n], key=entry_key(field, i, n),
+                                          placeholder=f"e.g. {EDIT_EXAMPLES[field][n]}")
+            st.button(add, icon=":material/add:", key=f"ed-add-{field}", on_click=add_entry, args=(field,))
+    with st.container(key="ed-foot", horizontal=True, horizontal_alignment="right", vertical_alignment="center"):
+        st.button("Cancel", key="ed-cancel", type="tertiary", on_click=cancel_editor)
+        st.button("Save changes", key="ed-save", type="primary", on_click=save_editor)
 
 
 def step3a() -> str:
@@ -819,7 +923,7 @@ with st.container(key="obody"):
         if store.candidate() is not None:
             right, y, w, h = EDIT_2
             st.markdown(f"<style>.stApp .st-key-oo-edit{{left:auto!important;right:{right}px}}</style>", unsafe_allow_html=True)
-            if overlay("edit", (0, y, w, h), "Edit profile"):
+            if overlay("edit", (0, y, w, h), "Edit profile", on_click=open_editor):
                 edit_profile()
     elif step == "3a":
         html(f'<section class="w-sec">{step3a()}</section>')

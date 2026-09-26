@@ -29,6 +29,17 @@ Return each fact as an object with two fields:
 A fact whose quote cannot be found in the CV is discarded, so a fact without
 an exact quote is wasted.
 
+For **education** and **experience**, write the value in three parts joined
+by " · " (space, middle dot, space), in this order:
+
+1. the degree or programme, or the role held;
+2. the institution, or the employer;
+3. the period, as the CV states it.
+
+For example `MSc in International Management · Fudan University · Sep 2025 –
+Jul 2027`. Leave out a part the CV does not state, together with its " · ";
+never fill it in. Do not use " · " inside a part.
+
 ## Rules
 
 - Extract **only** information explicitly present in the CV text.

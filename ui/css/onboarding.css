@@ -495,6 +495,32 @@
 .p-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .p-e{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .p-e + .p-e{margin-top:4px}
+/* Edit profile dialog: one card per entry, chips for skills, footer actions. */
+/* It fits the window: only its body scrolls, the footer stays in view. */
+[data-testid="stDialog"] [role="dialog"]:has(.st-key-ed-foot){max-height:calc(100vh - 96px);display:flex;flex-direction:column}
+[data-testid="stDialog"] [role="dialog"]:has(.st-key-ed-foot) > div:last-child{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:0}
+[data-testid="stDialog"] [data-testid="stLayoutWrapper"]:has(> .st-key-ed-foot){position:sticky;bottom:0;z-index:2;background:#F5F6F8}
+[data-testid="stDialog"] .ed-sub{font-size:14px;color:var(--t2);margin:-6px 0 10px;line-height:1.45}
+[data-testid="stDialog"] .ed-none{font-size:13.5px;color:var(--t3);padding:10px 2px}
+[data-testid="stDialog"] [data-baseweb="tab-list"]{gap:22px}
+[data-testid="stDialog"] [data-baseweb="tab"] p{font-size:14px;font-weight:600}
+[data-testid="stDialog"] [class*="st-key-ed-row-"]{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 14px 16px 16px;gap:10px!important}
+[data-testid="stDialog"] [class*="st-key-ed-row-"] [data-testid="stWidgetLabel"] p{font-size:13px;font-weight:600;color:var(--t1)}
+[data-testid="stDialog"] [class*="st-key-ed-row-"] [data-testid="stTextInputRootElement"]{border:1px solid var(--line)!important;border-radius:10px!important;background:#fff;min-height:42px}
+[data-testid="stDialog"] [class*="st-key-ed-row-"] [data-testid="stTextInputRootElement"]:focus-within{border-color:var(--blue)!important}
+[data-testid="stDialog"] [class*="st-key-ed-row-"] input{font-size:14px;color:var(--t1)}
+[data-testid="stDialog"] [class*="st-key-ed-del-"] button{color:var(--t3);min-height:36px;width:36px;border-radius:10px}
+[data-testid="stDialog"] [class*="st-key-ed-del-"] button:hover{color:var(--red);background:var(--redBg)}
+[data-testid="stDialog"] [class*="st-key-ed-add-"] button{border:1.5px dashed rgba(0,113,227,.45);background:#fff;color:var(--blue);border-radius:12px;min-height:42px;font-weight:600;padding:0 16px}
+[data-testid="stDialog"] [class*="st-key-ed-add-"] button:hover{background:var(--blueBg);border-color:var(--blue)}
+[data-testid="stDialog"] .st-key-ed-chips{gap:8px!important;margin:4px 0 6px}
+[data-testid="stDialog"] .st-key-ed-chips button{background:var(--blueBg);color:var(--blue);border:0;border-radius:999px;min-height:32px;padding:4px 10px 4px 14px;font-size:13px;font-weight:560;flex-direction:row-reverse;gap:4px}
+[data-testid="stDialog"] .st-key-ed-chips button span[data-has-shortcut]{display:flex;flex-direction:row-reverse;align-items:center;gap:6px}
+[data-testid="stDialog"] .st-key-ed-chips button:hover{background:#FBDDD0;color:var(--blue)}
+[data-testid="stDialog"] .st-key-ed-skill-new [data-testid="stTextInputRootElement"]{border-radius:999px;min-height:40px;background:#fff;border:1px solid var(--line)}
+[data-testid="stDialog"] .st-key-ed-foot{border-top:1px solid var(--line);margin-top:10px;padding:16px 0 20px;gap:12px!important}
+[data-testid="stDialog"] .st-key-ed-foot button{min-height:44px;border-radius:12px;padding:0 22px;font-weight:600}
+[data-testid="stDialog"] .st-key-ed-cancel button{color:var(--t2)}
 /* 3a preferences */
 .v3-l{padding:22px 28px;gap:14px}
 .v3-ta{border:0;border-radius:18px;background:#fff;box-shadow:0 0 0 2px var(--blue),0 12px 30px rgba(0,113,227,.14)}

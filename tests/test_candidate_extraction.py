@@ -251,6 +251,14 @@ def test_prompt_asks_for_one_entry_per_role_and_per_degree() -> None:
     assert "Never merge\n  roles" in experience_rule
 
 
+def test_prompt_asks_for_three_part_education_and_experience_values() -> None:
+    text = load_candidate_prompt().text
+
+    assert 'joined\nby " · "' in text
+    assert "MSc in International Management · Fudan University · Sep 2025 –\nJul 2027" in text
+    assert "never fill it in" in text
+
+
 def test_several_roles_become_distinct_experience_entries() -> None:
     text = CV_TEXT + "Analyst, Acme, 2024\nIntern, Acme, 2023\n"
     roles = [

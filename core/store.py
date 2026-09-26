@@ -25,6 +25,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import re
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -268,6 +269,30 @@ def has_candidate_for(content_hash: str) -> bool:
 EDITABLE = (("skills", "skill"), ("education", "education"), ("experience", "experience"))
 #: Prefix of the documents that hold the user's own edits to the profile.
 EDIT_DOC = "profile-edit-"
+
+
+#: Joins the parts of an education or experience value, as the extraction
+#: prompt writes them: title · institution or employer · period.
+ENTRY_SEP = " · "
+
+
+def split_entry(value: str) -> tuple[str, str, str]:
+    """An education or experience value as (title, organisation, period).
+
+    A part the CV does not state is left out of the value, so the last part is
+    the period only if it holds a year. Text that does not follow the format
+    stays whole in the title, for the user to split.
+    """
+    parts = [p.strip() for p in value.split(ENTRY_SEP)]
+    if len(parts) > 3:
+        return value.strip(), "", ""
+    period = parts.pop() if len(parts) > 1 and re.search(r"\d{4}", parts[-1]) else ""
+    return parts[0], ENTRY_SEP.join(parts[1:]), period
+
+
+def join_entry(title: str, organisation: str, period: str) -> str:
+    """The value split_entry reads back: the stated parts, in order."""
+    return ENTRY_SEP.join(p for p in (" ".join(x.split()) for x in (title, organisation, period)) if p)
 
 
 def apply_edits(profile: CandidateProfile, edits: dict[str, list[str]]) -> CandidateProfile:
