@@ -22,6 +22,7 @@ from pathlib import Path
 import streamlit as st
 
 from core import clock, explore, ranking, store
+from oi.intelligence.eligibility.catalogue import LANGUAGE_CONSTRAINT_ID, LanguageLevel
 from oi.intelligence.extraction import extract_candidate
 from oi.io.pdf import PdfExtractionError, extract_pdf_text
 from oi.providers.kimi import KimiClient
@@ -212,8 +213,15 @@ def step1(reading: tuple[str, int] | None = None) -> str:
 
 #: Profile sections read from the CV: card title and CandidateProfile field.
 CV_SECTIONS = [("Skills", "skills"), ("Education", "education"), ("Experience", "experience")]
-#: Sections the mockup shows that CV extraction does not read.
-UNREAD_SECTIONS = ["Languages"]
+#: The languages card: its title and the pseudo-field its answers are read
+#: under (the HC_LANGUAGE eligibility answers, not a CandidateProfile section).
+LANGUAGES = ("Languages", "languages")
+#: How the languages card names the languages the rule catalogue knows, by
+#: ISO 639-1 code. Any other code is shown as the code itself.
+LANGUAGE_NAMES = {
+    "en": "English", "it": "Italian", "de": "German", "fr": "French",
+    "es": "Spanish", "nl": "Dutch", "zh": "Mandarin", "ja": "Japanese",
+}
 #: How many skills a card lists before summarising the rest as "+N".
 SKILL_CHIPS = 8
 #: How many entries an education or experience card lists before "+N more".
@@ -253,12 +261,28 @@ def fact_quote(profile, fact) -> str:
     return " … ".join(" ".join(quotes[i].split()) for i in fact.evidence_ids)
 
 
+def section_facts(profile, field: str) -> list:
+    """What one card shows: a CandidateProfile section, or for "languages"
+    the HC_LANGUAGE answers the CV stated."""
+    if field == LANGUAGES[1]:
+        return list(profile.eligibility_answers.get(LANGUAGE_CONSTRAINT_ID, []))
+    return getattr(profile, field)
+
+
 def section_quotes(profile, field: str) -> list[str]:
     """The distinct CV quotes behind one section, in order. Several facts
     often rest on the same line of the CV; that line counts once. Values the
     user edited rest on no CV quote and are left out."""
-    facts = [f for f in getattr(profile, field) if not store.is_edited(profile, f)]
+    facts = [f for f in section_facts(profile, field) if not store.is_edited(profile, f)]
     return list(dict.fromkeys(fact_quote(profile, f) for f in facts))
+
+
+def language_label(answer) -> str:
+    """The language and its level on the scale the CV stated it on, e.g.
+    "English · C1" or "Mandarin · HSK 4", or that no level could be read."""
+    code = answer.answer_key.removeprefix("level_")
+    level = LanguageLevel.parse(answer.value)
+    return f"{LANGUAGE_NAMES.get(code, code.upper())} · {level.label if level else 'level not stated'}"
 
 
 def quote_count(n: int) -> str:
@@ -283,14 +307,15 @@ def cv_card(profile, title: str, field: str) -> str:
     """A card for one section read from the CV: its facts, or why there are none."""
     if profile is None:
         return profile_card(title, NOT_READ, '<div class="p-v">Upload your CV in step 1</div>')
-    facts = getattr(profile, field)
+    facts = section_facts(profile, field)
     if not facts:
         return profile_card(title, NOT_FOUND, '<div class="p-v">Not stated in your CV</div>')
+    text = language_label if field == LANGUAGES[1] else (lambda fact: fact.value)
 
     def item(fact, tag: str, cls: str = "") -> str:
-        return f'<{tag}{cls} title="{esc(fact_quote(profile, fact))}">{esc(fact.value)}</{tag}>'
+        return f'<{tag}{cls} title="{esc(fact_quote(profile, fact))}">{esc(text(fact))}</{tag}>'
 
-    if field == "skills":
+    if field in ("skills", LANGUAGES[1]):
         chips = "".join(item(f, "span", ' class="w-chip"') for f in facts[:SKILL_CHIPS])
         if len(facts) > SKILL_CHIPS:
             chips += f'<span class="w-chip">+{len(facts) - SKILL_CHIPS}</span>'
@@ -329,13 +354,21 @@ def work_auth_cards() -> list[str]:
     ]
 
 
+def languages_card(profile) -> str:
+    """The languages the CV stated, each with its level and the quote it came
+    from. A read CV that states none says so, like any other CV section."""
+    if profile is None:
+        return profile_card(LANGUAGES[0], NOT_READ, '<div class="p-v">Not read from your CV</div>')
+    return cv_card(profile, *LANGUAGES)
+
+
 def cv_page(profile) -> str:
     """The CV panel: the quotes each section was read from, highlighted."""
     if profile is None:
         return '<div class="p-m" style="margin-top:0">Quotes from your CV appear here once it has been read.</div>'
     filler = '<div class="p-ln" style="width:92%"></div><div class="p-ln" style="width:78%"></div>'
     blocks = []
-    for title, field in CV_SECTIONS:
+    for title, field in [*CV_SECTIONS, LANGUAGES]:
         quotes = section_quotes(profile, field)
         if not quotes:
             continue
@@ -362,11 +395,9 @@ def step2() -> str:
     else:
         found = sum(bool(getattr(profile, field)) for _, field in CV_SECTIONS)
         sub = f"{found} of {len(CV_SECTIONS)} sections found in your CV. <b>Each value is backed by a quote from it.</b>"
-        distinct = {q for _, field in CV_SECTIONS for q in section_quotes(profile, field)}
+        distinct = {q for _, field in [*CV_SECTIONS, LANGUAGES] for q in section_quotes(profile, field)}
         quotes = quote_count(len(distinct))
-    cards = [cv_card(profile, title, field) for title, field in CV_SECTIONS] + work_auth_cards() + [
-        profile_card(title, NOT_READ, '<div class="p-v">Not read from your CV</div>') for title in UNREAD_SECTIONS
-    ]
+    cards = [cv_card(profile, title, field) for title, field in CV_SECTIONS] + work_auth_cards() + [languages_card(profile)]
     # Always offered: without a CV the editor still takes the mandatory declaration.
     body = swap(
         body, re.escape('<div class="w-h1">Here’s what we found</div>'),
