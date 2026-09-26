@@ -164,6 +164,7 @@ def init() -> None:
     st.session_state.setdefault(CANDIDATE, None)
     st.session_state.setdefault(EXTRACTION_ERROR, None)
     st.session_state.setdefault(SIMULATED, False)
+    st.session_state.setdefault(WORK_AUTH, None)
 
 
 # ───────────────────────── Access (demo only) ─────────────────────────
@@ -241,13 +242,104 @@ def uk() -> Optional[str]:
 
 
 def set_uk(choice: Optional[str]) -> None:
-    """Record the UK answer. Everything downstream recomputes from it."""
+    """Record the UK answer. Everything downstream recomputes from it.
+
+    A saved work authorization declaration follows the answer, so the two
+    never disagree: "yes" means authorized in the UK, "no" means sponsorship
+    needed there, anything else declares neither.
+    """
     st.session_state[ANSWERS] = {**answers(), "uk_work": choice}
+    decl = work_auth()
+    if decl is not None:
+        authorized = [c for c in decl["authorized"] if c != "GB"] + (["GB"] if choice == "yes" else [])
+        sponsorship = [c for c in decl["sponsorship"] if c != "GB"] + (["GB"] if choice == "no" else [])
+        _store_work_auth(authorized, sponsorship)
 
 
 def set_answer(key: str, value: Any) -> None:
     """Record any other answer (e.g. the Fudan letter was uploaded)."""
     st.session_state[ANSWERS] = {**answers(), key: value}
+
+
+# ───────────────────────── Work authorization and sponsorship ─────────────────────────
+#
+# Declared once in onboarding, for every country the platform covers. A
+# country the user selects is a "yes"; one they leave out is an explicit
+# "no". Nothing is inferred from citizenship. Only ISO country codes are
+# stored: "EU" is a shortcut in the form, never a declared country.
+#
+# Only the UK part is used today, through the UK answer; the other countries
+# are kept for later and change no eligibility or ranking.
+
+_MARKETS_PATH = Path(__file__).resolve().parent.parent / "config" / "markets.json"
+WORK_AUTH = "work_auth"
+
+
+@lru_cache(maxsize=1)
+def markets() -> tuple[dict, ...]:
+    """The countries the platform covers: {"code", "name", "eu"}, in display order."""
+    return tuple(json.loads(_MARKETS_PATH.read_text("utf-8"))["countries"])
+
+
+def eu_codes() -> tuple[str, ...]:
+    """The platform countries in the EU; choosing "EU" selects all of them."""
+    return tuple(c["code"] for c in markets() if c["eu"])
+
+
+def country_name(code: str) -> str:
+    return next(c["name"] for c in markets() if c["code"] == code)
+
+
+def work_auth() -> Optional[dict]:
+    """The declaration, as {"authorized": [...], "sponsorship": [...]} country
+    codes in market order, or None until the user has made one."""
+    return st.session_state.get(WORK_AUTH)
+
+
+def work_auth_complete() -> bool:
+    """Whether the mandatory onboarding declaration has been made."""
+    return work_auth() is not None
+
+
+def set_work_auth(authorized: list[str], sponsorship: list[str]) -> None:
+    """Record where the user may work and where they would need sponsorship.
+
+    Either list may be empty ("none of these"). The UK part also answers the
+    UK question, so step 6 and every screen start from it.
+
+    Raises:
+        ValueError: On a country the platform does not cover, or one that is
+            both authorized and in need of sponsorship.
+    """
+    order = [c["code"] for c in markets()]
+    unknown = sorted((set(authorized) | set(sponsorship)) - set(order))
+    if unknown:
+        raise ValueError(f"Not a platform country: {', '.join(unknown)}.")
+    both = [c for c in order if c in authorized and c in sponsorship]
+    if both:
+        names = ", ".join(country_name(c) for c in both)
+        raise ValueError(f"You can’t need sponsorship where you can already work: {names}.")
+    _store_work_auth(authorized, sponsorship)
+    st.session_state[ANSWERS] = {**answers(), "uk_work": uk_from_work_auth()}
+
+
+def _store_work_auth(authorized: list[str], sponsorship: list[str]) -> None:
+    order = [c["code"] for c in markets()]
+    st.session_state[WORK_AUTH] = {
+        "authorized": [c for c in order if c in authorized],
+        "sponsorship": [c for c in order if c in sponsorship],
+    }
+
+
+def uk_from_work_auth() -> Optional[str]:
+    """The UK answer the declaration gives: "yes" if authorized, "no" if
+    sponsorship is needed, "unsure" if neither; None before a declaration."""
+    decl = work_auth()
+    if decl is None:
+        return None
+    if "GB" in decl["authorized"]:
+        return "yes"
+    return "no" if "GB" in decl["sponsorship"] else "unsure"
 
 
 def preferences() -> Optional[list[dict]]:
