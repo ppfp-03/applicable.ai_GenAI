@@ -14,15 +14,20 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Any, Optional
+from typing import Any, Optional, TypeVar
 
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from oi.providers.model_client import (
     ExtractedFields,
+    ExtractedJobFields,
     ExtractionError,
+    Prompt,
     load_candidate_prompt,
+    load_job_prompt,
 )
+
+_Output = TypeVar("_Output", bound=BaseModel)
 
 #: NVIDIA's OpenAI-compatible inference endpoint.
 DEFAULT_BASE_URL = "https://integrate.api.nvidia.com/v1"
@@ -43,7 +48,7 @@ MAX_ATTEMPTS = 3
 
 
 class KimiClient:
-    """Thin client for candidate extraction via the Kimi API.
+    """Thin client for candidate and job extraction via the Kimi API.
 
     Credentials are read from the environment at construction time. The caller
     loads any .env file beforehand; this class does not read one and keeps no
@@ -110,22 +115,49 @@ class KimiClient:
         """
         if not document_text.strip():
             raise ValueError("Cannot extract a profile from empty document text.")
+        return self._extract(
+            load_candidate_prompt(), "candidate_fields", document_text, ExtractedFields
+        )
 
+    def extract_job_fields(self, description_text: str) -> ExtractedJobFields:
+        """Ask Kimi to extract job facts and requirements from a posting.
+
+        Args:
+            description_text: The plain text of the job description.
+
+        Returns:
+            The model's facts and requirements, each paired with the quote it
+            claims supports it. Quotes and proposed hard constraints are
+            unverified here; the caller checks them.
+
+        Raises:
+            ValueError: If `description_text` is empty.
+            ExtractionError: As for `extract_candidate_fields`.
+        """
+        if not description_text.strip():
+            raise ValueError("Cannot extract job facts from empty description text.")
+        return self._extract(
+            load_job_prompt(), "job_fields", description_text, ExtractedJobFields
+        )
+
+    def _extract(
+        self, prompt: Prompt, schema_name: str, text: str, output: type[_Output]
+    ) -> _Output:
+        """Send one strict structured-output request and parse the reply."""
         from openai import OpenAIError
 
-        prompt = load_candidate_prompt()
         for _ in range(MAX_ATTEMPTS):
             try:
                 response = self._client.chat.completions.create(
                     model=self.model_id,
                     messages=[
                         {"role": "system", "content": prompt.text},
-                        {"role": "user", "content": document_text},
+                        {"role": "user", "content": text},
                     ],
                     response_format={
                         "type": "json_schema",
                         "json_schema": {
-                            "name": "candidate_fields",
+                            "name": schema_name,
                             "schema": prompt.schema,
                             "strict": True,
                         },
@@ -157,7 +189,7 @@ class KimiClient:
             ) from exc
 
         try:
-            return ExtractedFields.model_validate(payload)
+            return output.model_validate(payload)
         except ValidationError as exc:
             raise ExtractionError(
                 f"Kimi response did not match the expected schema: {exc}"
