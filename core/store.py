@@ -6,8 +6,10 @@ score); what the product concludes is never stored: every page asks this
 module, which runs the eligibility checks and core/ranking.py against the
 current answers. Change an answer and every screen follows.
 
-Work authorisation comes from the canonical engine (core/eligibility.py,
-HC_WORK_AUTH); the other seven criteria still come from core/rules.py.
+Every criterion comes from the canonical eligibility engine: the demo state
+is mapped onto its inputs by core/eligibility.py (structural adapter) and its
+result is rendered into the screens' tiles by core/eligibility_view.py
+(presentation adapter). Nothing in this module decides eligibility.
 
 The one answer that moves the most roles is the UK question. The demo starts
 where the dashboard mockup does -- the user finished onboarding and said
@@ -31,7 +33,7 @@ from typing import Any, Optional
 
 import streamlit as st
 
-from core import eligibility, ranking, rules
+from core import eligibility, eligibility_view, ranking, rules
 from oi.contracts import CandidateProfile
 
 _DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "demo.json"
@@ -99,6 +101,8 @@ class RoleView:
     raw: float
     score: float
     parts: list[float] = field(default_factory=list)
+    #: Requirements no supported rule checks; they never change `standing`.
+    limitations: list[eligibility_view.Limitation] = field(default_factory=list)
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self.role, name)
@@ -312,11 +316,13 @@ def view(role: RoleDef, ans: Optional[dict] = None) -> RoleView:
     """Check and score one role under `ans` (default: the current answers)."""
     d = data()
     ans = answers() if ans is None else ans
-    crit = rules.evaluate(d.profile, ans, role.raw, permission=eligibility.permission(role.raw, ans))
-    standing = rules.verdict(crit)
+    result = eligibility.assess(role.raw, d.profile, ans)
+    crit = eligibility_view.criteria(result, role.raw, d.profile, ans)
+    standing = eligibility_view.standing(result)
     raw = ranking.raw_score(role.factors, d.weights)
     return RoleView(role, crit, standing, raw, ranking.priority(raw, standing, d.penalty),
-                    ranking.contributions(role.factors, d.weights))
+                    ranking.contributions(role.factors, d.weights),
+                    eligibility_view.limitations(role.raw, d.profile, ans))
 
 
 def views(ans: Optional[dict] = None, as_of: Optional[str] = None) -> list[RoleView]:

@@ -144,13 +144,13 @@ def test_canonical_freshness_treats_it_as_simulated_discovery(role_id: str) -> N
 
 def test_the_event_recomputes_through_the_canonical_checks_and_ranking(monkeypatch) -> None:
     checked: list[str] = []
-    permission = eligibility.permission
+    assess = eligibility.assess
 
-    def spy(role, answers):
+    def spy(role, profile, answers):
         checked.append(role["id"])
-        return permission(role, answers)
+        return assess(role, profile, answers)
 
-    monkeypatch.setattr(store.eligibility, "permission", spy)
+    monkeypatch.setattr(store.eligibility, "assess", spy)
 
     store.views()
     assert not set(checked) & SCENARIO

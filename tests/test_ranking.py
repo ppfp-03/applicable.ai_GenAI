@@ -1,10 +1,12 @@
 """Ranking arithmetic and the orders the screens show.
 
 The expected lists are the dashboard/matches top five after "Yes" and the
-question screen's preview for each answer. Work authorisation comes from the
-canonical HC_WORK_AUTH rule, so they differ from the approved mockups wherever
-the mockups assumed a permit nobody declared: sponsoring Singapore roles are
-"to verify" (no Singapore declaration), not eligible.
+question screen's preview for each answer. Every criterion comes from the
+canonical engine, so they differ from the approved mockups wherever the
+mockups assumed a fact nobody declared: sponsoring Singapore roles are "to
+verify" (no Singapore declaration), not eligible. Mandarin HSK is outside
+canonical eligibility, so Deutsch Bank Shanghai (HSK 6) is "to verify", not
+excluded.
 """
 
 from __future__ import annotations
@@ -38,31 +40,32 @@ def test_to_verify_roles_lose_the_penalty():
 
 
 def test_top_five_after_yes():
-    assert top("yes") == [("RP", 87), ("BC", 83), ("LZ", 81), ("MS", 77), ("NE", 61)]
+    assert top("yes") == [("RP", 87), ("BC", 83), ("LZ", 81), ("MS", 77), ("DB", 65)]
 
 
 def test_question_preview_for_no_and_not_sure():
-    # "No" + a sponsoring employer is MET under HC_WORK_AUTH; non-sponsors are excluded.
-    assert [m for m, _ in top("no")] == ["BC", "MS", "NE", "JP", "RO"]
-    assert [m for m, _ in top("unsure")] == ["RP", "BC", "LZ", "MS", "NE"]
+    # "No" + sponsorship offered is MET under HC_WORK_AUTH; "not offered" is
+    # a conflict (Replai, Lazarde are excluded).
+    assert [m for m, _ in top("no")] == ["BC", "MS", "DB", "NE", "JP"]
+    assert [m for m, _ in top("unsure")] == ["RP", "BC", "LZ", "DB", "MS"]
 
 
 def test_onboarding_shortlist_before_the_answer():
     assert top(None, as_of=store.data().profile["onboarded"]) == [
-        ("RP", 72), ("BC", 68), ("LZ", 66), ("MS", 62), ("NE", 61)
+        ("RP", 72), ("BC", 68), ("LZ", 66), ("DB", 65), ("MS", 62)
     ]
 
 
 def test_movement_after_yes():
-    # Every role in the top five is "to verify" before the answer, so "Yes"
-    # lifts their scores without reordering them.
+    # Every role in the top five is "to verify" before the answer; "Yes"
+    # verifies the UK ones, which lifts Morgan above Deutsch Bank Shanghai.
     moves = store.movement({"uk_work": None}, {"uk_work": "yes"})
     assert moves == {
         "replai-pa": "—", "bolton-strategy": "—", "lazarde-ba": "—",
-        "morgan-product": "—", "nestella-strategy": "—",
+        "morgan-product": "↑ 1", "deutsch-shanghai": "↓ 1",
     }
 
 
 def test_excluded_roles_are_never_ranked():
-    ids = {v.id for v in store.ranked({"uk_work": "yes"}, include_new=True)}
-    assert "deutsch-shanghai" not in ids
+    ids = {v.id for v in store.ranked({"uk_work": "no"}, include_new=True)}
+    assert not {"replai-pa", "lazarde-ba"} & ids  # sponsorship not offered

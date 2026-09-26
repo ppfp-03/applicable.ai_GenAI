@@ -1,5 +1,5 @@
 {
-  "_comment": "Synthetic demo data for Applicable.ai. Every company is fictional. Eligibility is never stored here: core/rules.py decides it from `profile`, the user's answers and each role's `requirements`. Factor scores stand in for the pipeline's output; the priority score is always computed by core/ranking.py.",
+  "_comment": "Synthetic demo data for Applicable.ai. Every company is fictional. Eligibility is never stored here: the canonical engine (oi.intelligence.eligibility) decides it; core/eligibility.py only maps `profile`, the user's answers and each role's `requirements` onto it. Each role's `start` (\"2027-09\") is a synthetic scenario field, not a real posting's start date: it exists only so the degree-in-progress rule (completion before role start) is deterministic. `sponsorship` is explicit: offered, not_offered or not_stated; only not_offered can conflict. Both `start` and `sponsorship` are synthetic scenario values, set deliberately for deterministic demo evaluation only; they are not real HR posting data. Sponsorship scenario: the London non-sponsors (Replai, Lazarde) do not offer it; Deutsch Bank Shanghai requires a permit already held (see its posting quote), so it does not offer it; the other UK and Singapore roles offer it; Roshe Shanghai, Milan, Basel and Frankfurt do not state it. Roshe Shanghai's `cn_permit` is unused legacy data kept for a later cleanup; it is not read as sponsorship. Factor scores stand in for the pipeline's output; the priority score is always computed by core/ranking.py.",
   "today": "2026-09-24",
   "now": "10:55",
   "ranking_updated": "09:12",
@@ -18,7 +18,8 @@
     "university_letter": false,
     "enrolled": true,
     "school": "Fudan",
-    "degree": {"level": "master", "label": "MSc Finance", "field": "Finance", "school": "Fudan University", "graduation": "2027-07"},
+    "degree": {"level": "master", "label": "MSc Finance", "field": "Finance", "school": "Fudan University", "graduation": "2027-07", "status": "in_progress"},
+    "previous_degrees": [{"level": "bachelor", "label": "BSc Economics", "field": "Economics", "school": "Bocconi", "status": "completed", "completed": "2024"}],
     "languages": {"Italian": "native", "English": "C1", "Mandarin": "HSK 4"},
     "internships": 2,
     "experience_months": 10,
@@ -32,7 +33,7 @@
     {
       "id": "replai-pa", "company": "Replai", "mono": "RP", "bg": "#1D1D1F",
       "title": "Product Analyst Intern", "city": "London", "country": "GB", "mode": "Hybrid",
-      "closes": "2026-09-27", "closes_label": "Sun 27 Sep", "posted_days_ago": 9, "found": "2026-09-15", "sponsors_visa": false,
+      "closes": "2026-09-27", "closes_label": "Sun 27 Sep", "posted_days_ago": 9, "found": "2026-09-15", "sponsorship": "not_offered", "start": "2027-09",
       "factors": {"profile": [92, "7 of 8 key skills · MSc Finance"], "preference": [88, "Product role · London · hybrid"], "urgency": [90, "Applications close Sun 27 Sep"], "freshness": [70, "Demo fixture score · no source publication date"]},
       "why": "Strongest skills match", "highlight": "7 of 8 key skills", "gaps": [],
       "card_checks": [["ok", "7 of 8 key skills"], ["ok", "MSc Finance · fintech internship"]],
@@ -41,7 +42,7 @@
     {
       "id": "bolton-strategy", "company": "Bolton Consulting Group", "mono": "BC", "bg": "#3A3A3C",
       "title": "Strategy Intern", "city": "London", "country": "GB", "mode": "Onsite",
-      "closes": "2026-10-15", "closes_label": "15 Oct", "posted_days_ago": 2, "found": "2026-09-22", "sponsors_visa": true,
+      "closes": "2026-10-15", "closes_label": "15 Oct", "posted_days_ago": 2, "found": "2026-09-22", "sponsorship": "offered", "start": "2027-09",
       "factors": {"profile": [85, "6 of 8 key skills · case experience"], "preference": [90, "Strategy role · London"], "urgency": [60, "Closes 15 Oct"], "freshness": [95, "Demo fixture score · no source publication date"]},
       "why": "Best fit with your preferences", "highlight": "Strong preference fit", "gaps": [],
       "card_checks": [["ok", "Strong fit with your preferences"]],
@@ -50,7 +51,7 @@
     {
       "id": "lazarde-ba", "company": "Lazarde & Co.", "mono": "LZ", "bg": "#48484A",
       "title": "Business Analyst Intern", "city": "London", "country": "GB", "mode": "Hybrid",
-      "closes": "2026-10-18", "closes_label": "18 Oct", "posted_days_ago": 5, "found": "2026-09-19", "sponsors_visa": false,
+      "closes": "2026-10-18", "closes_label": "18 Oct", "posted_days_ago": 5, "found": "2026-09-19", "sponsorship": "not_offered", "start": "2027-09",
       "factors": {"profile": [90, "SQL, Python · Tableau"], "preference": [84, "Analyst role · London · hybrid"], "urgency": [55, "Closes 18 Oct"], "freshness": [86, "Demo fixture score · no source publication date"]},
       "why": "Strong skills match", "highlight": "SQL, Python · Tableau", "gaps": ["No payments experience"], "score_delta": 3,
       "card_checks": [["ok", "SQL, Python"]],
@@ -59,7 +60,7 @@
     {
       "id": "morgan-product", "company": "Morgan Stanfield", "mono": "MS", "bg": "#636366",
       "title": "Product Intern", "city": "London", "country": "GB", "mode": "Hybrid",
-      "closes": "2026-10-20", "closes_label": "20 Oct", "posted_days_ago": 0, "found": "2026-09-22", "sponsors_visa": true,
+      "closes": "2026-10-20", "closes_label": "20 Oct", "posted_days_ago": 0, "found": "2026-09-22", "sponsorship": "offered", "start": "2027-09",
       "factors": {"profile": [80, "5 of 7 key skills"], "preference": [78, "Product role · London"], "urgency": [55, "Closes 20 Oct"], "freshness": [98, "Demo fixture score · no source publication date"]},
       "why": "Good overall fit", "highlight": "Product internship", "gaps": ["Prefers 12 months"],
       "card_checks": [["ok", "Product internship"]],
@@ -68,7 +69,7 @@
     {
       "id": "nestella-strategy", "company": "Nestella", "mono": "NE", "bg": "#8E8E93",
       "title": "Strategy Intern", "city": "Singapore", "country": "SG", "mode": "Onsite",
-      "closes": "2026-10-03", "closes_label": "Sat 3 Oct", "posted_days_ago": 5, "found": "2026-09-19", "sponsors_visa": true,
+      "closes": "2026-10-03", "closes_label": "Sat 3 Oct", "posted_days_ago": 5, "found": "2026-09-19", "sponsorship": "offered", "start": "2027-09",
       "factors": {"profile": [78, "Mandarin HSK 4 · strategy projects"], "preference": [82, "Strategy role · Singapore"], "urgency": [65, "Closes Sat 3 Oct"], "freshness": [75, "Demo fixture score · no source publication date"]},
       "why": "Good preference fit", "highlight": "Mandarin HSK 4", "gaps": [],
       "card_checks": [["ok", "Strategy internship"], ["ok", "Mandarin HSK 4"]],
@@ -77,7 +78,7 @@
     {
       "id": "jpmorrow-strategy", "company": "J.P. Morrow", "mono": "JP", "bg": "#AEAEB2",
       "title": "Strategy Analyst Intern", "city": "Singapore", "country": "SG", "mode": "Hybrid",
-      "closes": "2026-10-30", "closes_label": "30 Oct", "posted_days_ago": 0, "found": "2026-09-10", "sponsors_visa": true,
+      "closes": "2026-10-30", "closes_label": "30 Oct", "posted_days_ago": 0, "found": "2026-09-10", "sponsorship": "offered", "start": "2027-09",
       "factors": {"profile": [80, "SQL, Python · MSc Finance"], "preference": [76, "Strategy role · Singapore"], "urgency": [50, "Closes 30 Oct"], "freshness": [89, "Demo fixture score · no source publication date"]},
       "why": "Solid skills match", "highlight": "SQL, Python", "gaps": ["No A/B testing experience"],
       "card_checks": [["ok", "SQL, Python"], ["ok", "MSc Finance"], ["gap", "No A/B testing experience"]],
@@ -86,7 +87,7 @@
     {
       "id": "unicreda-pa", "company": "UniCreda", "mono": "UC", "bg": "#1C1C1E",
       "title": "Product Analyst", "city": "Singapore", "country": "SG", "mode": "Hybrid",
-      "closes": "2026-10-25", "closes_label": "25 Oct", "posted_days_ago": null, "found": "2026-09-24", "sponsors_visa": true, "new": true, "scenario": "SIM-INGEST-01", "first_seen_at": "2026-09-24T10:55:00+00:00",
+      "closes": "2026-10-25", "closes_label": "25 Oct", "posted_days_ago": null, "found": "2026-09-24", "sponsorship": "offered", "start": "2027-09", "new": true, "scenario": "SIM-INGEST-01", "first_seen_at": "2026-09-24T10:55:00+00:00",
       "factors": {"profile": [78, "Fintech · product analytics"], "preference": [74, "Product role · Singapore"], "urgency": [60, "Closes 25 Oct"], "freshness": [88, "Simulated ingestion event · no source publication date"]},
       "why": "Fintech in your city", "highlight": "Fintech · Singapore", "gaps": [],
       "card_checks": [["ok", "Fintech · Singapore"]],
@@ -95,7 +96,7 @@
     {
       "id": "roshe-product", "company": "Roshe", "mono": "RO", "bg": "#636366",
       "title": "Product Intern", "city": "Shanghai", "country": "CN", "mode": "Hybrid",
-      "closes": "2026-10-20", "closes_label": "20 Oct", "posted_days_ago": 3, "found": "2026-09-21", "sponsors_visa": false, "cn_permit": "employer",
+      "closes": "2026-10-20", "closes_label": "20 Oct", "posted_days_ago": 3, "found": "2026-09-21", "sponsorship": "not_stated", "start": "2027-09", "cn_permit": "employer",
       "factors": {"profile": [71, "Fintech internship · based in Shanghai"], "preference": [66, "Product role · Shanghai"], "urgency": [45, "Closes 20 Oct"], "freshness": [82, "Demo fixture score · no source publication date"]},
       "why": "You are already in Shanghai", "highlight": "Prefers CS degree", "highlight_kind": "gap", "gaps": ["Prefers CS degree"],
       "card_checks": [["ok", "Fintech internship"], ["ok", "Based in Shanghai"], ["gap", "Prefers CS degree"]],
@@ -104,7 +105,7 @@
     {
       "id": "mediobanco-growth", "company": "Mediobanco", "mono": "MB", "bg": "#3A3A3C",
       "title": "Growth Intern", "city": "Milan", "country": "IT", "mode": "Hybrid",
-      "closes": "2026-10-28", "closes_label": "28 Oct", "posted_days_ago": null, "found": "2026-09-24", "sponsors_visa": false, "new": true, "scenario": "SIM-INGEST-01", "first_seen_at": "2026-09-24T10:55:00+00:00",
+      "closes": "2026-10-28", "closes_label": "28 Oct", "posted_days_ago": null, "found": "2026-09-24", "sponsorship": "not_stated", "start": "2027-09", "new": true, "scenario": "SIM-INGEST-01", "first_seen_at": "2026-09-24T10:55:00+00:00",
       "factors": {"profile": [72, "Growth analytics · Mediobanco alumna"], "preference": [72, "Growth role · Milan"], "urgency": [65, "Closes 28 Oct"], "freshness": [88, "Simulated ingestion event · no source publication date"]},
       "why": "You interned here before", "highlight": "Mediobanco alumna", "gaps": [],
       "card_checks": [["ok", "Mediobanco alumna"]],
@@ -113,7 +114,7 @@
     {
       "id": "roshe-basel", "company": "Roshe", "mono": "RO", "bg": "#636366",
       "title": "Strategy Intern", "city": "Basel", "country": "CH", "mode": "Onsite", "contract_months": 6,
-      "closes": "2026-10-22", "closes_label": "22 Oct", "posted_days_ago": null, "found": "2026-09-24", "sponsors_visa": false, "new": true, "scenario": "SIM-INGEST-01", "first_seen_at": "2026-09-24T10:55:00+00:00",
+      "closes": "2026-10-22", "closes_label": "22 Oct", "posted_days_ago": null, "found": "2026-09-24", "sponsorship": "not_stated", "start": "2027-09", "new": true, "scenario": "SIM-INGEST-01", "first_seen_at": "2026-09-24T10:55:00+00:00",
       "factors": {"profile": [70, "Strategy projects · finance"], "preference": [74, "Strategy role · Basel"], "urgency": [60, "Closes 22 Oct"], "freshness": [90, "Simulated ingestion event · no source publication date"]},
       "why": "Strategy role in finance", "highlight": "Strategy projects · finance", "gaps": [],
       "card_checks": [["ok", "Strategy projects · finance"]],
@@ -122,7 +123,7 @@
     {
       "id": "deutsch-frankfurt", "company": "Deutsch Bank", "mono": "DB", "bg": "#8E8E93",
       "title": "Product Intern", "city": "Frankfurt", "country": "DE", "mode": "Hybrid",
-      "closes": "2026-10-26", "closes_label": "26 Oct", "posted_days_ago": null, "found": "2026-09-24", "sponsors_visa": false, "new": true, "scenario": "SIM-INGEST-01", "first_seen_at": "2026-09-24T10:55:00+00:00",
+      "closes": "2026-10-26", "closes_label": "26 Oct", "posted_days_ago": null, "found": "2026-09-24", "sponsorship": "not_stated", "start": "2027-09", "new": true, "scenario": "SIM-INGEST-01", "first_seen_at": "2026-09-24T10:55:00+00:00",
       "factors": {"profile": [70, "Product analytics · SQL"], "preference": [68, "Product role · Frankfurt"], "urgency": [60, "Closes 26 Oct"], "freshness": [86, "Simulated ingestion event · no source publication date"]},
       "why": "Your SQL fits product analytics", "highlight": "SQL · product analytics", "gaps": [],
       "card_checks": [["ok", "SQL · product analytics"]],
@@ -131,9 +132,9 @@
     {
       "id": "deutsch-shanghai", "company": "Deutsch Bank", "mono": "DB", "bg": "#6E6E73",
       "title": "Product Analyst Intern", "city": "Shanghai", "country": "CN", "mode": "Onsite",
-      "closes": "2026-10-12", "closes_label": "12 Oct", "posted_days_ago": 4, "found": "2026-09-20", "sponsors_visa": false, "semantic": 96, "checked": "01:06",
+      "closes": "2026-10-12", "closes_label": "12 Oct", "posted_days_ago": 4, "found": "2026-09-20", "sponsorship": "not_offered", "start": "2027-09", "semantic": 96, "checked": "01:06",
       "factors": {"profile": [94, "Product analytics · Mandarin"], "preference": [80, "Product role · Shanghai"], "urgency": [50, "Closes 12 Oct"], "freshness": [84, "Demo fixture score · no source publication date"]},
-      "why": "High semantic match, blocked by a rule", "highlight": "Mandarin HSK 6 required", "gaps": [],
+      "why": "High semantic match · two facts to verify", "highlight": "Mandarin HSK 6 · not checked by rules", "highlight_kind": "gap", "gaps": [],
       "card_checks": [],
       "requirements": {"degree_level": "master", "fields": ["Computer Science", "Statistics"], "related_ok": true, "graduation": ["2026-06", "2027-12"], "experience_min": 1, "student": true, "languages": {"Mandarin": "HSK 6"}},
       "posting": {

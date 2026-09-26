@@ -6,7 +6,8 @@ score = 0.40 × profile fit + 0.25 × preference fit
 The weights are the same for every role. A role still "to verify" loses a
 fixed penalty until the missing fact is known, so a verified role outranks an
 unverified one of similar fit. Ranking orders eligible roles; it never
-decides eligibility -- that is core/rules.py, and an excluded role is never
+decides eligibility -- that is the canonical engine, reached through
+core/eligibility.py -- and an excluded role is never
 ranked however high it would score.
 """
 
