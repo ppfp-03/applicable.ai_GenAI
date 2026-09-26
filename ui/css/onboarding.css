@@ -416,6 +416,8 @@
 .stamp{transition:opacity .2s}.act{cursor:pointer}.act .o{transition:transform .15s}.act:hover .o{transform:scale(1.06)}
 .o6,.v3-seg span,.w-chip,.segm span{cursor:pointer}
 .u-pb i{transition:width 1.6s ease}
+.u-pb.run i{width:35%;animation:u-run 1.3s ease-in-out infinite}
+@keyframes u-run{from{transform:translateX(-100%)}to{transform:translateX(290%)}}
 .cc{transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .7s,box-shadow .7s}
 .cc.hl{transform:translate(calc(-50% - 1100px),-50%) scale(.6);opacity:0}
 .cc.hr{transform:translate(calc(-50% + 1100px),-50%) scale(.6);opacity:0}

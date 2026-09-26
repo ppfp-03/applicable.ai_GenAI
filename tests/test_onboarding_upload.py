@@ -70,6 +70,16 @@ def test_a_text_pdf_is_read_into_a_profile(model, ocr_used) -> None:
     assert ocr_used == []
 
 
+def test_the_file_card_shows_the_cv_read_not_the_demo_file(model) -> None:
+    pdf = build_text_pdf("Skills: Python")
+    at = upload(pdf)
+
+    page = "".join(m.value for m in at.markdown)
+    assert "cv.pdf" in page and "Read · 100%" in page and "1 KB" in page
+    for demo in ["Synthetic_CV_Giulia_Rossi.pdf", "184 KB · 2 pages", "Reading text · 64%"]:
+        assert demo not in page
+
+
 def test_a_pdf_without_text_fails_clearly_without_ocr_or_extraction(model, ocr_used) -> None:
     at = upload(build_pdf(b""))
 

@@ -28,7 +28,8 @@ from oi.providers.kimi import KimiClient
 from oi.providers.model_client import ExtractionError
 from ui import onboarding_markup as M
 from ui import parts, tabs
-from ui.html import CK12, CK_WHITE, WN12, esc, html
+from ui.html import CK12, CK_WHITE, WN12, esc, html, squash
+from ui.palette import orange
 from ui.theme import page_css
 
 d = store.data()
@@ -61,7 +62,7 @@ ACTS_3B = [(422, 645, 61, 104), (505, 652, 49, 90), (576, 645, 72, 104)]
 SEG_3B = [(24, 4, 104, 26)]
 OPTS_6 = [(230, 375, 600, 68), (230, 453, 600, 68), (230, 531, 600, 68)]
 FILT_7 = [(33, 107, 56, 26), (91, 107, 157, 26), (249, 107, 75, 26)]
-#: Where the CV's reading status sits: over the mockup's file card, below the drop zone.
+#: Where a CV reading error sits: in the file card's place, below the drop zone.
 CV_STATUS = (428, 458, 664)
 BTN_7 = [(1336, 194, 135, 34), (1405, 324, 66, 34), (1405, 454, 66, 34), (1405, 583, 66, 34), (1405, 713, 66, 34)]
 
@@ -76,7 +77,7 @@ S.setdefault("ob_swipes", [])  # one verdict per story seen, in story order: "r"
 S.setdefault("ob_tick", 0)
 S.setdefault("ob_uk", "yes")
 S.setdefault("ob_filter", 0)
-S.setdefault("ob_file", None)
+S.setdefault("ob_file", None)  # (name, size in bytes) of the CV read
 S.setdefault("ob_cv", None)
 
 qs = st.query_params.get("step")
@@ -148,13 +149,19 @@ def overlay(name: str, box, label: str, on_click=None, args=None, shortcut=None)
 # ───────────────────────── Step markup ─────────────────────────
 
 
-def step1() -> str:
+def step1(reading: tuple[str, int] | None = None) -> str:
+    """The upload screen. Its file card shows the CV being read (`reading`) or the one read."""
     body = M.S_1
-    name = S["ob_file"]
-    if name:
-        body = body.replace("Synthetic_CV_Giulia_Rossi.pdf", esc(name)).replace("Reading text · 64%", "Read · 100%")
-        body = body.replace('<div class="u-pb"><i></i></div>', '<div class="u-pb"><i style="width:100%"></i></div>')
-    if store.extraction_error():  # the error takes the file card's place
+    shown = reading or S["ob_file"]
+    if shown:
+        name, size = shown
+        status, bar = ("Reading your CV…", '<div class="u-pb run"><i></i></div>') if reading else (
+            "Read · 100%", '<div class="u-pb"><i style="width:100%"></i></div>')
+        body = swap(body, re.escape("Synthetic_CV_Giulia_Rossi.pdf"), esc(name))
+        body = swap(body, re.escape("Reading text · 64%"), status)
+        body = swap(body, re.escape("184 KB · 2 pages"), f"{max(1, round(size / 1024))} KB")
+        body = swap(body, re.escape('<div class="u-pb"><i></i></div>'), bar)
+    if store.extraction_error() and not reading:  # the error takes the file card's place
         body = body.replace('<div class="w-card u-file">', '<div class="w-card u-file" style="visibility:hidden">')
     return body
 
@@ -733,7 +740,14 @@ with st.container(key="otop"):
 
 with st.container(key="obody"):
     if step == "1":
-        html(f'<section class="w-sec">{step1()}</section>')
+        # The screen is a placeholder so the file card itself can show the CV being read.
+        screen = st.empty()
+
+        def draw(reading: tuple[str, int] | None = None) -> None:
+            markup = squash(f'<section class="w-sec">{step1(reading)}</section>')
+            screen.markdown(f'<div class="x">{orange(markup)}</div>', unsafe_allow_html=True)
+
+        draw()
         with st.container(key="oup"):
             up = st.file_uploader("Drop your CV here", type=["pdf"], key="ob-cv", label_visibility="collapsed")
         x, y, w = CV_STATUS
@@ -742,14 +756,16 @@ with st.container(key="obody"):
             unsafe_allow_html=True,
         )
         with st.container(key="ocv"):
+            # Emptied first, so an earlier error never sits over the card while a new CV is read.
+            status = st.empty()
             if up is not None and S["ob_cv"] != up.file_id:
                 S["ob_cv"] = up.file_id
-                with st.spinner("Reading your CV…"):
-                    read_cv(up.getvalue())
-                S["ob_file"] = up.name if store.candidate() else None
+                draw((up.name, up.size))
+                read_cv(up.getvalue())
+                S["ob_file"] = (up.name, up.size) if store.candidate() else None
                 st.rerun()
             if store.extraction_error():
-                st.error(f"We couldn’t read your CV. {store.extraction_error()}")
+                status.error(f"We couldn’t read your CV. {store.extraction_error()}")
     elif step == "2":
         html(f'<section class="w-sec">{step2()}</section>')
     elif step == "3a":
