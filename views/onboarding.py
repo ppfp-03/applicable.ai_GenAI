@@ -417,8 +417,9 @@ def cc_card(v, cls: str, first_verify: bool) -> str:
     checks = "".join(
         f'<div>{CK12 if k == "ok" else WN12}<span>{esc(t)}</span></div>' for k, t in v.card_checks
     )
-    if v.standing == "verify":
-        checks += f'<div>{WN12}<span>UK work permission unknown</span></div>'
+    kind, auth = parts.work_auth_check(v)
+    if kind != "ok":
+        checks += f'<div>{WN12}<span>{esc(auth)}</span></div>'
     n = clock.days_until(v.closes)
     close = (
         f'<div class="cc-pill u">Closes in {n} days<small>{esc(" ".join(v.closes_label.split()[-2:]))}</small></div>'

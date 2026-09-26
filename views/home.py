@@ -22,7 +22,7 @@ from pathlib import Path
 import streamlit as st
 
 from core import clock, store
-from ui import shell, tabs
+from ui import parts, shell, tabs
 from ui.html import CK, NEXT, PREV, WN, esc, html, logo, md_icon
 from ui.theme import page_css
 
@@ -41,9 +41,21 @@ SIM = d.simulated_event["label"]
 
 
 def week_item(item: dict) -> dict:
-    """The new-matches card offers to run the simulated event until it has run."""
+    """A carousel card as it reads under the current answers.
+
+    The new-matches card offers to run the simulated event until it has run.
+    A card with a "work_auth" row shows the role's standing and its right to
+    work as the canonical HC_WORK_AUTH rule decides them now.
+    """
     if item["kind"] == "new" and not store.simulated_event_ran():
         return {**item, **item["before"]}
+    if any(k == "work_auth" for k, _ in item.get("checks", [])):
+        v = store.view(d.role(item["role"]))
+        return {
+            **item,
+            "sub": f'{item["sub"]} · {parts.STANDING[v.standing]}',
+            "checks": [list(parts.work_auth_check(v)) if k == "work_auth" else [k, t] for k, t in item["checks"]],
+        }
     return item
 
 

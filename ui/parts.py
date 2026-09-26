@@ -92,6 +92,28 @@ def tag(v) -> tuple[str, str]:
     return "", "Demo data"
 
 
+#: A role's standing, in the words every list uses.
+STANDING = {"eligible": "Eligible", "verify": "To verify", "excluded": "Excluded"}
+
+
+def work_auth_check(v) -> tuple[str, str]:
+    """The right-to-work line for a role, as a (kind, text) checklist row.
+
+    Only renders the permission criterion the canonical HC_WORK_AUTH rule
+    decided for the current answers (core.store.view); it decides nothing.
+
+    Returns:
+        ("ok", …) when met; ("gap", …) when it needs verification or conflicts.
+    """
+    status = v.criterion("permission").status
+    where = f"Right to work in {v.city}"
+    if status == "met":
+        return "ok", f"{where} · confirmed"
+    if status == "not_met":
+        return "gap", f"{where} · conflict"
+    return "gap", f"{where} · needs verification"
+
+
 def eligibility_dot(v) -> str:
     """"● Eligible" / "● To verify" as the list shows it."""
     if v.standing == "eligible":

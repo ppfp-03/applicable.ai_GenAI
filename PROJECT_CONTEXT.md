@@ -4,10 +4,10 @@
 
 | Control | Value |
 |---|---|
-| Context version | 0.4.9-draft - operational plan storage clarified |
+| Context version | 0.4.10-draft - evidence quote normalization approved (D-044) |
 | Contract version | 0.2.0-draft core frozen; JobSnapshot 0.2.1-draft jointly approved; result/config envelopes remain separately unfrozen |
 | Created | 2026-09-17 |
-| Last updated | 2026-09-24 |
+| Last updated | 2026-09-26 |
 | Project deadline | 2026-09-29; exact submission time/timezone still to confirm |
 | Current-state boundary | Planning/product decisions are recorded here; implementation and measured progress require repository/session evidence |
 
@@ -248,7 +248,7 @@ Their presence below records intended boundaries and minimum behavior only. It i
 | `SupportedText` | `value`, `evidence_ids` |
 | `ExtractionReceipt` | `mode`, `provider`, `model_id`, `prompt_version`, `schema_version`, `input_hash`, `produced_at`, `latency_ms` |
 
-`quote` must be found in the referenced document using the declared whitespace normalization. `source_ref` identifies the public source or synthetic/session document, not an invented URL. `latency_ms` is nullable when not measured; cached inference latency is not newly measured runtime latency.
+`quote` must be found in the referenced document using the declared whitespace normalization (D-044): runs of whitespace (spaces, tabs and newlines) are collapsed to one space and leading/trailing whitespace is trimmed, in both the quote and the referenced `SourceDocument` text; the normalized quote must then be an exact substring of the normalized text. Matching is case-sensitive and punctuation-sensitive, a whitespace-only quote is invalid, and no fuzzy or semantic matching is part of contract validation. `source_ref` identifies the public source or synthetic/session document, not an invented URL. `latency_ms` is nullable when not measured; cached inference latency is not newly measured runtime latency.
 
 Questionnaire and clarification answers become explicit `SourceDocument` inputs too, so a user override has provenance. Do not expose raw credentials or real CV content through the document registry.
 
@@ -642,6 +642,7 @@ These decisions were provided in the kick-off discussion and are integrated into
 | D-041 | Greenhouse Batch 01 (A-03) is a technical development/demo snapshot of collected and normalized job postings. It provides stable, reproducible input for demonstrations and downstream intelligence development. It is not the frozen evaluation dataset and does not make Greenhouse the only permanent source; D-021 still governs source strategy. | Approved by Marco, Pierpaolo + Giorgio G, 2026-09-24 |
 | D-042 | The application accesses the demo snapshot through one loading boundary, `get_demo_snapshot()` (A-04). Consumers do not depend on the snapshot file path. The boundary only loads and validates the snapshot; it contains no intelligence, eligibility, ranking or transformation logic. | Approved by Marco, Pierpaolo + Giorgio G, 2026-09-24 |
 | D-043 | The Greenhouse Batch 01 snapshot (D-041) of real job postings is approved for project development and demo use. The repository may temporarily contain these postings and is expected to become private after project completion. Before any future external publication or continued public access, the team verifies that sharing the stored job content is appropriate. Source strategy is unchanged (D-021). | Approved by Marco, Pierpaolo + Giorgio G, 2026-09-24 |
+| D-044 | Evidence quote containment is checked after (1) collapsing runs of whitespace (spaces, tabs and newlines) to one space, (2) trimming leading and trailing whitespace, and (3) requiring the normalized quote to be an exact substring of the normalized referenced `SourceDocument` text. Matching is case-sensitive and punctuation-sensitive. Whitespace-only quotes are invalid. No fuzzy or semantic matching is part of contract validation. Rationale: makes the already-approved `EvidenceRef` grounding invariant deterministic and consistent with the existing extraction/reference-validation implementation, without changing serialized contract fields. Affected boundary: `EvidenceRef`/`SourceDocument` quote-containment validation and the associated contract/reference tests (section 6A). | Approved by Marco + Pierpaolo, 2026-09-26 |
 
 ### Proposed implementation defaults - review/freeze before independent implementation
 
