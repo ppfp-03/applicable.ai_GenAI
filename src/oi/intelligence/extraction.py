@@ -61,7 +61,7 @@ def extract_candidate(
     eligibility answers) starts empty for the questionnaire to fill.
 
     Args:
-        document: An ingested CV, as produced by `oi.io.document_loader`.
+        document: An ingested CV, as produced by `oi.io.pdf.extract_pdf_text`.
         model_client: The client used to perform the extraction.
 
     Returns:

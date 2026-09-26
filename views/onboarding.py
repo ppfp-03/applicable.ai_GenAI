@@ -22,7 +22,7 @@ import streamlit as st
 
 from core import clock, store
 from oi.intelligence.extraction import extract_candidate
-from oi.io.document_loader import load_document
+from oi.io.pdf import PdfExtractionError, extract_pdf_text
 from oi.providers.kimi import KimiClient
 from oi.providers.model_client import ExtractionError
 from ui import onboarding_markup as M
@@ -107,6 +107,11 @@ BEFORE = {**store.answers(), "uk_work": None}
 AS_OF = d.profile["onboarded"]
 
 
+#: Shown when a PDF has no usable text. Only text-based PDFs are read: there
+#: is no OCR, so a scan fails here rather than reaching the model.
+NO_PDF_TEXT = "No usable text was found in this PDF. Scanned PDFs/OCR are not supported in this MVP."
+
+
 def read_cv(pdf_bytes: bytes) -> None:
     """Extract a profile from an uploaded CV and store it, or store why not.
 
@@ -114,13 +119,17 @@ def read_cv(pdf_bytes: bytes) -> None:
     calling the model a second time. Failures are stored, never papered over
     with the demo profile.
     """
-    # Same hash the loader puts on the SourceDocument, so it can be checked
-    # before any reading or model call happens.
+    # Same hash extract_pdf_text puts on the SourceDocument, so it can be
+    # checked before any reading or model call happens.
     content_hash = hashlib.sha256(pdf_bytes).hexdigest()
     if store.has_candidate_for(content_hash):
         return
     try:
-        document = load_document(pdf_bytes, f"cv-{content_hash[:12]}")
+        document = extract_pdf_text(pdf_bytes, f"cv-{content_hash[:12]}")
+    except PdfExtractionError:
+        store.set_extraction_error(NO_PDF_TEXT)
+        return
+    try:
         store.set_candidate(extract_candidate(document, KimiClient()))
     except (ValueError, RuntimeError, ExtractionError) as exc:
         store.set_extraction_error(str(exc))
