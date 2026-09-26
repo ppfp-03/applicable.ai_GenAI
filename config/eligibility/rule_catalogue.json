@@ -124,49 +124,63 @@
         {
           "answer_key": "level_en",
           "answer_type": "single_choice",
-          "allowed_values": ["A1", "A2", "B1", "B2", "C1", "C2", "native"],
-          "description": "English proficiency (CEFR or native).",
+          "allowed_values": ["CEFR:A1", "CEFR:A2", "CEFR:B1", "CEFR:B2", "CEFR:C1", "CEFR:C2", "SELF:fluent", "SELF:native"],
+          "description": "English proficiency, on the scale it was stated on (CEFR, fluent or native).",
           "approval_ref": null
         },
         {
           "answer_key": "level_it",
           "answer_type": "single_choice",
-          "allowed_values": ["A1", "A2", "B1", "B2", "C1", "C2", "native"],
-          "description": "Italian proficiency (CEFR or native).",
+          "allowed_values": ["CEFR:A1", "CEFR:A2", "CEFR:B1", "CEFR:B2", "CEFR:C1", "CEFR:C2", "SELF:fluent", "SELF:native"],
+          "description": "Italian proficiency, on the scale it was stated on (CEFR, fluent or native).",
           "approval_ref": null
         },
         {
           "answer_key": "level_de",
           "answer_type": "single_choice",
-          "allowed_values": ["A1", "A2", "B1", "B2", "C1", "C2", "native"],
-          "description": "German proficiency (CEFR or native).",
+          "allowed_values": ["CEFR:A1", "CEFR:A2", "CEFR:B1", "CEFR:B2", "CEFR:C1", "CEFR:C2", "SELF:fluent", "SELF:native"],
+          "description": "German proficiency, on the scale it was stated on (CEFR, fluent or native).",
           "approval_ref": null
         },
         {
           "answer_key": "level_fr",
           "answer_type": "single_choice",
-          "allowed_values": ["A1", "A2", "B1", "B2", "C1", "C2", "native"],
-          "description": "French proficiency (CEFR or native).",
+          "allowed_values": ["CEFR:A1", "CEFR:A2", "CEFR:B1", "CEFR:B2", "CEFR:C1", "CEFR:C2", "SELF:fluent", "SELF:native"],
+          "description": "French proficiency, on the scale it was stated on (CEFR, fluent or native).",
           "approval_ref": null
         },
         {
           "answer_key": "level_es",
           "answer_type": "single_choice",
-          "allowed_values": ["A1", "A2", "B1", "B2", "C1", "C2", "native"],
-          "description": "Spanish proficiency (CEFR or native).",
+          "allowed_values": ["CEFR:A1", "CEFR:A2", "CEFR:B1", "CEFR:B2", "CEFR:C1", "CEFR:C2", "SELF:fluent", "SELF:native"],
+          "description": "Spanish proficiency, on the scale it was stated on (CEFR, fluent or native).",
           "approval_ref": null
         },
         {
           "answer_key": "level_nl",
           "answer_type": "single_choice",
-          "allowed_values": ["A1", "A2", "B1", "B2", "C1", "C2", "native"],
-          "description": "Dutch proficiency (CEFR or native).",
+          "allowed_values": ["CEFR:A1", "CEFR:A2", "CEFR:B1", "CEFR:B2", "CEFR:C1", "CEFR:C2", "SELF:fluent", "SELF:native"],
+          "description": "Dutch proficiency, on the scale it was stated on (CEFR, fluent or native).",
+          "approval_ref": null
+        },
+        {
+          "answer_key": "level_zh",
+          "answer_type": "single_choice",
+          "allowed_values": ["HSK:1", "HSK:2", "HSK:3", "HSK:4", "HSK:5", "HSK:6", "SELF:fluent", "SELF:native"],
+          "description": "Mandarin Chinese proficiency, on the scale it was stated on (HSK, fluent or native).",
+          "approval_ref": null
+        },
+        {
+          "answer_key": "level_ja",
+          "answer_type": "single_choice",
+          "allowed_values": ["JLPT:N5", "JLPT:N4", "JLPT:N3", "JLPT:N2", "JLPT:N1", "SELF:fluent", "SELF:native"],
+          "description": "Japanese proficiency, on the scale it was stated on (JLPT, fluent or native).",
           "approval_ref": null
         }
       ],
       "parameter_kind": "language",
       "settings": {},
-      "rule_version": "0.1"
+      "rule_version": "0.2"
     },
     {
       "constraint_id": "HC_MIN_EXPERIENCE",

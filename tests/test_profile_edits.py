@@ -6,6 +6,7 @@ import streamlit as st
 from core import store
 from oi.contracts import CandidateProfile, DocumentKind
 from oi.intelligence.extraction import extract_candidate
+from oi.providers.model_client import ExtractedLanguage
 from tests.test_candidate_extraction import FakeModelClient, fact, make_cv, make_fields
 
 CV = "cv-001"
@@ -43,6 +44,18 @@ def test_edited_and_added_values_are_backed_by_the_users_own_document() -> None:
     assert after.provenance.questionnaire_document_ids == ["profile-edit-1"]
     quotes = {e.quote for e in after.provenance.evidence if e.document_id == "profile-edit-1"}
     assert quotes == {"Intern at Acme, 2024", "MSc Finance"}
+
+
+def test_edits_keep_the_languages_read_from_the_cv() -> None:
+    text = make_cv().text + "German C1\n"
+    fields = make_fields(languages=[ExtractedLanguage(language="de", level="C1", quote="German C1")])
+    before = extract_candidate(make_cv(text), FakeModelClient(fields=fields))
+
+    after = store.apply_edits(before, {"skills": []})
+
+    assert after.eligibility_answers == before.eligibility_answers
+    (answer,) = after.eligibility_answers["HC_LANGUAGE"]
+    assert answer.evidence_ids[0] in {e.evidence_id for e in after.provenance.evidence}
 
 
 def test_removed_values_leave_no_evidence_behind() -> None:

@@ -14,8 +14,9 @@ from oi.intelligence.eligibility.catalogue import (
     DEFAULT_CATALOGUE_PATH,
     DEGREE_LEVELS,
     DEGREE_STATUSES,
-    LANGUAGE_LEVELS,
+    LANGUAGE_SCALES,
     STUDENT_STATUSES,
+    LanguageLevel,
     RuleCatalogue,
     load_rule_catalogue,
 )
@@ -85,9 +86,16 @@ def test_vocabularies_match_the_code_constants() -> None:
     assert values("HC_STUDENT_STATUS", "current_status") == STUDENT_STATUSES
     language = catalogue.get("HC_LANGUAGE")
     assert language is not None
+
+    def scale(*names: str) -> tuple[str, ...]:
+        return tuple(f"{name}:{level}" for name in names for level in LANGUAGE_SCALES[name])
+
+    extra = {"level_zh": scale("HSK"), "level_ja": scale("JLPT")}
     for key in language.answer_keys:
         assert key.answer_key.startswith("level_")
-        assert tuple(key.allowed_values or ()) == LANGUAGE_LEVELS
+        expected = extra.get(key.answer_key, scale("CEFR")) + scale("SELF")
+        assert tuple(key.allowed_values or ()) == expected
+        assert all(LanguageLevel.parse(v) is not None for v in expected)
 
 
 def test_get_returns_none_for_unsupported_ids() -> None:

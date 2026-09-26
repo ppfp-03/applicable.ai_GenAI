@@ -12,10 +12,12 @@ from oi.contracts import (
     ExtractionMode,
     SourceDocument,
 )
+from oi.intelligence.eligibility import RuleStatus, assess_eligibility, load_rule_catalogue
 from oi.intelligence.extraction import extract_candidate
 from oi.providers.model_client import (
     ExtractedFact,
     ExtractedFields,
+    ExtractedLanguage,
     ExtractionError,
     ModelClient,
     load_candidate_prompt,
@@ -47,8 +49,8 @@ def fact(value: str, quote: str) -> ExtractedFact:
     return ExtractedFact(value=value, quote=quote)
 
 
-def make_fields(**overrides: list[ExtractedFact]) -> ExtractedFields:
-    payload: dict[str, list[ExtractedFact]] = {
+def make_fields(**overrides: list[Any]) -> ExtractedFields:
+    payload: dict[str, list[Any]] = {
         "skills": [fact("Python", "Skills: Python")],
         "education": [
             fact(
@@ -62,6 +64,7 @@ def make_fields(**overrides: list[ExtractedFact]) -> ExtractedFields:
                 "Summer Analyst, Mediobanco, June-August 2025",
             )
         ],
+        "languages": [],
     }
     payload.update(overrides)
     return ExtractedFields(**payload)
@@ -236,12 +239,22 @@ def test_non_cv_document_fails_before_calling_provider() -> None:
 
 
 def test_prompt_keeps_programming_languages_and_leaves_out_human_languages() -> None:
-    # Human languages feed HC_LANGUAGE through a separate path, not skills.
+    # Human languages feed HC_LANGUAGE through their own section, not skills.
     text = load_candidate_prompt().text
     skills_rule = text.split("- **skills**", 1)[1].split("- **education**", 1)[0]
 
     assert "including\n  programming languages" in skills_rule
     assert "Leave out spoken or written human languages" in skills_rule
+    assert "they go in\n  **languages**" in skills_rule
+
+
+def test_prompt_asks_to_keep_each_language_on_its_own_scale() -> None:
+    text = load_candidate_prompt().text
+    languages_rule = text.split("## Languages", 1)[1].split("##", 1)[0]
+
+    assert "ISO 639-1" in languages_rule
+    assert "never turn\n  one scale into another" in languages_rule
+    assert "Never infer a language or a level from nationality" in languages_rule
 
 
 def test_prompt_asks_for_one_entry_per_role_and_per_degree() -> None:
@@ -274,6 +287,135 @@ def test_several_roles_become_distinct_experience_entries() -> None:
 
     assert [e.value for e in profile.experience] == ["Summer Analyst at Mediobanco", "Analyst at Acme", "Intern at Acme"]
     assert len({e.evidence_ids[0] for e in profile.experience}) == 3
+
+
+# --- languages ------------------------------------------------------------
+
+LANGUAGE_CV = CV_TEXT + (
+    "Languages: English (Fluent), Mandarin HSK 4, Japanese JLPT N2,\n"
+    "Italian (native), German C1\n"
+)
+
+
+def lang(code: str, level: str, quote: str) -> ExtractedLanguage:
+    return ExtractedLanguage(language=code, level=level, quote=quote)
+
+
+def extract_languages(*languages: ExtractedLanguage, text: str = LANGUAGE_CV) -> CandidateProfile:
+    fields = make_fields(languages=list(languages))
+    return extract_candidate(make_cv(text), FakeModelClient(fields=fields))
+
+
+def language_answers(profile: CandidateProfile) -> list[tuple[str, str, Any]]:
+    return [
+        (a.answer_key, a.state.value, a.value)
+        for a in profile.eligibility_answers.get("HC_LANGUAGE", [])
+    ]
+
+
+def test_stated_languages_become_answers_on_their_own_scale() -> None:
+    profile = extract_languages(
+        lang("en", "Fluent", "English (Fluent)"),
+        lang("zh", "HSK 4", "Mandarin HSK 4"),
+        lang("ja", "JLPT N2", "Japanese JLPT N2"),
+        lang("it", "Native", "Italian (native)"),
+        lang("de", "C1", "German C1"),
+    )
+
+    # Fluent is stored as stated; the rule decides what it counts as.
+    assert language_answers(profile) == [
+        ("level_en", "known", "SELF:fluent"),
+        ("level_zh", "known", "HSK:4"),
+        ("level_ja", "known", "JLPT:N2"),
+        ("level_it", "known", "SELF:native"),
+        ("level_de", "known", "CEFR:C1"),
+    ]
+    assert CandidateProfile.model_validate(profile.model_dump()) == profile
+
+
+def test_language_answers_keep_cv_provenance() -> None:
+    document = make_cv(LANGUAGE_CV)
+    fields = make_fields(languages=[lang("zh", "HSK 4", "Mandarin HSK 4")])
+    profile = extract_candidate(document, FakeModelClient(fields=fields))
+
+    (answer,) = profile.eligibility_answers["HC_LANGUAGE"]
+    assert answer.constraint_id == "HC_LANGUAGE"
+    assert answer.answer_type.value == "single_choice"
+    assert answer.source_document_id == "cv-001"
+    assert answer.evidence_ids == ["ev-cv-001-language-001"]
+    evidence = {ref.evidence_id: ref for ref in profile.provenance.evidence}
+    ref = evidence["ev-cv-001-language-001"]
+    assert ref.document_id == "cv-001"
+    assert ref.quote == "Mandarin HSK 4"
+    assert ref.quote in document.text
+    assert ref.field_path == "eligibility_answers.HC_LANGUAGE.level_zh"
+
+
+def test_a_named_scale_wins_over_fluent_beside_it() -> None:
+    text = CV_TEXT + "English: Fluent (C1)\n"
+    profile = extract_languages(lang("en", "Fluent (C1)", "English: Fluent (C1)"), text=text)
+    assert language_answers(profile) == [("level_en", "known", "CEFR:C1")]
+
+
+@pytest.mark.parametrize(
+    ("level", "quote"),
+    [
+        ("", "German C1"),  # no level given
+        ("C1", "English (Fluent)"),  # the quote does not state it
+        ("Native", "English (Fluent)"),  # nor this
+        ("Mother tongue", "Italian (native)"),  # not a supported way to write it
+        ("Proficient", "German C1"),  # no approved mapping
+        ("C1/C2", "German C1"),  # two levels
+        ("IELTS 7.5", "German C1"),  # unsupported scale
+        ("HSK 7", "Mandarin HSK 4"),  # not an HSK level
+        ("non-native", "Italian (native)"),
+    ],
+)
+def test_unreadable_level_gives_an_unknown_answer_with_its_evidence(
+    level: str, quote: str
+) -> None:
+    profile = extract_languages(lang("de", level, quote))
+
+    (answer,) = profile.eligibility_answers["HC_LANGUAGE"]
+    assert (answer.state.value, answer.value) == ("unknown", None)
+    assert answer.evidence_ids == ["ev-cv-001-language-001"]
+
+
+@pytest.mark.parametrize(
+    "language",
+    [
+        lang("English", "C1", "German C1"),  # not an ISO code
+        lang("", "C1", "German C1"),
+        lang("de", "C1", "German C2"),  # quote not in the CV
+        lang("de", "C1", "   "),
+    ],
+)
+def test_language_with_invalid_code_or_quote_is_dropped(language: ExtractedLanguage) -> None:
+    profile = extract_languages(language)
+
+    assert profile.eligibility_answers == {}
+    assert not any(ref.evidence_id.startswith("ev-cv-001-language") for ref in profile.provenance.evidence)
+
+
+def test_language_code_is_lower_cased() -> None:
+    profile = extract_languages(lang(" DE ", "C1", "German C1"))
+    assert language_answers(profile) == [("level_de", "known", "CEFR:C1")]
+
+
+def test_extracted_language_feeds_the_language_rule() -> None:
+    from tests.eligibility import builders as b
+
+    candidate = extract_languages(lang("en", "Fluent", "English (Fluent)"))
+    job = b.job(requirements=[("req-1", "HC_LANGUAGE", "mandatory")])
+    layer = b.parameters(
+        ("req-1", "HC_LANGUAGE", {"kind": "language", "language": "en", "scale": "CEFR", "min_level": "C1"})
+    )
+
+    result = assess_eligibility(candidate, job, load_rule_catalogue(), job_parameters=layer)
+
+    (outcome,) = [o for o in result.outcomes if o.rule_id == "HC_LANGUAGE"]
+    assert outcome.status is RuleStatus.MET
+    assert outcome.candidate_evidence_ids == ["ev-cv-001-language-001"]
 
 
 def test_model_input_version_is_deterministic() -> None:
@@ -321,10 +463,13 @@ def test_extracted_fields_schema_is_strict() -> None:
     schema = ExtractedFields.model_json_schema()
 
     assert schema["additionalProperties"] is False
-    assert set(schema["required"]) == {"skills", "education", "experience"}
+    assert set(schema["required"]) == {"skills", "education", "experience", "languages"}
     fact_schema = schema["$defs"]["ExtractedFact"]
     assert fact_schema["additionalProperties"] is False
     assert set(fact_schema["required"]) == {"value", "quote"}
+    language_schema = schema["$defs"]["ExtractedLanguage"]
+    assert language_schema["additionalProperties"] is False
+    assert set(language_schema["required"]) == {"language", "level", "quote"}
 
 
 def _kimi_with_reply(content: str | None) -> Any:

@@ -21,7 +21,11 @@ from oi.contracts import (
     RequirementFact,
     WorkAuthorizationDeclaration,
 )
-from oi.intelligence.eligibility.catalogue import ConstraintSpec, RuleCatalogue
+from oi.intelligence.eligibility.catalogue import (
+    ConstraintSpec,
+    RuleCatalogue,
+    language_level_key,
+)
 from oi.intelligence.eligibility.models import EligibilityWarning, WarningCode
 from oi.intelligence.eligibility.parameters import (
     FieldOfStudyParams,
@@ -183,8 +187,14 @@ def _vocabulary_problem(parameters: JobParameters, spec: ConstraintSpec) -> str 
             return f"fields {unknown} are not in the field_of_study vocabulary"
 
     if isinstance(parameters, LanguageParams):
-        if spec.answer_key(f"level_{parameters.language}") is None:
+        key = spec.answer_key(language_level_key(parameters.language))
+        if key is None:
             return f"language '{parameters.language}' has no answer key in the catalogue"
+        if parameters.required.code not in (key.allowed_values or ()):
+            return (
+                f"level '{parameters.required.code}' is not in the vocabulary "
+                f"of {key.answer_key}"
+            )
 
     if isinstance(parameters, MinExperienceParams):
         if parameters.answer_key is not None:
