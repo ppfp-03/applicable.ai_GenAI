@@ -138,3 +138,98 @@ def test_after_the_last_story_the_stack_is_done_and_takes_no_more() -> None:
     assert "sw-done" in page
     assert "You’d enjoy 6, passed on 6 and weren’t sure about 0." in page
     assert swipe_buttons(at) == {}
+
+
+# --- Explore comes first and is not optional; Fine-tune confirms (D-045) ----
+
+#: Likes "Conversion drop" (Product analytics, Fintech) and "Launch review"
+#: (Product management, Fintech); passes or is unsure about the rest.
+SWIPES = ["r", "l", "l", "u", "u", "l", "l", "u", "l", "l", "r", "u"]
+
+
+def page_of(at: AppTest) -> str:
+    return "".join(m.value for m in at.markdown)
+
+
+def test_every_story_names_an_industry_or_none() -> None:
+    industries = {s["industry"] for s in STORIES}
+    assert None in industries and "Fintech" in industries
+
+
+def test_industries_follow_likes_and_drop_what_was_passed() -> None:
+    assert explore.industries(STORIES, SWIPES) == ["Fintech"]
+    assert explore.industries(STORIES, ["r", "l"]) == []  # Fintech liked once, passed once
+    assert explore.industries(STORIES, ["u", "u", "r"]) == []  # a story without an industry
+
+
+def test_explore_is_the_first_preferences_step_and_cannot_be_skipped() -> None:
+    at, page = step3b()
+    assert "Skip for now" not in [b.label for b in at.button]
+    assert at.button(key="next").disabled
+    assert "oo-to3a" not in [b.key for b in at.button]  # Fine-tune waits for every story
+    assert "1 · Explore" in page and "2 · Fine-tune" in page
+    assert "Describe" not in page
+    # No jumping past Explore from the step bar either.
+    assert {b.key for b in at.button if b.key and b.key.startswith("oo-st")} == {"oo-st1", "oo-st2", "oo-st3"}
+
+
+def test_after_every_story_continue_opens_fine_tune_with_the_suggestions() -> None:
+    at, _ = step3b(SWIPES)
+    assert not at.button(key="next").disabled
+    at.button(key="next").click().run()
+
+    assert not at.exception
+    assert at.session_state["ob_step"] == "3a"
+    rows = [(r["field"], r["values"], r["level"]) for r in at.session_state["ob_prefs"]]
+    assert rows == [
+        ("role_family", ["Product analytics"], "important"),
+        ("role_family", ["Product management"], "important"),
+        ("industry", ["Fintech"], "important"),
+        ("city", ["London", "Singapore", "Shanghai"], "important"),
+        ("mode", ["Hybrid"], "nice"),
+    ]
+    page = page_of(at)
+    for gone in ["Your ideal internship", "Describe it in your own words", "In 3 years I want to be"]:
+        assert gone not in page
+    assert "Product analytics roles" in page and "Suggested by your swipes" in page
+
+
+def fine_tune(verdicts=SWIPES) -> AppTest:
+    at, _ = step3b(verdicts)
+    at.button(key="next").click().run()
+    assert not at.exception
+    return at
+
+
+def test_nothing_counts_until_find_my_roles() -> None:
+    at = fine_tune()
+    assert "confirmed_preferences" not in at.session_state
+
+    at.button(key="next").click().run()
+
+    assert not at.exception
+    assert at.session_state["ob_step"] == "4"
+    assert at.session_state["confirmed_preferences"] == at.session_state["ob_prefs"]
+
+
+def test_a_level_change_shows_in_the_live_preview() -> None:
+    at = fine_tune()
+    at.button(key="oo-imp43").click().run()  # Hybrid work: Don't mind
+
+    assert at.session_state["ob_prefs"][4]["level"] == "none"
+    assert "Hybrid work<b>" not in page_of(at)  # no weight, no share in the bar
+
+
+def test_fine_tune_cannot_be_confirmed_without_a_weighted_preference() -> None:
+    at = fine_tune()
+    for r in range(len(at.session_state["ob_prefs"])):
+        at.button(key=f"oo-imp{r}3").click().run()
+
+    assert at.button(key="next").disabled
+    assert "Mark at least one preference to continue" in page_of(at)
+
+
+def test_without_likes_fine_tune_offers_only_the_declared_rows() -> None:
+    at = fine_tune(["l"] * 12)
+    assert [r["field"] for r in at.session_state["ob_prefs"]] == ["city", "mode"]
+    assert "Like a few stories in Explore to get suggestions." in page_of(at)
