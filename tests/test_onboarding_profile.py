@@ -59,7 +59,10 @@ def test_sections_the_cv_extraction_does_not_read_are_marked_not_read() -> None:
 
     for title in ["Work authorization", "Sponsorship", "Languages"]:
         assert f"<b>{title}</b>" in page
-    assert page.count("Not read from your CV") == 3
+    # Languages is not read; work authorization and sponsorship are declared
+    # by the user instead (tests/test_onboarding_work_auth.py).
+    assert page.count("Not read from your CV") == 1
+    assert page.count("Required · add it in Edit profile") == 2
 
 
 def test_a_section_with_no_facts_says_it_is_not_stated() -> None:
@@ -143,7 +146,8 @@ def test_edited_values_are_marked_and_kept_off_the_cv_panel() -> None:
     assert "Your CV<span>3 quotes</span>" in page
 
 
-def test_the_edit_button_needs_a_profile() -> None:
+def test_the_edit_button_is_always_offered() -> None:
+    # Without a CV the editor still takes the mandatory work authorization.
     def buttons(p=None) -> list[str]:
         at = AppTest.from_file(ONBOARDING, default_timeout=30)
         at.session_state["ob_step"] = "2"
@@ -152,19 +156,24 @@ def test_the_edit_button_needs_a_profile() -> None:
         at.run()
         return [b.label for b in at.button]
 
-    assert "Edit profile" not in buttons()
+    assert "Edit profile" in buttons()
     assert "Edit profile" in buttons(profile())
     assert "Edit profile" in step2(profile())
-    assert "Edit profile" not in step2()
+    assert "Edit profile" in step2()
 
 
 # --- the Edit profile dialog ------------------------------------------------
+
+
+#: A saved declaration, so these tests exercise the CV sections alone.
+DECLARED = {"authorized": ["IT"], "sponsorship": []}
 
 
 def open_editor(p):
     at = AppTest.from_file(ONBOARDING, default_timeout=30)
     at.session_state["ob_step"] = "2"
     at.session_state[store.CANDIDATE] = p
+    at.session_state[store.WORK_AUTH] = DECLARED
     at.run()
     at.button(key="oo-edit").click().run()
     assert not at.exception

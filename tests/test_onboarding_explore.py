@@ -5,12 +5,14 @@ from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
 
-from core import explore
+from core import explore, store
 from ui.html import esc
 
 ROOT = Path(__file__).resolve().parents[1]
 ONBOARDING = str(ROOT / "views" / "onboarding.py")
 STORIES = json.loads((ROOT / "data" / "stories.json").read_text("utf-8"))["stories"]
+#: Step 3 opens only after step 2's mandatory work authorization declaration.
+DECLARED = {"authorized": ["IT"], "sponsorship": []}
 
 
 def test_every_story_carries_what_the_panel_needs() -> None:
@@ -79,6 +81,7 @@ def test_why_names_only_skills_the_cv_has() -> None:
 def step3b(verdicts=None) -> tuple[AppTest, str]:
     at = AppTest.from_file(ONBOARDING, default_timeout=30)
     at.session_state["ob_step"] = "3b"
+    at.session_state[store.WORK_AUTH] = DECLARED
     if verdicts is not None:
         at.session_state["ob_swipes"] = verdicts
     at.run()

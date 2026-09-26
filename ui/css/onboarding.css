@@ -519,6 +519,10 @@
 [data-testid="stDialog"] .st-key-ed-chips button{background:var(--blueBg);color:var(--blue);border:0;border-radius:999px;min-height:32px;padding:4px 10px 4px 14px;font-size:13px;font-weight:560;flex-direction:row-reverse;gap:4px}
 [data-testid="stDialog"] .st-key-ed-chips button span[data-has-shortcut]{display:flex;flex-direction:row-reverse;align-items:center;gap:6px}
 [data-testid="stDialog"] .st-key-ed-chips button:hover{background:#FBDDD0;color:var(--blue)}
+/* Work authorization answers: selected like the skill chips above, so the label stays readable. */
+[data-testid="stDialog"] [class*="st-key-ed-wa-"] [data-testid="stWidgetLabel"] p{font-size:14px;font-weight:600;color:var(--t1)}
+[data-testid="stDialog"] [class*="st-key-ed-wa-"] button[aria-pressed="true"]{background:var(--blueBg)!important;color:var(--blue)}
+[data-testid="stDialog"] [class*="st-key-ed-wa-"] button[aria-pressed="true"] p{color:var(--blue)}
 [data-testid="stDialog"] .st-key-ed-skill-new [data-testid="stTextInputRootElement"]{border-radius:999px;min-height:40px;background:#fff;border:1px solid var(--line)}
 [data-testid="stDialog"] .st-key-ed-foot{border-top:1px solid var(--line);margin-top:10px;padding:16px 0 20px;gap:12px!important}
 [data-testid="stDialog"] .st-key-ed-foot button{min-height:44px;border-radius:12px;padding:0 22px;font-weight:600}
