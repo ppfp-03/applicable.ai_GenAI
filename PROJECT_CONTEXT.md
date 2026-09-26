@@ -731,4 +731,36 @@ The public sources below support technical assumptions, not claims about the pro
 
 No runtime provider login, billing, endpoint dataset collection, application execution, browser demo or academic evaluation is established merely by this document. Current implementation/progress claims require evidence in the repository and/or `SESSION_LOGS.md`.
 
+D-046 - Scale-aware HC_LANGUAGE and CV language answers
+
+Question:
+How should candidate languages and HC_LANGUAGE requirements represent and compare different language scales?
+
+Decision:
+- CV-stated language levels are accepted as known candidate answers with CV provenance.
+- Language values preserve their original scale using SCALE:LEVEL representation.
+- Supported scales:
+  - CEFR: A1-C2
+  - HSK: 1-6
+  - JLPT: N5-N1
+  - SELF: fluent/native
+- Mandarin uses HSK only; Japanese uses JLPT only.
+- Cross-scale conversion is not performed.
+- Same-scale levels are compared using the approved scale ordering.
+- Fluent normalization:
+  - English -> CEFR:C1
+  - Mandarin -> HSK:5
+  - Japanese -> JLPT:N1
+- Native represents the highest level for the language.
+- A native candidate satisfies lower requirements; a native requirement is satisfied only by native.
+
+Rationale:
+Preserve the candidate's declared language scale and avoid unsupported equivalence mappings.
+
+Affected:
+- HC_LANGUAGE rule catalogue;
+- language eligibility rules;
+- candidate extraction;
+- language tests.
+
 **END OF PROJECT CONTEXT - v0.4.8-draft.**
