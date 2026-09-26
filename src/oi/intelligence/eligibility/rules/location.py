@@ -1,8 +1,11 @@
-"""HC_LOCATION: the job is in a country the candidate said they accept.
+"""HC_LOCATION: the location being evaluated is in a country the candidate accepts.
 
 Active only when the candidate declared an explicit country perimeter
 (`preferences.allowed_country_codes`). Without one there is nothing to be
 incompatible with, so the rule is NOT_APPLICABLE.
+
+The engine evaluates each alternative job location separately and combines
+them; this rule only judges the one location it is given.
 
 `allowed_country_codes` carries no evidence IDs in the frozen contract, so
 MET and CONFLICT here cite job evidence only.
@@ -10,7 +13,6 @@ MET and CONFLICT here cite job evidence only.
 
 from __future__ import annotations
 
-from oi.intelligence.eligibility.inputs import job_countries
 from oi.intelligence.eligibility.models import UnknownCause
 from oi.intelligence.eligibility.rules.base import (
     Finding,
@@ -23,37 +25,22 @@ from oi.intelligence.eligibility.rules.base import (
 
 
 def evaluate(context: RuleContext) -> Finding:
-    """Any job country inside the perimeter is MET; all outside is CONFLICT."""
+    """The location's country inside the perimeter is MET, outside is CONFLICT."""
 
     allowed = context.candidate.preferences.allowed_country_codes
     if allowed is None:
         return not_applicable("You have not restricted the countries you would work in.")
 
-    countries = job_countries(context.job)
-    if not countries.codes:
+    country = context.country_code
+    evidence = context.location_evidence_ids
+    if country is None:
         return unknown(
             UnknownCause.JOB_DATA_AMBIGUOUS,
-            "The posting's country could not be resolved.",
-            job=countries.evidence_ids,
+            "This location's country could not be resolved.",
+            job=evidence,
         )
 
     perimeter = ", ".join(allowed)
-    inside = [code for code in countries.codes if code in allowed]
-    if inside:
-        return met(
-            f"The role is in {', '.join(inside)}, within your countries ({perimeter}).",
-            job=countries.evidence_ids,
-        )
-
-    listed = ", ".join(countries.codes)
-    if countries.has_unresolved:
-        return unknown(
-            UnknownCause.JOB_DATA_AMBIGUOUS,
-            f"The resolved locations ({listed}) are outside your countries "
-            f"({perimeter}), but at least one location has no country.",
-            job=countries.evidence_ids,
-        )
-    return conflict(
-        f"The role is in {listed}, outside your countries ({perimeter}).",
-        job=countries.evidence_ids,
-    )
+    if country in allowed:
+        return met(f"{country} is within your countries ({perimeter}).", job=evidence)
+    return conflict(f"{country} is outside your countries ({perimeter}).", job=evidence)

@@ -130,6 +130,47 @@ def job_countries(job: JobRecord) -> JobCountries:
     return JobCountries(codes, has_unresolved, evidence)
 
 
+@dataclass(frozen=True)
+class JobLocationContext:
+    """One alternative location of a job, as the rules see it.
+
+    Locations sharing a country are one alternative: every rule gives them the
+    same answer. Locations without a country form one "unresolved" alternative,
+    for which no country is invented.
+    """
+
+    key: str
+    country_code: str | None
+    evidence_ids: tuple[str, ...]
+
+
+def job_location_contexts(job: JobRecord, unresolved_key: str) -> list[JobLocationContext]:
+    """Alternative locations in country order, the unresolved one last.
+
+    A job with no locations at all is a single unresolved alternative.
+    """
+
+    by_country: dict[str | None, list[str]] = {}
+    for location in job.locations:
+        by_country.setdefault(location.country_code, []).extend(location.evidence_ids)
+
+    contexts = [
+        JobLocationContext(
+            code, code, tuple(resolvable_job_evidence(job, by_country[code]))
+        )
+        for code in sorted(code for code in by_country if code is not None)
+    ]
+    if None in by_country or not contexts:
+        contexts.append(
+            JobLocationContext(
+                unresolved_key,
+                None,
+                tuple(resolvable_job_evidence(job, by_country.get(None, []))),
+            )
+        )
+    return contexts
+
+
 def hard_requirements(job: JobRecord) -> list[RequirementFact]:
     """The job's hard-constraint requirements, in requirement_id order."""
 

@@ -9,7 +9,10 @@ The engine owns everything that must be the same for every rule:
 - a failing comparison on a requirement whose modality is unspecified is
   UNKNOWN, never CONFLICT: only an explicitly mandatory requirement excludes;
 - constraint IDs outside the catalogue only produce warnings;
-- CONFLICT beats UNKNOWN beats ELIGIBLE.
+- every rule is evaluated separately for each alternative job location;
+- within a location, CONFLICT beats UNKNOWN beats ELIGIBLE;
+- across locations, one eligible location is enough, otherwise one uncertain
+  location keeps the job uncertain, and only all-incompatible is ineligible.
 """
 
 from __future__ import annotations
@@ -19,19 +22,24 @@ from typing import Iterable, Mapping
 from oi.contracts import CandidateProfile, JobRecord, RequirementFact, RequirementModality
 from oi.intelligence.eligibility.catalogue import ConstraintSpec, RuleCatalogue
 from oi.intelligence.eligibility.inputs import (
+    JobLocationContext,
     answer_key_warnings,
     hard_requirements,
+    job_location_contexts,
     orphan_parameter_warnings,
     resolvable_job_evidence,
     resolve_parameters,
 )
 from oi.intelligence.eligibility.models import (
+    UNRESOLVED_LOCATION,
     EligibilityResult,
     EligibilityWarning,
+    LocationAssessment,
     RuleOutcome,
     RuleStatus,
     UnknownCause,
     WarningCode,
+    aggregate_locations,
     aggregate_status,
     collect_missing_field_paths,
 )
@@ -72,6 +80,7 @@ def _outcome(
     spec: ConstraintSpec,
     finding: Finding,
     job: JobRecord,
+    location_key: str,
     requirement: RequirementFact | None = None,
     parameter_evidence: Iterable[str] = (),
 ) -> RuleOutcome:
@@ -88,6 +97,7 @@ def _outcome(
         unknown_cause=finding.unknown_cause,
         missing_field_paths=sorted(set(finding.missing_field_paths)),
         rule_version=spec.rule_version,
+        location_key=location_key,
     )
 
 
@@ -149,24 +159,78 @@ def assess_eligibility(
                 )
             )
 
+    locations: list[LocationAssessment] = []
+    for location in job_location_contexts(job, UNRESOLVED_LOCATION):
+        outcomes = _assess_location(
+            candidate,
+            job,
+            rule_catalogue,
+            requirements,
+            job_parameters,
+            location,
+            warnings,
+        )
+        locations.append(
+            LocationAssessment(
+                location_key=location.key,
+                country_code=location.country_code,
+                status=aggregate_status(outcomes),
+                outcomes=outcomes,
+            )
+        )
+
+    all_outcomes = [outcome for location in locations for outcome in location.outcomes]
+    # Parameter warnings repeat once per location; report each once.
+    unique_warnings = {warning.sort_key(): warning for warning in warnings}
+    return EligibilityResult(
+        candidate_id=candidate.candidate_id,
+        job_id=job.job_id,
+        catalogue_version=rule_catalogue.catalogue_version,
+        parameter_layer_version=job_parameters.layer_version if job_parameters else None,
+        status=aggregate_locations(locations),
+        outcomes=all_outcomes,
+        missing_field_paths=collect_missing_field_paths(all_outcomes),
+        warnings=[unique_warnings[key] for key in sorted(unique_warnings)],
+        locations=locations,
+    )
+
+
+def _assess_location(
+    candidate: CandidateProfile,
+    job: JobRecord,
+    rule_catalogue: RuleCatalogue,
+    requirements: list[RequirementFact],
+    job_parameters: JobParameterSet | None,
+    location: JobLocationContext,
+    warnings: list[EligibilityWarning],
+) -> list[RuleOutcome]:
+    """Every catalogue constraint, evaluated for one alternative location."""
+
+    def context(spec, requirement=None, parameters=None) -> RuleContext:
+        return RuleContext(
+            candidate,
+            job,
+            spec,
+            requirement,
+            parameters,
+            location.country_code,
+            location.evidence_ids,
+        )
+
     outcomes: list[RuleOutcome] = []
     for spec in rule_catalogue.constraints:
         rule = RULES[spec.constraint_id]
 
         if spec.trigger == "job_location":
-            finding = rule(RuleContext(candidate, job, spec))
-            outcomes.append(_outcome(spec, finding, job))
+            outcomes.append(_outcome(spec, rule(context(spec)), job, location.key))
             continue
 
         matching = [r for r in requirements if r.constraint_id == spec.constraint_id]
         if not matching:
-            outcomes.append(
-                _outcome(
-                    spec,
-                    not_applicable(f"The posting states no {spec.label.lower()} requirement."),
-                    job,
-                )
+            finding = not_applicable(
+                f"The posting states no {spec.label.lower()} requirement."
             )
+            outcomes.append(_outcome(spec, finding, job, location.key))
             continue
 
         for requirement in matching:
@@ -175,27 +239,17 @@ def assess_eligibility(
                     f"{spec.label} is stated as {requirement.modality.value}, "
                     "not as a hard requirement."
                 )
-                outcomes.append(_outcome(spec, finding, job, requirement))
+                outcomes.append(_outcome(spec, finding, job, location.key, requirement))
                 continue
 
             resolved = resolve_parameters(job, requirement, spec, job_parameters)
             warnings.extend(resolved.warnings)
-            finding = rule(
-                RuleContext(candidate, job, spec, requirement, resolved.parameters)
-            )
+            finding = rule(context(spec, requirement, resolved.parameters))
             if requirement.modality is RequirementModality.UNSPECIFIED:
                 finding = _gate_unspecified(finding)
             outcomes.append(
-                _outcome(spec, finding, job, requirement, resolved.evidence_ids)
+                _outcome(
+                    spec, finding, job, location.key, requirement, resolved.evidence_ids
+                )
             )
-
-    return EligibilityResult(
-        candidate_id=candidate.candidate_id,
-        job_id=job.job_id,
-        catalogue_version=rule_catalogue.catalogue_version,
-        parameter_layer_version=job_parameters.layer_version if job_parameters else None,
-        status=aggregate_status(outcomes),
-        outcomes=outcomes,
-        missing_field_paths=collect_missing_field_paths(outcomes),
-        warnings=sorted(warnings, key=EligibilityWarning.sort_key),
-    )
+    return outcomes

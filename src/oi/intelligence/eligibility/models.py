@@ -82,6 +82,8 @@ class RuleOutcome(ContractModel):
     unknown_cause: UnknownCause | None = None
     missing_field_paths: list[CandidateFieldPath] = []
     rule_version: NonEmptyStr
+    #: The job location this outcome was evaluated for; see LocationAssessment.
+    location_key: str | None = None
 
     @model_validator(mode="after")
     def validate_unknown_fields(self) -> "RuleOutcome":
@@ -124,8 +126,59 @@ def collect_missing_field_paths(outcomes: Iterable[RuleOutcome]) -> list[str]:
     return sorted({path for outcome in outcomes for path in outcome.missing_field_paths})
 
 
+#: location_key of the one assessment made when no job country is resolvable.
+UNRESOLVED_LOCATION = "unresolved"
+
+
+class LocationAssessment(ContractModel):
+    """Every rule evaluated for one alternative job location.
+
+    `location_key` is the ISO country code, or UNRESOLVED_LOCATION for
+    locations whose country is unknown: no country is ever invented for them.
+    """
+
+    location_key: NonEmptyStr
+    country_code: str | None
+    status: EligibilityStatus
+    outcomes: list[RuleOutcome]
+
+    @model_validator(mode="after")
+    def validate_location(self) -> "LocationAssessment":
+        if self.country_code is None and self.location_key != UNRESOLVED_LOCATION:
+            raise ValueError("a location without a country must use the unresolved key")
+        if self.country_code is not None and self.location_key != self.country_code:
+            raise ValueError("location_key must be the location's country code")
+        if any(outcome.location_key != self.location_key for outcome in self.outcomes):
+            raise ValueError("every outcome must carry this location_key")
+        if self.status is not aggregate_status(self.outcomes):
+            raise ValueError("location status does not match its outcomes")
+        return self
+
+
+def aggregate_locations(locations: Iterable[LocationAssessment]) -> EligibilityStatus:
+    """Across alternative locations, one compatible location is enough.
+
+    Any ELIGIBLE location makes the job eligible; otherwise any UNCERTAIN
+    location makes it uncertain; only all-known incompatible locations make it
+    ineligible (PROJECT_CONTEXT, "Eligibility aggregation").
+    """
+
+    statuses = {location.status for location in locations}
+    if EligibilityStatus.ELIGIBLE in statuses:
+        return EligibilityStatus.ELIGIBLE
+    if EligibilityStatus.UNCERTAIN in statuses:
+        return EligibilityStatus.UNCERTAIN
+    return EligibilityStatus.INELIGIBLE
+
+
 class EligibilityResult(ContractModel):
-    """Eligibility of one job for one candidate, with every rule's outcome."""
+    """Eligibility of one job for one candidate, with every rule's outcome.
+
+    `locations` holds one assessment per alternative job location and decides
+    `status`; `outcomes` is the flat list of all of their outcomes, in location
+    order. A result built without `locations` (legacy callers) aggregates
+    `outcomes` directly.
+    """
 
     schema_version: Literal["eligibility-0.1-internal"] = ELIGIBILITY_SCHEMA_VERSION
     candidate_id: NonEmptyStr
@@ -136,12 +189,22 @@ class EligibilityResult(ContractModel):
     outcomes: list[RuleOutcome]
     missing_field_paths: list[CandidateFieldPath]
     warnings: list[EligibilityWarning]
+    locations: list[LocationAssessment] = []
 
     @model_validator(mode="after")
     def validate_derived_fields(self) -> "EligibilityResult":
-        """Status and missing paths are derived; they may not disagree."""
+        """Status, outcomes and missing paths are derived; they may not disagree."""
 
-        if self.status is not aggregate_status(self.outcomes):
+        if self.locations:
+            keys = [location.location_key for location in self.locations]
+            if len(set(keys)) != len(keys):
+                raise ValueError("location keys must be unique")
+            flat = [o for location in self.locations for o in location.outcomes]
+            if self.outcomes != flat:
+                raise ValueError("outcomes must be the locations' outcomes, in order")
+            if self.status is not aggregate_locations(self.locations):
+                raise ValueError("status does not match the aggregated locations")
+        elif self.status is not aggregate_status(self.outcomes):
             raise ValueError("status does not match the aggregated outcomes")
 
         if self.missing_field_paths != collect_missing_field_paths(self.outcomes):
