@@ -48,7 +48,7 @@ AMSTERDAM_PARAMS = [
     ("r-grad", "HC_GRAD_WINDOW", {"kind": "grad_window", "start": "2027-01-01", "end": "2027-12-31"}),
     ("r-degree", "HC_DEGREE_LEVEL", {"kind": "degree_level", "min_level": "bachelor", "in_progress_policy": "counts"}),
     ("r-field", "HC_FIELD_OF_STUDY", {"kind": "field_of_study", "accepted": ["economics", "finance", "management"], "related_accepted": False}),
-    ("r-en", "HC_LANGUAGE", {"kind": "language", "language": "en", "min_level": "C1"}),
+    ("r-en", "HC_LANGUAGE", {"kind": "language", "language": "en", "scale": "CEFR", "min_level": "C1"}),
     ("r-status", "HC_STUDENT_STATUS", {"kind": "student_status", "accepted": ["enrolled_student"]}),
 ]
 
@@ -89,7 +89,7 @@ def persona_a() -> CandidateProfile:
             ("HC_DEGREE_LEVEL", "degree_level"): "bachelor",
             ("HC_DEGREE_LEVEL", "degree_status"): "in_progress",
             ("HC_FIELD_OF_STUDY", "field_of_study"): "economics",
-            ("HC_LANGUAGE", "level_en"): "C1",
+            ("HC_LANGUAGE", "level_en"): "CEFR:C1",
             ("HC_STUDENT_STATUS", "current_status"): "enrolled_student",
             ("HC_MIN_EXPERIENCE", "has_corporate_finance_experience"): True,
         },
@@ -108,7 +108,7 @@ def persona_b() -> CandidateProfile:
             ("HC_DEGREE_LEVEL", "degree_level"): "bachelor",
             ("HC_DEGREE_LEVEL", "degree_status"): "completed",
             ("HC_FIELD_OF_STUDY", "field_of_study"): "law",
-            ("HC_LANGUAGE", "level_en"): "native",
+            ("HC_LANGUAGE", "level_en"): "SELF:native",
             ("HC_STUDENT_STATUS", "current_status"): "recent_graduate",
         },
     )
@@ -121,7 +121,7 @@ def persona_c(experience: bool | None = None) -> CandidateProfile:
         ("HC_DEGREE_LEVEL", "degree_level"): "master",
         ("HC_DEGREE_LEVEL", "degree_status"): "in_progress",
         ("HC_FIELD_OF_STUDY", "field_of_study"): "finance",
-        ("HC_LANGUAGE", "level_en"): "C2",
+        ("HC_LANGUAGE", "level_en"): "CEFR:C2",
         ("HC_STUDENT_STATUS", "current_status"): "enrolled_student",
     }
     if experience is not None:

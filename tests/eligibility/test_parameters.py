@@ -51,7 +51,7 @@ def test_committed_layer_loads_and_is_empty() -> None:
     [
         (GRAD, GradWindowParams),
         ({"kind": "degree_level", "min_level": "master"}, DegreeLevelParams),
-        ({"kind": "language", "language": "de", "min_level": "B2"}, LanguageParams),
+        ({"kind": "language", "language": "de", "scale": "CEFR", "min_level": "B2"}, LanguageParams),
         ({"kind": "min_experience", "min_months": 6}, MinExperienceParams),
         ({"kind": "work_auth", "employer_sponsorship": "offered"}, WorkAuthParams),
     ],
@@ -71,8 +71,12 @@ def test_degree_policy_override_is_optional_and_closed() -> None:
     "parameters",
     [
         {"kind": "grad_window", "start": "2027-12-31", "end": "2027-01-01"},
-        {"kind": "language", "language": "English", "min_level": "B2"},
-        {"kind": "language", "language": "en", "min_level": "fluent"},
+        {"kind": "language", "language": "English", "scale": "CEFR", "min_level": "B2"},
+        {"kind": "language", "language": "en", "min_level": "B2"},
+        {"kind": "language", "language": "en", "scale": "CEFR", "min_level": "fluent"},
+        {"kind": "language", "language": "zh", "scale": "HSK", "min_level": "7"},
+        {"kind": "language", "language": "ja", "scale": "JLPT", "min_level": "N6"},
+        {"kind": "language", "language": "en", "scale": "TOEFL", "min_level": "100"},
         {"kind": "min_experience"},
         {"kind": "min_experience", "min_months": 6, "answer_key": "x"},
         {"kind": "min_experience", "min_months": 0},
