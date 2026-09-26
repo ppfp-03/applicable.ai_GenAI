@@ -15,8 +15,9 @@ companies only). No real LLM is called yet.
   applications wallet.
 - **Matches**: the top five, each score broken down into four factors with
   fixed weights (40/25/20/15).
-- **Role**: eligibility against eight fixed criteria, decided by
-  `core/rules.py`.
+- **Role**: eligibility against eight fixed criteria: permission to work by
+  the canonical `HC_WORK_AUTH` rule (`core/eligibility.py`), the other seven
+  by `core/rules.py`.
 - **One quick question**: the UK work question. Saving the answer recomputes
   eligibility and ranking everywhere.
 - **Profile**: review and correct what was read from the CV.
@@ -49,33 +50,12 @@ Install the initial dependencies:
 pip install -r requirements.txt
 ```
 
-### System dependencies for OCR
+### PDF input
 
-Scanned, image-based PDFs are read with OCR. That path needs two programs
-installed on the system itself, alongside the Python packages above:
-
-- **Tesseract** — the OCR engine.
-- **Poppler** — provides `pdftoppm`, used to render PDF pages as images.
-
-On macOS with Homebrew:
-
-```bash
-brew install tesseract poppler
-```
-
-On Debian or Ubuntu:
-
-```bash
-sudo apt-get install tesseract-ocr poppler-utils
-```
-
-On Windows, install the
-[Tesseract installer](https://github.com/UB-Mannheim/tesseract/wiki) and the
-[Poppler binaries](https://github.com/oschwartz10612/poppler-windows/releases),
-then add both `bin` directories to `PATH`.
-
-Text-based PDFs work without these; only the OCR fallback requires them.
-Verify an installation with `tesseract --version` and `pdftoppm -v`.
+Only text-bearing PDFs are supported: the CV's text is read with `pypdf`, and
+no system programs are needed. OCR is out of MVP scope, so a scanned or
+image-only PDF is rejected with a clear "no usable text" error instead of
+being read.
 
 Optionally copy the environment template for future development:
 
@@ -86,7 +66,7 @@ cp .env.example .env
 On Windows PowerShell, use `Copy-Item .env.example .env`.
 The template contains `KIMI_API_KEY=` and `KIMI_MODEL=`. Candidate extraction
 calls the Kimi API and requires a valid `KIMI_API_KEY`; the rest of the
-application (PDF and OCR ingestion) runs without one. Keep real secrets out of
+application (including PDF text extraction) runs without one. Keep real secrets out of
 version control; `.env` files are ignored.
 
 ## Run the application

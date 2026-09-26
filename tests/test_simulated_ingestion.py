@@ -30,6 +30,7 @@ APP = str(Path(__file__).resolve().parents[1] / "app.py")
 
 #: Phrases that would pass a scripted event off as real discovery.
 REAL_DISCOVERY_CLAIMS = ["LinkedIn", "career pages", "Found on", "New today", "Posted yesterday",
+                         "Posted today", "Verified today", "verified today", "checked today",
                          "detected in", "detection latency:", "real-time"]
 
 
@@ -213,7 +214,8 @@ def test_explore_runs_the_event_and_labels_every_new_posting() -> None:
 
 def test_home_card_runs_the_event_and_lists_what_it_added() -> None:
     at = app()
-    at.session_state["home_card"] = next(i for i, w in enumerate(D.week) if w["kind"] == "new")
+    # Before the event the Hong Kong question is not in the carousel.
+    at.session_state["home_card"] = [w["kind"] for w in D.week if w["kind"] != "question"].index("new")
     at.run()
     before = page(at)
     assert LABEL in before and "not live monitoring" in before
@@ -225,6 +227,25 @@ def test_home_card_runs_the_event_and_lists_what_it_added() -> None:
     assert "Review 4 matches" in [b.label for b in at.button]
     assert f"<b>{LABEL}</b>" in after
     assert_no_real_discovery_claim(after)
+
+
+def test_home_hong_kong_question_waits_for_the_event_and_claims_no_role_count() -> None:
+    question = next(w for w in D.week if w["kind"] == "question")
+    # No demo role is in Hong Kong, so the card must not claim any depend on it.
+    assert not [r for r in D.roles if r.city == "Hong Kong"]
+    copy = " ".join([question["sub"], question["waiting"], *question["results"].values()])
+    assert not re.search(r"\b\d+ roles\b", copy), copy
+
+    at = app()
+    at.run()
+    assert question["title"] not in page(at)
+    assert "UniCreda" not in page(at)
+    assert_no_real_discovery_claim(page(at))
+
+    at.session_state["home_card"] = [w["kind"] for w in D.week if w["kind"] != "question"].index("new")
+    at.run()
+    at.button(key="uc-sim").click().run()
+    assert question["title"] in page(at)
 
 
 def test_matches_row_tag_names_the_simulated_event() -> None:

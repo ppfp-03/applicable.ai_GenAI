@@ -73,7 +73,9 @@ def application_for(role_id: str) -> dict | None:
 
 
 def tag(v) -> tuple[str, str]:
-    """The one chip a list row shows: applied, simulated, closing soon, or how fresh.
+    """The one chip a list row shows: applied, simulated, closing soon, or demo data.
+
+    Demo postings have no source publication date, so no posting age is shown.
 
     Returns:
         (chip class, text) -- class "g" green, "u" amber, "" neutral.
@@ -87,8 +89,7 @@ def tag(v) -> tuple[str, str]:
     n = clock.days_until(v.closes)
     if n <= 9:
         return "u", f"Closes in {n} days"
-    p = v.posted_days_ago
-    return "", "Posted today" if p == 0 else "Posted yesterday" if p == 1 else f"Posted {p} days ago"
+    return "", "Demo data"
 
 
 def eligibility_dot(v) -> str:

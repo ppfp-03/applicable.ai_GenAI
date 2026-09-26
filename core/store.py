@@ -50,7 +50,6 @@ class Data:
         self.now: str = raw["now"]
         self.updated: str = raw["ranking_updated"]
         self.profile: dict = raw["profile"]
-        self.catalog: dict = raw["catalog"]
         self.weights: dict = raw["weights"]
         self.penalty: float = raw["verify_penalty"]
         self.roles: list[RoleDef] = [RoleDef(r) for r in raw["roles"]]
@@ -379,10 +378,28 @@ def excluded() -> list[RoleView]:
     return [v for v in views() if v.standing == "excluded"]
 
 
-def counts(choice: Any = "current") -> dict[str, int]:
-    """Catalogue-level eligible / to verify / excluded for a UK answer."""
-    key = uk() if choice == "current" else choice
-    return data().catalog["by_uk_answer"][key or "none"]
+def counts(choice: Any = "current", as_of: Optional[str] = None) -> dict[str, int]:
+    """Eligible / to verify / excluded among the roles available now.
+
+    Counted from the same checks every screen shows, so the numbers always
+    match the roles the user can see (the baseline, plus the simulated
+    event's postings once it has run).
+
+    Args:
+        choice: A UK answer to count under ("yes", "no", "unsure" or None);
+            "current" keeps the user's own answer.
+        as_of: As in `views`.
+    """
+    ans = answers() if choice == "current" else {**answers(), "uk_work": choice}
+    out = {"eligible": 0, "verify": 0, "excluded": 0}
+    for v in views(ans, as_of):
+        out[v.standing] += 1
+    return out
+
+
+def uk_roles() -> list[RoleView]:
+    """The available roles in the UK, the ones the UK question can settle."""
+    return [v for v in views() if v.country == "GB"]
 
 
 def movement(before: dict, after: dict, n: int = 5, as_of: Optional[str] = None) -> dict[str, str]:

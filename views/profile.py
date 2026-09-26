@@ -104,8 +104,8 @@ with st.container(key="pf-main"):
                     args=(CUR, i),
                 )
         html(
-            '<div class="pfoot"><b>Run ex_7f3a92</b> · extraction schema v2.3 · 42 fields · 38 extracted · 4 empty · '
-            "every value is linked to a page and line in your CV · last edit 00:44</div>"
+            '<div class="pfoot"><b>Demo profile</b> · every value is linked to a page and line '
+            "in the synthetic demo CV</div>"
         )
 
     s = sections[cur]

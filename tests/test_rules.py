@@ -1,8 +1,9 @@
-"""Tests for deterministic eligibility.
+"""Tests for core/rules.py now that it no longer decides work authorisation.
 
-Work authorisation is never judged by a model, and never inferred from
-citizenship: PROJECT_CONTEXT.md treats the two separately until a
-country-specific inference is approved (Q-04). These tests pin that.
+Permission to work comes only from the canonical HC_WORK_AUTH rule
+(core/eligibility.py; see tests/test_canonical_work_auth.py). core/rules.py
+takes that outcome as given and has no fallback of its own, so a second,
+conflicting work-authorisation implementation cannot come back unnoticed.
 """
 
 from __future__ import annotations
@@ -12,7 +13,8 @@ from pathlib import Path
 
 import pytest
 
-from core.rules import RULES_VERSION, evaluate, verdict
+from core import rules
+from core.rules import RULES_VERSION, Criterion, evaluate, verdict
 
 _DEMO = json.loads(
     (Path(__file__).resolve().parent.parent / "data" / "demo.json").read_text("utf-8")
@@ -20,81 +22,35 @@ _DEMO = json.loads(
 PROFILE = _DEMO["profile"]
 ROLES = {role["id"]: role for role in _DEMO["roles"]}
 
-
-def permission(role: dict, answers: dict | None = None, profile: dict = PROFILE):
-    return next(c for c in evaluate(profile, answers or {}, role) if c.id == "permission")
+GIVEN = Criterion("permission", "Permission to work", "check", "given", "given", "given")
 
 
-def in_country(country: str, **extra) -> dict:
-    """A demo role moved to `country`, everything else unchanged."""
-    return {**ROLES["deutsch-frankfurt"], "country": country, **extra}
+def test_there_is_no_legacy_permission_rule():
+    assert not hasattr(rules, "_permission")
+    assert not hasattr(rules, "work_authorisation")
 
 
-class TestCitizenshipIsNotWorkAuthorisation:
-    @pytest.mark.parametrize("country", ["IT", "DE", "FR", "NL", "CH", "JP"])
-    def test_eu_citizen_is_asked_not_assumed(self, country):
-        assert PROFILE["citizenship"] == "IT"
-        c = permission(in_country(country))
-        assert c.status == "check"
-        assert c.rule == f"{country}_right_to_work = unknown → ask"
-
-    def test_own_country_is_asked_too(self):
-        c = permission(in_country("IT"), profile={**PROFILE, "citizenship": "IT"})
-        assert c.status == "check"
-
-    @pytest.mark.parametrize("months", [None, 3, 6, 18])
-    def test_contract_length_no_longer_picks_a_swiss_permit(self, months):
-        c = permission(in_country("CH", contract_months=months))
-        assert c.status == "check"
-        assert "permit" not in c.value.lower()
-
-    def test_the_answer_says_why_it_asks(self):
-        c = permission(in_country("DE"))
-        assert "Citizenship alone does not settle it" in c.detail
-
-    @pytest.mark.parametrize("role_id", ["mediobanco-growth", "roshe-basel", "deutsch-frankfurt"])
-    def test_demo_eu_roles_need_verifying(self, role_id):
-        assert verdict(evaluate(PROFILE, {"uk_work": "yes"}, ROLES[role_id])) == "verify"
+def test_evaluate_requires_the_permission_outcome():
+    with pytest.raises(TypeError):
+        evaluate(PROFILE, {"uk_work": "yes"}, ROLES["replai-pa"])  # type: ignore[call-arg]
 
 
-class TestSingaporeDoesNotAssumeAnEmploymentPass:
-    """Nothing in the profile says whether the user needs a pass.
-
-    An employer that sponsors one covers either case, so the role stays open.
-    Without sponsorship the answer depends on that unknown, so ask; never
-    exclude on an assumption about the user's status.
-    """
-
-    def test_employer_sponsorship_covers_either_case(self):
-        c = permission(in_country("SG", sponsors_visa=True))
-        assert c.status == "met"
-        assert "if you need one" in c.detail
-
-    def test_no_sponsorship_asks_instead_of_excluding(self):
-        c = permission(in_country("SG", sponsors_visa=False))
-        assert c.status == "check"
-        assert c.rule == "SG_right_to_work = unknown + no_sponsorship → ask"
-
-    @pytest.mark.parametrize("sponsors", [True, False])
-    def test_never_states_that_the_user_needs_a_pass(self, sponsors):
-        c = permission(in_country("SG", sponsors_visa=sponsors))
-        assert "You need an Employment Pass" not in c.detail
-        assert "SG_EP_required" not in c.rule
-
-    @pytest.mark.parametrize("role_id", ["nestella-strategy", "jpmorrow-strategy", "unicreda-pa"])
-    def test_demo_singapore_roles_all_sponsor_and_stay_eligible(self, role_id):
-        assert ROLES[role_id]["sponsors_visa"] is True
-        assert verdict(evaluate(PROFILE, {"uk_work": "yes"}, ROLES[role_id])) == "eligible"
-
-
-class TestExplicitAnswersStillDecide:
-    def test_uk_yes_is_met(self):
-        assert permission(in_country("GB"), {"uk_work": "yes"}).status == "met"
-
-    def test_uk_unknown_asks(self):
-        assert permission(in_country("GB"), {"uk_work": None}).status == "check"
+@pytest.mark.parametrize("role_id", sorted(ROLES))
+def test_the_permission_outcome_is_used_unchanged(role_id):
+    crit = evaluate(PROFILE, {"uk_work": "yes"}, ROLES[role_id], permission=GIVEN)
+    assert [c.id for c in crit] == list(rules.CRITERIA)
+    assert crit[1] is GIVEN
 
 
 def test_rules_are_versioned():
     # Rules change with the law; an outcome must be traceable to a version.
     assert RULES_VERSION
+
+
+def test_verdict_order():
+    met = Criterion("x", "x", "met", "", "", "")
+    check = Criterion("x", "x", "check", "", "", "")
+    no = Criterion("x", "x", "not_met", "", "", "")
+    assert verdict([met, met]) == "eligible"
+    assert verdict([met, check]) == "verify"
+    assert verdict([check, no, met]) == "excluded"

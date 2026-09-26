@@ -79,7 +79,7 @@ def card(v) -> str:
         f'<div class="t">{esc(v.title)}</div><div class="m">{esc(v.company)} · {esc(v.city)}</div>'
         f'<div class="why">{esc(why)}</div><div class="b" style="margin-top:auto"><i style="width:{v.shown if v.standing != "excluded" else 0}%"></i></div>'
         + (f'<div class="f"><span>{SIM}</span></div></div>' if store.is_simulated(v) else
-           f'<div class="f"><span class="{"u" if hot else ""}">{esc(close)}</span><span>Verified today</span></div></div>')
+           f'<div class="f"><span class="{"u" if hot else ""}">{esc(close)}</span><span>Demo data</span></div></div>')
     )
 
 

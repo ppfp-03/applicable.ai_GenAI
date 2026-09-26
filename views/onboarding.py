@@ -40,8 +40,8 @@ FLOW = [
     ("2", 2, "<b>Step 2 of 7</b> · Every field links back to your CV", "Confirm profile"),
     ("3a", 3, "<b>Step 3 of 7</b> · Change anytime — your ranking updates instantly", "Find my roles"),
     ("3b", 3, "<b>Step 3 of 7</b> · Swipe or use ← ↑ → on your keyboard", "Continue"),
-    ("4", 4, "<b>Step 4 of 7</b> · Ranking 55 roles…", "View shortlist"),
-    ("5", 5, "<b>Step 5 of 7</b> · 2 of your top matches need one answer", "Answer 1 question"),
+    ("4", 4, "<b>Step 4 of 7</b> · Ranking your roles…", "View shortlist"),
+    ("5", 5, "<b>Step 5 of 7</b> · Some of your top matches need one answer", "Answer 1 question"),
     ("6", 6, "<b>Step 6 of 7</b> · One answer updates one field", "Save answer"),
     ("7", 7, "<b>Step 7 of 7</b> · Your shortlist is ready", "Start application"),
 ]
@@ -301,12 +301,12 @@ def step3a() -> str:
         return f'<div class="v3-seg">{spans}</div>'
 
     body = re.sub(r'<div class="v3-seg">.*?</div>', seg, body, flags=re.S)
+    # The demo roles carry no pay data, so nothing is filtered: say so.
+    body = swap(
+        body, re.escape("<b>312</b><span>roles fit · 41 unpaid removed by your must-have</span>"),
+        f"<b>{len(store.views())}</b><span>demo roles · preferences shape your Preference fit</span>",
+    )
     if S["ob_imp"][0] != 0:  # "Paid internship" is no longer a must-have
-        roles = d.catalog["match_preferences"] + d.catalog["unpaid_removed"]
-        body = body.replace(
-            "<b>312</b><span>roles fit · 41 unpaid removed by your must-have</span>",
-            f"<b>{roles}</b><span>roles fit · no must-have filters set</span>",
-        )
         body = body.replace('<span class="v3-p m"><small>Must</small>Paid</span>', '<span class="v3-p"><small>Value</small>Paid</span>')
     return body
 
@@ -353,10 +353,56 @@ def step3b() -> str:
     return body
 
 
+def funnel_row(label: str, small: str, width: float, n: int, color: str) -> str:
+    return (
+        f'<div class="f4"><div class="k">{label}<small>{small}</small></div>'
+        f'<div class="f4b"><i style="width:{width:.1f}%;background:{color}"></i></div><div class="n">{n}</div></div>'
+    )
+
+
 def step4() -> str:
-    c = store.counts(None)
+    """The analysis funnel, counted over the demo roles actually available.
+
+    The demo has no larger catalogue behind it, so every number here is a
+    count of those roles under the same checks the other screens run.
+    """
+    c = store.counts(None, AS_OF)
+    total = sum(c.values())
+    ranked = c["eligible"] + c["verify"]
+    share = 100 * ranked / total if total else 0
+    fun = (
+        '<div class="fun">\n'
+        + funnel_row("Roles in the demo data", "Synthetic postings · not a live catalogue", 100, total, "#D1D1D6")
+        + funnel_row("Checked for eligibility", "Mandatory requirements", 100, total, "#6E6E73")
+        + '<div class="f4"><div class="k">Eligibility result<small>Fixed rules</small></div><div class="f4b" style="background:none">'
+        f'<i style="flex:{c["eligible"]};background:#30A14E;border-radius:6px"></i>'
+        f'<i style="flex:{c["verify"]};background:#E3A03A;border-radius:6px"></i>'
+        f'<i style="flex:{c["excluded"]};background:repeating-linear-gradient(135deg,#F3C9C5 0 3px,#FBEAE8 3px 6px);border-radius:6px"></i>'
+        f'</div><div class="n">{total}</div></div>'
+        f'<div class="lg4"><span><i style="background:#30A14E"></i>{c["eligible"]} eligible</span>'
+        f'<span><i style="background:#E3A03A"></i>{c["verify"]} to verify</span>'
+        f'<span><i style="background:#F3C9C5"></i>{c["excluded"]} excluded · conflict</span></div>'
+        + funnel_row("Ranked for you", "Eligible + to verify", share, ranked, "var(--blue);border-radius:9px")
+        .replace('<div class="n">', '<div class="n" style="color:var(--blue)">')
+        + '\n</div></div>\n<div class="a4-r">'
+    )
+    first = "".join(
+        f'<div style="display:flex;align-items:center;gap:12px{";margin-top:12px" if i else ""}">'
+        f'<span class="w-logo" style="background:{v.bg};width:34px;height:34px">{v.mono}</span>'
+        f'<div style="flex:1"><div style="font-size:13.5px;font-weight:600">{esc(v.title)}</div>'
+        f'<div style="font-size:12px;color:var(--t2)">{esc(v.company)} · {esc(v.city)}</div></div>'
+        f'<span style="font-size:22px;font-weight:700;letter-spacing:-0.03em">{v.shown}</span></div>'
+        for i, v in enumerate(store.ranked(BEFORE, AS_OF)[:2])
+    )
     body = M.S_4
-    return body.replace("38 eligible", f"{c['eligible']} eligible").replace("17 to verify", f"{c['verify']} to verify")
+    body = swap(body, r'<div class="fun">.*?\n</div></div>\n<div class="a4-r">', fun)
+    body = swap(
+        body, r'<div class="w-lab">First results<span>Updating</span></div>.*?</div>\n<div class="w-tip">',
+        f'<div class="w-lab">First results<span>Updating</span></div>{first}</div>\n<div class="w-tip">',
+    )
+    body = swap(body, "from 312 postings", f"from {total} postings")
+    body = swap(body, "78 roles · 23 conflicts removed", f"{total} roles · {c['excluded']} conflict{'s' if c['excluded'] != 1 else ''} removed")
+    return swap(body, "Rank 55 roles", f"Rank {ranked} roles")
 
 
 def shortlist_roles():
@@ -378,7 +424,6 @@ def cc_card(v, cls: str, first_verify: bool) -> str:
         f'<div class="cc-pill u">Closes in {n} days<small>{esc(" ".join(v.closes_label.split()[-2:]))}</small></div>'
         if n <= 9 else f'<div class="cc-pill">Closes {esc(v.closes_label)}<small></small></div>'
     )
-    posted = "Posted today" if v.posted_days_ago == 0 else f"{v.posted_days_ago} days ago"
     need = ""
     if v.standing == "verify":
         text = "One answer from you could make this your #1" if first_verify else "Same answer unlocks this role"
@@ -389,7 +434,7 @@ def cc_card(v, cls: str, first_verify: bool) -> str:
         f'<div style="flex:1"><div class="cc-t">{esc(v.title)}</div><div class="cc-m">{esc(v.company)} · {esc(v.city)} · {esc(v.mode)}</div></div>{badge}</div>'
         f'<div class="cc-sc"><b>{v.shown}<small>/100</small></b><span style="font-size:12px;color:var(--amber);font-weight:600">{delta}</span></div>'
         f'<div class="cc-bar">{segs}</div><div class="cc-ck">{checks}</div>'
-        f'<div class="cc-ft">{close}<div class="cc-pill">{posted}<small>Verified today</small></div></div>{need}</div>'
+        f'<div class="cc-ft">{close}<div class="cc-pill">Demo data<small>No source date</small></div></div>{need}</div>'
     )
 
 
@@ -453,6 +498,17 @@ def step6() -> str:
     for k, o in zip(ks, opts):
         body = body.replace(o, f'<div class="o6{" on" if k == choice else ""}" data-k="{k}">', 1)
     before, after = store.counts(None), store.counts(choice)
+    # The UK roles and what each answer does, counted as the question screen counts them.
+    uk = store.uk_roles()
+    more = f" and {len(uk) - 3} more" if len(uk) > 3 else ""
+    yes, no = store.counts("yes"), store.counts("no")
+    body = swap(body, "<b>14 roles in London</b>", f"<b>{len(uk)} roles in the UK</b>")
+    body = swap(
+        body, re.escape("Replai, Bolton Consulting Group, Lazarde &amp; Co. and 11 more"),
+        esc(", ".join(v.company for v in uk[:3])) + more,
+    )
+    body = swap(body, re.escape(">+11 roles<"), f">+{yes['eligible'] - before['eligible']} roles<")
+    body = swap(body, re.escape(">4 roles stay<"), f">{no['eligible'] - before['eligible']} roles stay<")
     label = {"yes": "Yes", "no": "No", "unsure": "I’m not sure"}[choice]
     body = body.replace("<h3>If you answer “Yes”</h3>", f"<h3>If you answer “{label}”</h3>")
 
@@ -500,8 +556,6 @@ def step7() -> str:
             f'<span class="ix">{WN12}{esc(v.gaps[0])}</span>' if v.gaps else '<span class="in">No gaps found</span>'
         )
         first_ok = next((t for k, t in v.card_checks if k == "ok"), v.highlight)
-        posted = "Posted today" if v.posted_days_ago == 0 else f"{v.posted_days_ago} days ago"
-        dot = "#E3A03A" if v.posted_days_ago > 7 else "#30A14E"
         show = S["ob_filter"] == 0 or (S["ob_filter"] == 1 and urgent) or (S["ob_filter"] == 2 and mv == "New")
         items.append(
             f'<div class="it{" top" if i == 0 else ""}" style="{"" if show else "display:none"}">'
@@ -514,7 +568,7 @@ def step7() -> str:
             f'<div class="dt"><span class="cal{" u" if urgent else ""}"><i>{month}</i><b>{day}</b></span><div>'
             f'<div class="k{" u" if urgent else ""}">{"Closes in %d days" % n if urgent else "Closes " + esc(v.closes_label)}</div>'
             f'<small>{"Apply this week" if urgent else "%d days left" % n}</small></div></div>'
-            f'<div class="fs"><span class="d" style="background:{dot}"></span><div>{posted}<small>Verified today</small></div></div>'
+            f'<div class="fs"><span class="d" style="background:#C7C7CC"></span><div>Demo data<small>No source date</small></div></div>'
             f'<div class="btn">{"Start application" if i == 0 else "Open"}</div></div>'
         )
     closing = sum(clock.days_until(v.closes) <= 9 for v in top)

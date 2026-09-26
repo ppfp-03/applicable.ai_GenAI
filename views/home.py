@@ -7,7 +7,8 @@ the side cards are drawn behind it and brought forward with native buttons.
 
 The new-matches card is the controlled "Simulated ingestion event" (FR-10):
 until the user runs it, the card offers to; afterwards it lists the synthetic
-postings it added, and every card showing one says so.
+postings it added, and every card showing one says so. The Hong Kong question
+belongs to the post-event scenario, so it is shown only once the event has run.
 
 Motion lives in `ui/js/home.js`: the carousel and the top matches can be
 dragged, and every move animates before the native button commits it.
@@ -52,12 +53,20 @@ def new_note() -> str:
     return f'<b>{SIM}</b> · same rules as your other <b>{store.counts()["eligible"]} eligible</b> roles'
 
 
+def shown(item: dict) -> bool:
+    """The Hong Kong question belongs to the post-event scenario, so it waits
+    until the simulated event has run."""
+    return item["kind"] != "question" or store.simulated_event_ran()
+
+
 def run_event() -> None:
     store.run_simulated_event()
+    # Every card is shown now; keep the new-matches card in front.
+    st.session_state[CARD] = next(i for i, w in enumerate(d.week) if w["kind"] == "new")
     st.toast(f"{SIM} · {len(store.new_matches())} synthetic postings added")
 
 
-week = [week_item(w) for w in d.week]
+week = [week_item(w) for w in d.week if shown(w)]
 N = len(week)
 
 
@@ -68,7 +77,7 @@ def go(i: int) -> None:
 # ───────────────────────── Header ─────────────────────────
 
 shell.topbar("home", store.nav_counts())
-cur = st.session_state[CARD]
+cur = st.session_state[CARD] % N
 
 with shell.header(
     f"Good morning, {d.profile['first_name']}",
@@ -224,7 +233,7 @@ with st.container(key="car"):
             elif kind == "question":
                 if st.button("Save answer", type="primary", key="uc-save", disabled=not choice):
                     store.set_answer("hk_relocate", choice)
-                    st.toast("Answer saved · ranking will update")
+                    st.toast("Answer saved to your profile")
                 st.button("Later", key="uc-q-later", on_click=go, args=(cur + 1,))
             elif kind == "new" and not store.simulated_event_ran():
                 st.button(item["buttons"][0][0], type="primary", key="uc-sim", on_click=run_event)
@@ -305,8 +314,6 @@ def mcard(v) -> str:
         foot, urgent = "Applied", False
     elif app and app["stage"] == "interview":
         foot, urgent = "Interview today", False
-    elif v.get("new") or v.posted_days_ago == 0:
-        foot, urgent = "New", False
     else:
         foot, urgent = clock.closes_line(v)
     mark = "!" if v.get("highlight_kind") == "gap" else "✓"
@@ -317,7 +324,7 @@ def mcard(v) -> str:
         f'<div class="why">{mark} {esc(v.highlight)}</div>'
         f'<div class="b" style="margin-top:auto"><i style="width:{v.shown}%"></i></div>'
         + (f'<div class="f"><span>{SIM}</span></div></div>' if sim else
-           f'<div class="f"><span class="{"u" if urgent else ""}">{esc(foot)}</span><span>Verified today</span></div></div>')
+           f'<div class="f"><span class="{"u" if urgent else ""}">{esc(foot)}</span><span>Demo data</span></div></div>')
     )
 
 

@@ -25,7 +25,7 @@ st.session_state.setdefault(SEL, 0)
 counts = store.counts()
 top = store.ranked()[:5]
 ranked_n = counts["eligible"] + counts["verify"]
-checked = d.catalog["checked"]
+checked = sum(counts.values())
 if st.session_state[SEL] >= len(top):
     st.session_state[SEL] = 0
 

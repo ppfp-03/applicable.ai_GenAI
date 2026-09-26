@@ -1,17 +1,14 @@
-"""Deterministic eligibility rules.
+"""Deterministic eligibility rules for the seven non-permission criteria.
 
-Work authorisation is decided here and nowhere else. No model input reaches
-this module and none of its outputs depend on one: given the same facts it
-always returns the same answer, and every answer names the rule that produced
-it.
+Permission to work is not decided here: it comes from the canonical
+HC_WORK_AUTH rule (core/eligibility.py) and is passed in. No model input
+reaches this module and none of its outputs depend on one: given the same
+facts it always returns the same answer, and every answer names the rule that
+produced it.
 
 That separation is the point. A language model may explain what these rules
-concluded; it may never conclude it. Getting someone's right to work wrong is
-not a ranking error, and "the model said so" is not something a user can check.
-
-Citizenship is never read as permission to work. Until a country-specific
-inference is approved (PROJECT_CONTEXT.md, Q-04), a country with no explicit
-answer or document is a question, not a yes. This is not legal advice.
+concluded; it may never conclude it. "The model said so" is not something a
+user can check. This is not legal advice.
 """
 
 from __future__ import annotations
@@ -117,65 +114,6 @@ def level_gap(have: Optional[str], need: str) -> Optional[int]:
     return None
 
 
-def _permission(profile: dict, answers: dict, role: dict) -> Criterion:
-    """Work permission, by the country the role is based in."""
-    name = CRITERION_NAMES["permission"]
-    country = role["country"]
-
-    if country == "GB":
-        uk = answers.get("uk_work")
-        if uk == "yes":
-            return Criterion("permission", name, "met", "UK · no sponsorship needed",
-                             "You told us you can work in the UK without visa sponsorship.",
-                             "UK_right_to_work = yes → allowed")
-        if uk == "no":
-            if role.get("sponsors_visa"):
-                return Criterion("permission", name, "check", "Needs sponsorship · employer sponsors",
-                                 "You need a visa; this employer sponsors visas, subject to its approval.",
-                                 "UK_right_to_work = no + employer_sponsors → to verify")
-            return Criterion("permission", name, "not_met", "Needs sponsorship · not offered",
-                             "You need a visa and this employer does not sponsor visas.",
-                             "UK_right_to_work = no + no_sponsorship → not allowed")
-        return Criterion("permission", name, "check", "UK right to work · not stated",
-                         "UK right to work is not stated in your CV.",
-                         "UK_right_to_work = unknown → ask")
-
-    if country == "CN" and profile.get("citizenship") != "CN":
-        visa = profile.get("visa") or {}
-        if visa.get("type") != "X1":
-            return Criterion("permission", name, "check", "China permit · not stated",
-                             "No Chinese work or study permit is stated in your CV.",
-                             "CN_permit = unknown → ask")
-        if role.get("cn_permit") == "employer":
-            return Criterion("permission", name, "met", "X1 visa · employer arranges permit",
-                             "The employer arranges the internship permit with your university.",
-                             "CN_X1 + employer_arranges → allowed")
-        if profile.get("university_letter") or answers.get("cn_letter"):
-            return Criterion("permission", name, "met", "X1 visa + university letter",
-                             "An X1 study visa with a university letter allows internships.",
-                             "CN_X1 + university_letter → allowed")
-        return Criterion("permission", name, "check", "X1 visa · letter missing",
-                         "An X1 study visa allows internships only with a letter from your university.",
-                         "CN_X1 + university_letter → allowed")
-
-    if country == "SG":
-        if role.get("sponsors_visa"):
-            # Covered either way: already allowed to work, or sponsored.
-            return Criterion("permission", name, "met", "Employment Pass sponsored",
-                             "This employer sponsors an Employment Pass if you need one.",
-                             "SG_employer_sponsors → allowed")
-        return Criterion("permission", name, "check", "Right to work · no sponsorship offered",
-                         "You have not told us whether you can work in Singapore, and this employer "
-                         "does not sponsor an Employment Pass.",
-                         "SG_right_to_work = unknown + no_sponsorship → ask")
-
-    # No answer for this country. Citizenship alone does not settle it, so ask.
-    return Criterion("permission", name, "check", "Right to work · not stated",
-                     f"You have not told us whether you can work in {role['city']} ({country}). "
-                     "Citizenship alone does not settle it.",
-                     f"{country}_right_to_work = unknown → ask")
-
-
 def _language(profile: dict, role: dict, answers: dict | None = None) -> Criterion:
     """Every language the posting requires, at the level it requires.
 
@@ -206,18 +144,16 @@ def _language(profile: dict, role: dict, answers: dict | None = None) -> Criteri
                               "The posting sets no language requirement.", "none → allowed")
 
 
-def evaluate(
-    profile: dict, answers: dict, role: dict, *, permission: Optional[Criterion] = None
-) -> list[Criterion]:
+def evaluate(profile: dict, answers: dict, role: dict, *, permission: Criterion) -> list[Criterion]:
     """Check one role against the eight fixed criteria.
 
     Args:
         profile: The candidate profile (from the CV and confirmed by the user).
         answers: The user's answers to our questions, e.g. {"uk_work": "yes"}.
         role: The role, with the `requirements` read from its posting.
-        permission: The permission outcome decided elsewhere. The screens pass
-            the canonical engine's (core/eligibility.py); the legacy
-            `_permission` below runs only when this is None.
+        permission: The permission outcome, decided by the canonical
+            HC_WORK_AUTH rule (core/eligibility.permission). There is no
+            fallback: this module never decides work authorisation.
 
     Returns:
         Eight Criterion outcomes, in CRITERIA order.
@@ -229,7 +165,7 @@ def evaluate(
     out.append(Criterion("location", CRITERION_NAMES["location"], "met",
                          f"{role['city']} · {role['mode'].lower()}",
                          "The role’s location is stated in the posting.", "location_stated → met"))
-    out.append(permission or _permission(profile, answers, role))
+    out.append(permission)
 
     if req.get("student") and not profile.get("enrolled"):
         out.append(Criterion("student", CRITERION_NAMES["student"], "not_met", "Not enrolled",

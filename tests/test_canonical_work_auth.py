@@ -124,14 +124,12 @@ def test_changing_the_answer_recomputes_through_the_engine(fresh_session):
     assert store.view(r).standing == "excluded"
 
 
-def test_production_path_never_runs_the_legacy_permission_rule(monkeypatch):
-    def legacy(*_args, **_kwargs):
-        raise AssertionError("core.rules._permission was called")
-
-    monkeypatch.setattr(rules, "_permission", legacy)
+def test_the_legacy_permission_rule_is_gone():
+    # core/rules.py has no work-authorisation logic left to fall back on.
+    assert not hasattr(rules, "_permission")
     for uk in ("yes", "no", "unsure", None):
-        store.views({"uk_work": uk})
-        store.ranked({"uk_work": uk}, include_new=True)
+        for v in store.views({"uk_work": uk}):
+            assert v.criterion("permission").rule.startswith("HC_WORK_AUTH")
 
 
 def test_ui_modules_do_not_call_legacy_rules_directly():

@@ -51,7 +51,7 @@ with shell.header(
     TITLE[v.standing],
     f"{esc(role.title)} · <b>{esc(role.company)}</b> · {esc(role.city)} · "
     + (f"<b>{esc(d.simulated_event['label'])}</b>" if store.is_simulated(role)
-       else f"checked today {role.get('checked', d.updated)}"),
+       else "Demo data"),
 ):
     if st.button("‹ Matches", key="back"):
         tabs.go("matches")
@@ -110,13 +110,14 @@ def copy(c) -> dict:
     elif c.id == "permission" and role.country == "GB":
         out.update(
             act="Answer 1 question", btn="Answer 1 question",
-            say="Tell us whether you can work in the UK without sponsorship. One answer settles 14 roles.",
+            say="Tell us whether you can work in the UK without sponsorship. "
+                f"One answer settles all {len(store.uk_roles())} UK roles.",
             alt=["Why we ask", "It’s the only fact still deciding these roles"],
-            viz='<div class="cmp"><span class="pill">EU citizen</span><span class="ar">+</span><span class="pill q">UK right to work ?</span></div>',
+            # Citizenship is not shown here: it is not evidence of permission to work.
+            viz='<div class="cmp"><span class="pill q">UK right to work ?</span></div>',
             big='<h4>One answer missing</h4><div class="sub">United Kingdom · right to work not stated</div>'
-                '<div class="cmp" style="justify-content:flex-start"><span class="pill">EU citizen <span style="color:var(--green)">✓</span></span>'
-                '<span class="ar">+</span><span class="pill q">UK right to work ?</span></div>',
-            dec=f"Rule <code>{esc(c.rule)}</code>. Your nationality is in your CV (p.2). UK right to work is not stated in your CV.",
+                '<div class="cmp" style="justify-content:flex-start"><span class="pill q">UK right to work ?</span></div>',
+            dec=f"Rule <code>{esc(c.rule)}</code>. UK right to work is not stated in your CV, and citizenship alone does not settle it.",
         )
     elif c.id == "permission":
         # Outside the UK nothing answers it yet, and citizenship is not an answer.
