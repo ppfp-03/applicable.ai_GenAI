@@ -7,6 +7,7 @@ from streamlit.testing.v1 import AppTest
 from core import store
 from ui import onboarding_markup as M
 from oi.intelligence.extraction import extract_candidate
+from oi.providers.model_client import ExtractedLanguage
 from tests.test_candidate_extraction import FakeModelClient, fact, make_cv, make_fields
 
 ONBOARDING = str(Path(__file__).resolve().parents[1] / "views" / "onboarding.py")
@@ -27,6 +28,19 @@ def step2(profile=None) -> str:
 
 def profile(**fields):
     return extract_candidate(make_cv(), FakeModelClient(fields=make_fields(**fields)))
+
+
+LANGUAGE_LINE = "Languages: English (C1), Mandarin HSK 4, Japanese JLPT N2, Italian (native), Spanish (fluent)"
+
+
+def lang(code: str, level: str, quote: str) -> ExtractedLanguage:
+    return ExtractedLanguage(language=code, level=level, quote=quote)
+
+
+def speaker(*languages: ExtractedLanguage):
+    """A profile read from a CV that also states `languages` on LANGUAGE_LINE."""
+    cv = make_cv(make_cv().text + LANGUAGE_LINE + "\n")
+    return extract_candidate(cv, FakeModelClient(fields=make_fields(languages=list(languages))))
 
 
 def test_without_a_profile_nothing_is_shown_as_extracted() -> None:
@@ -54,15 +68,79 @@ def test_extracted_facts_and_their_quotes_are_shown() -> None:
         assert value not in page
 
 
-def test_sections_the_cv_extraction_does_not_read_are_marked_not_read() -> None:
+def test_a_read_cv_without_languages_says_none_are_stated() -> None:
     page = step2(profile())
 
     for title in ["Work authorization", "Sponsorship", "Languages"]:
         assert f"<b>{title}</b>" in page
-    # Languages is not read; work authorization and sponsorship are declared
-    # by the user instead (tests/test_onboarding_work_auth.py).
-    assert page.count("Not read from your CV") == 1
+    # Work authorization and sponsorship are declared by the user instead
+    # (tests/test_onboarding_work_auth.py).
     assert page.count("Required · add it in Edit profile") == 2
+    card = page.split("<b>Languages</b>", 1)[1].split('<div class="w-card', 1)[0]
+    assert card.startswith('<span class="w-b ne"><i></i>Not found</span>')
+    assert '<div class="p-v">Not stated in your CV</div>' in card
+    assert "Not read from your CV" not in page
+    assert '<span class="tg">Languages</span>' not in page
+
+
+def test_languages_are_marked_not_read_without_a_profile() -> None:
+    page = step2()
+
+    assert "<b>Languages</b>" in page
+    assert page.count("Not read from your CV") == 1
+
+
+# --- languages ----------------------------------------------------------------
+
+
+def test_languages_read_from_the_cv_are_shown_on_their_own_scale() -> None:
+    page = step2(speaker(
+        lang("en", "C1", "English (C1)"),
+        lang("zh", "HSK 4", "Mandarin HSK 4"),
+        lang("ja", "JLPT N2", "Japanese JLPT N2"),
+        lang("it", "Native", "Italian (native)"),
+    ))
+
+    card = page.split("<b>Languages</b>", 1)[1].split('<div class="w-card', 1)[0]
+    assert '<span class="w-b ok"><i></i>Found</span>' in card
+    for label, quote in [
+        ("English · C1", "English (C1)"),
+        ("Mandarin · HSK 4", "Mandarin HSK 4"),
+        ("Japanese · JLPT N2", "Japanese JLPT N2"),
+        ("Italian · native", "Italian (native)"),
+    ]:
+        assert f'<span class="w-chip" title="{quote}">{label}</span>' in card
+    assert "From your CV · 4 quotes</div>" in card
+    assert "Not read from your CV" not in page
+
+
+def test_language_quotes_appear_on_the_cv_panel() -> None:
+    page = step2(speaker(lang("zh", "HSK 4", "Mandarin HSK 4")))
+
+    panel = page.split('<div class="p-page">', 1)[1]
+    assert '<span class="tg">Languages</span><div style="font-size:12px;line-height:1.5;color:var(--t1)">Mandarin HSK 4</div>' in panel
+    assert "Your CV<span>4 quotes</span>" in page
+    # Languages are not one of the three CV sections the header counts.
+    assert "3 of 3 sections found in your CV" in page
+
+
+def test_fluent_is_shown_as_the_cv_states_it() -> None:
+    # Stored as SELF:fluent; what it counts as is the rule's concern, not the card's.
+    page = step2(speaker(lang("es", "Fluent", "Spanish (fluent)")))
+
+    assert '<span class="w-chip" title="Spanish (fluent)">Spanish · fluent</span>' in page
+
+
+def test_a_language_without_a_readable_level_is_still_listed() -> None:
+    page = step2(speaker(lang("de", "", "Italian (native)")))
+
+    assert "German · level not stated</span>" in page
+
+
+def test_an_unknown_language_code_is_shown_as_the_code() -> None:
+    page = step2(speaker(lang("pt", "C1", "English (C1)")))
+
+    assert "PT · C1</span>" in page
 
 
 def test_a_section_with_no_facts_says_it_is_not_stated() -> None:
