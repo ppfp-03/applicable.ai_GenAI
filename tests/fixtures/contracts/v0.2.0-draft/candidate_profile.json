@@ -89,21 +89,21 @@
       "cv-001": {
         "document_id": "cv-001",
         "kind": "cv",
-        "text": "Synthetic CV text for the shared contract fixture.",
+        "text": "Synthetic CV text for the shared contract fixture.\nBuilt three-statement financial models in Excel\nUsed Python and pandas for coursework data analysis\nBSc Economics and Management, expected graduation 2027\nCorporate finance summer intern, June to August",
         "content_hash": "hash-cv-001",
         "source_ref": "synthetic_fixture"
       },
       "questionnaire-001": {
         "document_id": "questionnaire-001",
         "kind": "questionnaire",
-        "text": "Synthetic onboarding questionnaire answers.",
+        "text": "Synthetic onboarding questionnaire answers.\nI can work in the Netherlands without sponsorship\nFor the United Kingdom I would need sponsorship\nMy expected graduation date is 15 July 2027",
         "content_hash": "hash-questionnaire-001",
         "source_ref": "synthetic_fixture"
       },
       "clarification-001": {
         "document_id": "clarification-001",
         "kind": "questionnaire",
-        "text": "Synthetic clarification answers collected after a first pass.",
+        "text": "Synthetic clarification answers collected after a first pass.\nI speak English and Italian",
         "content_hash": "hash-clarification-001",
         "source_ref": "synthetic_fixture"
       }

@@ -3,12 +3,21 @@
 `data/demo.json` stands in for the pipeline's output. What is stored there is
 what the pipeline would read or measure (a posting's requirements, a factor
 score); what the product concludes is never stored: every page asks this
-module, which runs core/rules.py and core/ranking.py against the current
-answers. Change an answer and every screen follows.
+module, which runs the eligibility checks and core/ranking.py against the
+current answers. Change an answer and every screen follows.
+
+Work authorisation comes from the canonical engine (core/eligibility.py,
+HC_WORK_AUTH); the other seven criteria still come from core/rules.py.
 
 The one answer that moves the most roles is the UK question. The demo starts
 where the dashboard mockup does -- the user finished onboarding and said
 "yes" -- and the question screen lets them change it.
+
+New postings arrive only through a controlled, labelled scenario (FR-10): the
+roles tagged with the `simulated_event` id stay out of every view until the
+user runs the "Simulated ingestion event". Nothing here monitors a real source
+or measures detection latency; the event only makes predefined synthetic
+postings available, and the same checks and ranking then run over them.
 """
 
 from __future__ import annotations
@@ -22,7 +31,7 @@ from typing import Any, Optional
 
 import streamlit as st
 
-from core import ranking, rules
+from core import eligibility, ranking, rules
 from oi.contracts import CandidateProfile
 
 _DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "demo.json"
@@ -41,7 +50,6 @@ class Data:
         self.now: str = raw["now"]
         self.updated: str = raw["ranking_updated"]
         self.profile: dict = raw["profile"]
-        self.catalog: dict = raw["catalog"]
         self.weights: dict = raw["weights"]
         self.penalty: float = raw["verify_penalty"]
         self.roles: list[RoleDef] = [RoleDef(r) for r in raw["roles"]]
@@ -51,6 +59,7 @@ class Data:
         self.sections: list[dict] = raw["profile_sections"]
         self.value_options: dict = raw["value_options"]
         self.eligibility_copy: dict = raw["eligibility_copy"]
+        self.simulated_event: dict = raw["simulated_event"]
 
     def role(self, role_id: str) -> "RoleDef":
         """One role by id.
@@ -133,6 +142,7 @@ EXTRA = "extra_answers"
 REVIEWED = "new_reviewed"
 CANDIDATE = "candidate_profile"
 EXTRACTION_ERROR = "extraction_error"
+SIMULATED = "simulated_event_ran"
 
 
 def init() -> None:
@@ -147,6 +157,7 @@ def init() -> None:
     st.session_state.setdefault(REVIEWED, False)
     st.session_state.setdefault(CANDIDATE, None)
     st.session_state.setdefault(EXTRACTION_ERROR, None)
+    st.session_state.setdefault(SIMULATED, False)
 
 
 # ───────────────────────── Access (demo only) ─────────────────────────
@@ -264,6 +275,36 @@ def set_extraction_error(message: str) -> None:
     st.session_state[CANDIDATE] = None
 
 
+# ───────────────────────── Simulated ingestion event ─────────────────────────
+
+
+def is_simulated(role: Any) -> bool:
+    """Whether a role (RoleDef or RoleView) arrives with the simulated event."""
+    return role.get("scenario") == data().simulated_event["id"]
+
+
+def simulated_event_ran() -> bool:
+    """Whether the user has run the simulated ingestion event this session."""
+    return bool(st.session_state.get(SIMULATED, False))
+
+
+def run_simulated_event() -> None:
+    """The controlled refresh: make the scenario's synthetic postings available.
+
+    Idempotent. The new postings are unreviewed until the user reviews them.
+    """
+    if not simulated_event_ran():
+        st.session_state[SIMULATED] = True
+        st.session_state[REVIEWED] = False
+
+
+def available() -> list[RoleDef]:
+    """The roles the product knows about right now: the baseline snapshot,
+    plus the scenario's postings once the simulated event has run."""
+    ran = simulated_event_ran()
+    return [r for r in data().roles if ran or not is_simulated(r)]
+
+
 # ───────────────────────── Derived views ─────────────────────────
 
 
@@ -271,7 +312,7 @@ def view(role: RoleDef, ans: Optional[dict] = None) -> RoleView:
     """Check and score one role under `ans` (default: the current answers)."""
     d = data()
     ans = answers() if ans is None else ans
-    crit = rules.evaluate(d.profile, ans, role.raw)
+    crit = rules.evaluate(d.profile, ans, role.raw, permission=eligibility.permission(role.raw, ans))
     standing = rules.verdict(crit)
     raw = ranking.raw_score(role.factors, d.weights)
     return RoleView(role, crit, standing, raw, ranking.priority(raw, standing, d.penalty),
@@ -286,7 +327,7 @@ def views(ans: Optional[dict] = None, as_of: Optional[str] = None) -> list[RoleV
         as_of: Only roles found on or before this ISO date (the onboarding
             snapshot was taken before today's new matches arrived).
     """
-    return [view(r, ans) for r in data().roles if as_of is None or r.found <= as_of]
+    return [view(r, ans) for r in available() if as_of is None or r.found <= as_of]
 
 
 def reviewed() -> bool:
@@ -328,7 +369,7 @@ def top_matches() -> list[RoleView]:
 
 
 def new_matches() -> list[RoleView]:
-    """Roles found today, not yet reviewed."""
+    """The postings the simulated ingestion event added (none before it runs)."""
     return [v for v in views() if v.get("new")]
 
 
@@ -337,10 +378,28 @@ def excluded() -> list[RoleView]:
     return [v for v in views() if v.standing == "excluded"]
 
 
-def counts(choice: Any = "current") -> dict[str, int]:
-    """Catalogue-level eligible / to verify / excluded for a UK answer."""
-    key = uk() if choice == "current" else choice
-    return data().catalog["by_uk_answer"][key or "none"]
+def counts(choice: Any = "current", as_of: Optional[str] = None) -> dict[str, int]:
+    """Eligible / to verify / excluded among the roles available now.
+
+    Counted from the same checks every screen shows, so the numbers always
+    match the roles the user can see (the baseline, plus the simulated
+    event's postings once it has run).
+
+    Args:
+        choice: A UK answer to count under ("yes", "no", "unsure" or None);
+            "current" keeps the user's own answer.
+        as_of: As in `views`.
+    """
+    ans = answers() if choice == "current" else {**answers(), "uk_work": choice}
+    out = {"eligible": 0, "verify": 0, "excluded": 0}
+    for v in views(ans, as_of):
+        out[v.standing] += 1
+    return out
+
+
+def uk_roles() -> list[RoleView]:
+    """The available roles in the UK, the ones the UK question can settle."""
+    return [v for v in views() if v.country == "GB"]
 
 
 def movement(before: dict, after: dict, n: int = 5, as_of: Optional[str] = None) -> dict[str, str]:

@@ -5,6 +5,11 @@ timeline, the top matches and the applications wallet. The centre card of
 the carousel is a native container, so every action in it is a real widget;
 the side cards are drawn behind it and brought forward with native buttons.
 
+The new-matches card is the controlled "Simulated ingestion event" (FR-10):
+until the user runs it, the card offers to; afterwards it lists the synthetic
+postings it added, and every card showing one says so. The Hong Kong question
+belongs to the post-event scenario, so it is shown only once the event has run.
+
 Motion lives in `ui/js/home.js`: the carousel and the top matches can be
 dragged, and every move animates before the native button commits it.
 """
@@ -17,7 +22,7 @@ from pathlib import Path
 import streamlit as st
 
 from core import clock, store
-from ui import shell, tabs
+from ui import parts, shell, tabs
 from ui.html import CK, NEXT, PREV, WN, esc, html, logo, md_icon
 from ui.theme import page_css
 
@@ -32,7 +37,48 @@ st.session_state.setdefault(CARD, 2)
 st.session_state.setdefault(WALLET, [0, 1, 2, 3])
 MOTION_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "home.js").read_text(encoding="utf-8")
 
-week = d.week
+SIM = d.simulated_event["label"]
+
+
+def week_item(item: dict) -> dict:
+    """A carousel card as it reads under the current answers.
+
+    The new-matches card offers to run the simulated event until it has run.
+    A card with a "work_auth" row shows the role's standing and its right to
+    work as the canonical HC_WORK_AUTH rule decides them now.
+    """
+    if item["kind"] == "new" and not store.simulated_event_ran():
+        return {**item, **item["before"]}
+    if any(k == "work_auth" for k, _ in item.get("checks", [])):
+        v = store.view(d.role(item["role"]))
+        return {
+            **item,
+            "sub": f'{item["sub"]} · {parts.STANDING[v.standing]}',
+            "checks": [list(parts.work_auth_check(v)) if k == "work_auth" else [k, t] for k, t in item["checks"]],
+        }
+    return item
+
+
+def new_note() -> str:
+    if not store.simulated_event_ran():
+        return "Controlled demo scenario · <b>not live monitoring</b>"
+    return f'<b>{SIM}</b> · same rules as your other <b>{store.counts()["eligible"]} eligible</b> roles'
+
+
+def shown(item: dict) -> bool:
+    """The Hong Kong question belongs to the post-event scenario, so it waits
+    until the simulated event has run."""
+    return item["kind"] != "question" or store.simulated_event_ran()
+
+
+def run_event() -> None:
+    store.run_simulated_event()
+    # Every card is shown now; keep the new-matches card in front.
+    st.session_state[CARD] = next(i for i, w in enumerate(d.week) if w["kind"] == "new")
+    st.toast(f"{SIM} · {len(store.new_matches())} synthetic postings added")
+
+
+week = [week_item(w) for w in d.week if shown(w)]
 N = len(week)
 
 
@@ -43,7 +89,7 @@ def go(i: int) -> None:
 # ───────────────────────── Header ─────────────────────────
 
 shell.topbar("home", store.nav_counts())
-cur = st.session_state[CARD]
+cur = st.session_state[CARD] % N
 
 with shell.header(
     f"Good morning, {d.profile['first_name']}",
@@ -113,6 +159,8 @@ def body(item: dict) -> str:
             f'{esc(item["label"])}</div>{figure}</div>{checks(item["checks"])}</div>'
         )
     if kind == "new":
+        if not store.simulated_event_ran():
+            return f'<div class="mm" style="margin-top:20px">{esc(d.simulated_event["disclaimer"])}</div>'
         rows = "".join(
             f'<div class="nrow"><span class="m2" style="background:{v.bg}">{v.mono}</span>'
             f'<b>{esc(v.company)}</b><span class="r">{esc(v.title.replace(" Intern", " Intern"))} · {esc(v.city)}</span>'
@@ -130,7 +178,7 @@ def fake_buttons(item: dict) -> str:
     )
     note = f'<span class="nt">{item["note"]}</span>' if item.get("note") else ""
     if item["kind"] == "new":
-        note = f'<span class="nt">Same rules as your other <b>{store.counts()["eligible"]} eligible</b> roles</span>'
+        note = f'<span class="nt">{new_note()}</span>'
     return f'<div class="foot">{btns}{note}</div>'
 
 
@@ -197,13 +245,15 @@ with st.container(key="car"):
             elif kind == "question":
                 if st.button("Save answer", type="primary", key="uc-save", disabled=not choice):
                     store.set_answer("hk_relocate", choice)
-                    st.toast("Answer saved · ranking will update")
+                    st.toast("Answer saved to your profile")
                 st.button("Later", key="uc-q-later", on_click=go, args=(cur + 1,))
+            elif kind == "new" and not store.simulated_event_ran():
+                st.button(item["buttons"][0][0], type="primary", key="uc-sim", on_click=run_event)
             elif kind == "new":
                 if st.button(f"Review {len(store.new_matches())} matches", type="primary", key="uc-new"):
                     st.session_state[store.REVIEWED] = True
                     tabs.go("explore", filter="new")
-            note = item.get("note") or (
+            note = new_note() if kind == "new" else item.get("note") or (
                 f'Same rules as your other <b>{store.counts()["eligible"]} eligible</b> roles'
             )
             html(f'<span class="ucn">{note}</span>')
@@ -270,13 +320,12 @@ STEP = 208  # card width plus gap
 
 def mcard(v) -> str:
     app = apps.get(v.id)
-    small = f"↑ {v.score_delta}" if v.get("score_delta") else "Priority"
+    sim = store.is_simulated(v)
+    small = "Simulated" if sim else f"↑ {v.score_delta}" if v.get("score_delta") else "Priority"
     if app and app["stage"] == "applied":
         foot, urgent = "Applied", False
     elif app and app["stage"] == "interview":
         foot, urgent = "Interview today", False
-    elif v.get("new") or v.posted_days_ago == 0:
-        foot, urgent = "New", False
     else:
         foot, urgent = clock.closes_line(v)
     mark = "!" if v.get("highlight_kind") == "gap" else "✓"
@@ -286,7 +335,8 @@ def mcard(v) -> str:
         f'<div class="t">{esc(v.title)}</div><div class="m">{esc(v.company)} · {esc(v.city)}</div>'
         f'<div class="why">{mark} {esc(v.highlight)}</div>'
         f'<div class="b" style="margin-top:auto"><i style="width:{v.shown}%"></i></div>'
-        f'<div class="f"><span class="{"u" if urgent else ""}">{esc(foot)}</span><span>Verified today</span></div></div>'
+        + (f'<div class="f"><span>{SIM}</span></div></div>' if sim else
+           f'<div class="f"><span class="{"u" if urgent else ""}">{esc(foot)}</span><span>Demo data</span></div></div>')
     )
 
 

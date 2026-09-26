@@ -73,7 +73,9 @@ def application_for(role_id: str) -> dict | None:
 
 
 def tag(v) -> tuple[str, str]:
-    """The one chip a list row shows: applied, closing soon, or how fresh.
+    """The one chip a list row shows: applied, simulated, closing soon, or demo data.
+
+    Demo postings have no source publication date, so no posting age is shown.
 
     Returns:
         (chip class, text) -- class "g" green, "u" amber, "" neutral.
@@ -82,11 +84,34 @@ def tag(v) -> tuple[str, str]:
     if app and app["stage"] in ("applied", "interview"):
         when = app["note"].split(" · ")[0].replace("Sent", "Applied")
         return "g", when
+    if store.is_simulated(v):
+        return "", store.data().simulated_event["label"]
     n = clock.days_until(v.closes)
     if n <= 9:
         return "u", f"Closes in {n} days"
-    p = v.posted_days_ago
-    return "", "Posted today" if p == 0 else "Posted yesterday" if p == 1 else f"Posted {p} days ago"
+    return "", "Demo data"
+
+
+#: A role's standing, in the words every list uses.
+STANDING = {"eligible": "Eligible", "verify": "To verify", "excluded": "Excluded"}
+
+
+def work_auth_check(v) -> tuple[str, str]:
+    """The right-to-work line for a role, as a (kind, text) checklist row.
+
+    Only renders the permission criterion the canonical HC_WORK_AUTH rule
+    decided for the current answers (core.store.view); it decides nothing.
+
+    Returns:
+        ("ok", …) when met; ("gap", …) when it needs verification or conflicts.
+    """
+    status = v.criterion("permission").status
+    where = f"Right to work in {v.city}"
+    if status == "met":
+        return "ok", f"{where} · confirmed"
+    if status == "not_met":
+        return "gap", f"{where} · conflict"
+    return "gap", f"{where} · needs verification"
 
 
 def eligibility_dot(v) -> str:

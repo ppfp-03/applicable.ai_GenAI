@@ -1,7 +1,7 @@
 """One quick question — the answer that moves the most roles
 (04_Clarification_Question.html).
 
-Asked only because a fixed rule cannot decide 14 roles without it. The
+Asked only because a fixed rule cannot decide the UK roles without it. The
 right-hand preview recomputes live for whichever answer is selected: the
 same rules and arithmetic that run after saving, run now on a copy of the
 answers, so what the preview promises is exactly what saving does.
@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from core import store
+from core import clock, store
 from ui import shell, tabs
 from ui.html import CLOCK, SH, esc, hit, html, logo
 from ui.theme import page_css
@@ -25,8 +25,10 @@ choice = st.session_state[PICK]
 
 before = store.counts(None)
 after = {k: store.counts(k) for k in store.UK_CHOICES}
-cat = d.catalog
-uk_roles = [v for v in store.views() if v.country == "GB" and not v.get("new")]
+uk_roles = store.uk_roles()
+n_uk = len(uk_roles)
+closing = sum(clock.days_until(v.closes) <= 7 for v in uk_roles)
+more = f" and {n_uk - 3} more" if n_uk > 3 else ""
 
 
 def pick(k: str) -> None:
@@ -36,7 +38,7 @@ def pick(k: str) -> None:
 shell.topbar("home", store.nav_counts())
 with shell.header(
     "One quick question",
-    f"Asked only because <b>{cat['uk_roles']} roles</b> depend on it · your answer updates one profile field",
+    f"Asked only because <b>{n_uk} UK roles</b> depend on it · your answer updates one profile field",
 ):
     if st.button("Answer later", key="later"):
         tabs.go("home")
@@ -58,9 +60,9 @@ with st.container(key="main"):
                 '<div class="kk"><i style="background:#0071E3"></i>Question 1 of 1 · about 10 seconds</div>'
                 '<div class="q-h">Can you work in the UK without visa sponsorship?</div>'
                 "<div class=\"q-sub\">It’s not stated in your CV, and it’s the only thing still deciding "
-                f"<b>{cat['uk_roles']} roles in London</b>.</div>"
-                f'<div class="q-meta"><span class="chip u">{CLOCK}{cat["uk_closing_this_week"]} of these roles close this week</span>'
-                f'<div class="logos">{logos}<span class="more">{esc(names)} and {cat["uk_roles"] - 3} more</span></div></div>'
+                f"<b>{n_uk} roles in the UK</b>.</div>"
+                f'<div class="q-meta"><span class="chip u">{CLOCK}{closing} of these roles close this week</span>'
+                f'<div class="logos">{logos}<span class="more">{esc(names)}{more}</span></div></div>'
             )
             with st.container(key="opts"):
                 for n, (k, title, sub, fx, fc) in enumerate(OPTIONS, start=1):

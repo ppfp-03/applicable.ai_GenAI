@@ -1,17 +1,14 @@
-"""Deterministic eligibility rules.
+"""Deterministic eligibility rules for the seven non-permission criteria.
 
-Work authorisation is decided here, by table lookup, and nowhere else. No
-model input reaches this module and none of its outputs depend on one: given
-the same facts it always returns the same answer, and every answer names the
-rule that produced it.
+Permission to work is not decided here: it comes from the canonical
+HC_WORK_AUTH rule (core/eligibility.py) and is passed in. No model input
+reaches this module and none of its outputs depend on one: given the same
+facts it always returns the same answer, and every answer names the rule that
+produced it.
 
 That separation is the point. A language model may explain what these rules
-concluded; it may never conclude it. Getting someone's right to work wrong is
-not a ranking error, and "the model said so" is not something a user can check.
-
-The Swiss table for EU/EFTA citizens comes from
-design-system/10-ux-architecture.md. This is not legal advice, and the rules
-carry a version so an outcome can be traced to the text it was read from.
+concluded; it may never conclude it. "The model said so" is not something a
+user can check. This is not legal advice.
 """
 
 from __future__ import annotations
@@ -19,144 +16,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-from oi.contracts import Evidence, ReqStatus, Source
-
-#: Bump when a rule changes. Shown in "How we know" alongside the outcome.
-RULES_VERSION = "2026-09-22"
-
-#: Countries whose citizens move freely within the EU/EFTA area.
-_EU_EFTA = frozenset(
-    {
-        "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE",
-        "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT",
-        "RO", "SK", "SI", "ES", "SE",          # EU
-        "IS", "LI", "NO", "CH",                # EFTA
-    }
-)
-
-
-@dataclass(frozen=True)
-class RuleOutcome:
-    """What a rule concluded, and the evidence for it.
-
-    `evidence` is None only when the rule could not fire for want of a fact.
-    In that case `status` is "confirm": we ask rather than assume.
-    """
-
-    status: ReqStatus
-    explanation: str
-    evidence: Optional[Evidence] = None
-
-
-def _rule_evidence(explanation: str, where: str) -> Evidence:
-    """Wrap a rule's conclusion as evidence attributed to RULE."""
-    return Evidence(
-        text=explanation,
-        highlight=None,
-        source=Source(kind="RULE", where=f"{where} · rules {RULES_VERSION}"),
-    )
-
-
-def swiss_permit_for_eu_citizen(contract_months: Optional[int]) -> RuleOutcome:
-    """Apply the Swiss permit table for an EU/EFTA citizen.
-
-    | Contract length      | Outcome                                |
-    |----------------------|----------------------------------------|
-    | <= 3 months          | No permit needed                       |
-    | > 3 and < 12 months  | L permit (EU/EFTA), for the contract   |
-    | >= 12 months         | B permit (EU/EFTA), valid 5 years      |
-
-    Args:
-        contract_months: Contract length in months, or None if the posting
-            does not say.
-
-    Returns:
-        A met outcome for any of the three bands. When the length is unknown,
-        a "confirm" outcome with no evidence -- we do not pick a band, because
-        that would be inventing a fact about someone's legal status.
-
-    Raises:
-        ValueError: If `contract_months` is zero or negative.
-    """
-    if contract_months is None:
-        return RuleOutcome(
-            status="confirm",
-            explanation="Contract length is not stated in this posting.",
-        )
-
-    if contract_months <= 0:
-        raise ValueError(
-            f"Contract length must be a positive number of months, "
-            f"got {contract_months}."
-        )
-
-    if contract_months <= 3:
-        explanation = "No permit needed for ≤ 3 months"
-        where = "CH · EU/EFTA · contract ≤ 3 months"
-    elif contract_months < 12:
-        explanation = "L permit (EU/EFTA) for the contract length"
-        where = "CH · EU/EFTA · contract 3–12 months"
-    else:
-        explanation = "B permit (EU/EFTA), valid 5 years"
-        where = "CH · EU/EFTA · contract ≥ 12 months"
-
-    return RuleOutcome(
-        status="met",
-        explanation=explanation,
-        evidence=_rule_evidence(explanation, where),
-    )
-
-
-def work_authorisation(
-    citizenship: Optional[str],
-    country: str,
-    contract_months: Optional[int] = None,
-) -> RuleOutcome:
-    """Decide whether the candidate may work in `country`.
-
-    Args:
-        citizenship: ISO 3166-1 alpha-2 code of the declared citizenship, or
-            None if we have not been told.
-        country: ISO 3166-1 alpha-2 code of where the role is based.
-        contract_months: Contract length, where the posting states it.
-
-    Returns:
-        A RuleOutcome. Absent a rule for the pair, the status is "confirm":
-        having no rule means we do not know, which is different from knowing
-        the answer is no.
-    """
-    citizenship = (citizenship or "").upper() or None
-    country = country.upper()
-
-    if citizenship is None:
-        return RuleOutcome(
-            status="confirm",
-            explanation="Citizenship is not stated in your CV.",
-        )
-
-    # Free movement inside the EU/EFTA area, except Switzerland, which runs
-    # its own permit regime even for EU citizens.
-    if country in _EU_EFTA and country != "CH" and citizenship in _EU_EFTA:
-        explanation = "EU/EFTA citizen — free movement applies"
-        return RuleOutcome(
-            status="met",
-            explanation=explanation,
-            evidence=_rule_evidence(
-                explanation, f"{country} · EU/EFTA citizen"
-            ),
-        )
-
-    if country == "CH" and citizenship in _EU_EFTA:
-        return swiss_permit_for_eu_citizen(contract_months)
-
-    # No rule covers this pair yet. Ask; never assume either way.
-    return RuleOutcome(
-        status="confirm",
-        explanation=(
-            f"We have no work-authorisation rule for {citizenship} "
-            f"citizens in {country} yet."
-        ),
-    )
+#: Bump when a rule changes.
+RULES_VERSION = "2026-09-26"
 
 
 # ───────────────────────── The eight fixed criteria ─────────────────────────
@@ -253,62 +114,6 @@ def level_gap(have: Optional[str], need: str) -> Optional[int]:
     return None
 
 
-def _permission(profile: dict, answers: dict, role: dict) -> Criterion:
-    """Work permission, by the country the role is based in."""
-    name = CRITERION_NAMES["permission"]
-    country = role["country"]
-
-    if country == "GB":
-        uk = answers.get("uk_work")
-        if uk == "yes":
-            return Criterion("permission", name, "met", "UK · no sponsorship needed",
-                             "You told us you can work in the UK without visa sponsorship.",
-                             "UK_right_to_work = yes → allowed")
-        if uk == "no":
-            if role.get("sponsors_visa"):
-                return Criterion("permission", name, "check", "Needs sponsorship · employer sponsors",
-                                 "You need a visa; this employer sponsors visas, subject to its approval.",
-                                 "UK_right_to_work = no + employer_sponsors → to verify")
-            return Criterion("permission", name, "not_met", "Needs sponsorship · not offered",
-                             "You need a visa and this employer does not sponsor visas.",
-                             "UK_right_to_work = no + no_sponsorship → not allowed")
-        return Criterion("permission", name, "check", "UK right to work · not stated",
-                         "UK right to work is not stated in your CV.",
-                         "UK_right_to_work = unknown → ask")
-
-    if country == "CN" and profile.get("citizenship") != "CN":
-        visa = profile.get("visa") or {}
-        if visa.get("type") != "X1":
-            return Criterion("permission", name, "check", "China permit · not stated",
-                             "No Chinese work or study permit is stated in your CV.",
-                             "CN_permit = unknown → ask")
-        if role.get("cn_permit") == "employer":
-            return Criterion("permission", name, "met", "X1 visa · employer arranges permit",
-                             "The employer arranges the internship permit with your university.",
-                             "CN_X1 + employer_arranges → allowed")
-        if profile.get("university_letter") or answers.get("cn_letter"):
-            return Criterion("permission", name, "met", "X1 visa + university letter",
-                             "An X1 study visa with a university letter allows internships.",
-                             "CN_X1 + university_letter → allowed")
-        return Criterion("permission", name, "check", "X1 visa · letter missing",
-                         "An X1 study visa allows internships only with a letter from your university.",
-                         "CN_X1 + university_letter → allowed")
-
-    if country == "SG":
-        if role.get("sponsors_visa"):
-            return Criterion("permission", name, "met", "Employment Pass sponsored",
-                             "You need an Employment Pass and this employer sponsors it.",
-                             "SG_EP_required + employer_sponsors → allowed")
-        return Criterion("permission", name, "not_met", "Employment Pass not sponsored",
-                         "You need an Employment Pass and this employer does not sponsor it.",
-                         "SG_EP_required + no_sponsorship → not allowed")
-
-    outcome = work_authorisation(profile.get("citizenship"), country, role.get("contract_months"))
-    status = {"met": "met", "confirm": "check", "conflict": "not_met"}[outcome.status]
-    return Criterion("permission", name, status, outcome.explanation, outcome.explanation,
-                     f"{profile.get('citizenship')}_citizen + {country} → table")
-
-
 def _language(profile: dict, role: dict, answers: dict | None = None) -> Criterion:
     """Every language the posting requires, at the level it requires.
 
@@ -339,13 +144,16 @@ def _language(profile: dict, role: dict, answers: dict | None = None) -> Criteri
                               "The posting sets no language requirement.", "none → allowed")
 
 
-def evaluate(profile: dict, answers: dict, role: dict) -> list[Criterion]:
+def evaluate(profile: dict, answers: dict, role: dict, *, permission: Criterion) -> list[Criterion]:
     """Check one role against the eight fixed criteria.
 
     Args:
         profile: The candidate profile (from the CV and confirmed by the user).
         answers: The user's answers to our questions, e.g. {"uk_work": "yes"}.
         role: The role, with the `requirements` read from its posting.
+        permission: The permission outcome, decided by the canonical
+            HC_WORK_AUTH rule (core/eligibility.permission). There is no
+            fallback: this module never decides work authorisation.
 
     Returns:
         Eight Criterion outcomes, in CRITERIA order.
@@ -357,7 +165,7 @@ def evaluate(profile: dict, answers: dict, role: dict) -> list[Criterion]:
     out.append(Criterion("location", CRITERION_NAMES["location"], "met",
                          f"{role['city']} · {role['mode'].lower()}",
                          "The role’s location is stated in the posting.", "location_stated → met"))
-    out.append(_permission(profile, answers, role))
+    out.append(permission)
 
     if req.get("student") and not profile.get("enrolled"):
         out.append(Criterion("student", CRITERION_NAMES["student"], "not_met", "Not enrolled",

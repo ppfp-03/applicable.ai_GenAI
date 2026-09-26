@@ -1,10 +1,11 @@
 """Role — how eligibility was decided for one role (03_Eligibility.html).
 
-Eight fixed criteria, decided by core/rules.py. What needs attention comes
+Eight fixed criteria: permission to work from the canonical HC_WORK_AUTH rule
+(core/eligibility.py), the rest from core/rules.py. What needs attention comes
 first, one tile per open criterion; the side panel shows the posting's words,
 the rule that compared them with the profile, and what the user can do. The
-primary action feeds a new fact back (a certificate, a letter, an answer) and
-the same rules run again.
+primary action feeds a new fact back (a certificate, an answer) and the same
+rules run again.
 """
 
 from __future__ import annotations
@@ -48,7 +49,9 @@ DOT = {"excluded": "#D9443C", "verify": "#E3A03A", "eligible": "#30A14E"}
 shell.topbar("matches", store.nav_counts())
 with shell.header(
     TITLE[v.standing],
-    f"{esc(role.title)} · <b>{esc(role.company)}</b> · {esc(role.city)} · checked today {role.get('checked', d.updated)}",
+    f"{esc(role.title)} · <b>{esc(role.company)}</b> · {esc(role.city)} · "
+    + (f"<b>{esc(d.simulated_event['label'])}</b>" if store.is_simulated(role)
+       else "Demo data"),
 ):
     if st.button("‹ Matches", key="back"):
         tabs.go("matches")
@@ -104,26 +107,25 @@ def copy(c) -> dict:
             "AI only read the posting. It didn’t make this decision."
         )
         out["name"] = c.name
-    elif c.id == "permission" and role.country == "CN":
-        out["viz"] = '<div class="cmp"><span class="pill">X1 study visa</span><span class="ar">+</span><span class="pill q">Fudan letter ?</span></div>'
-        out["big"] = (
-            '<h4>One document missing</h4><div class="sub">China · X1 study visa + internship letter</div>'
-            '<div class="cmp" style="justify-content:flex-start"><span class="pill">X1 study visa <span style="color:var(--green)">✓</span></span>'
-            '<span class="ar">+</span><span class="pill q">Fudan internship letter ?</span></div>'
-        )
-        out["dec"] = (
-            f"Rule <code>{esc(c.rule)}</code>. Your visa is in your CV (p.2). The letter is not stated in your CV."
-        )
     elif c.id == "permission" and role.country == "GB":
         out.update(
             act="Answer 1 question", btn="Answer 1 question",
-            say="Tell us whether you can work in the UK without sponsorship. One answer settles 14 roles.",
+            say="Tell us whether you can work in the UK without sponsorship. "
+                f"One answer settles all {len(store.uk_roles())} UK roles.",
             alt=["Why we ask", "It’s the only fact still deciding these roles"],
-            viz='<div class="cmp"><span class="pill">EU citizen</span><span class="ar">+</span><span class="pill q">UK right to work ?</span></div>',
+            # Citizenship is not shown here: it is not evidence of permission to work.
+            viz='<div class="cmp"><span class="pill q">UK right to work ?</span></div>',
             big='<h4>One answer missing</h4><div class="sub">United Kingdom · right to work not stated</div>'
-                '<div class="cmp" style="justify-content:flex-start"><span class="pill">EU citizen <span style="color:var(--green)">✓</span></span>'
-                '<span class="ar">+</span><span class="pill q">UK right to work ?</span></div>',
-            dec=f"Rule <code>{esc(c.rule)}</code>. Your nationality is in your CV (p.2). UK right to work is not stated in your CV.",
+                '<div class="cmp" style="justify-content:flex-start"><span class="pill q">UK right to work ?</span></div>',
+            dec=f"Rule <code>{esc(c.rule)}</code>. UK right to work is not stated in your CV, and citizenship alone does not settle it.",
+        )
+    elif c.id == "permission":
+        # Outside the UK nothing answers it yet, and citizenship is not an answer.
+        out.update(
+            act="Confirm with the employer", btn="Open job posting",
+            say=f"Citizenship alone does not settle whether you can work in {role.city}. "
+                "Check the posting or ask the employer before you apply.",
+            alt=["Similar roles", "Explore more roles"],
         )
     elif c.id == "field":
         out["viz"] = (
@@ -277,16 +279,12 @@ with st.container(key="main"):
                             store.set_answer("languages", langs)
                             st.session_state["flash"] = f"Certificate added · {c.name} = {level} · checked again"
                             st.rerun()
-                elif c.id == "permission" and role.country == "CN":
-                    with st.popover(k["btn"], type="primary", key="letter"):
-                        up = st.file_uploader("Internship letter from Fudan (PDF)", type=["pdf"], key="letter-file")
-                        if st.button("Check again with this letter", type="primary", disabled=up is None):
-                            store.set_answer("cn_letter", True)
-                            st.session_state["flash"] = "Letter added · permission checked again"
-                            st.rerun()
                 elif c.id == "permission" and role.country == "GB":
                     if st.button(k["btn"], type="primary", key="ask"):
                         tabs.go("question")
+                elif c.id == "permission":
+                    if st.button(k["btn"], type="primary", key="posting-f"):
+                        st.toast("Opening the job posting")
                 elif c.id == "field":
                     with st.popover(k["btn"], type="primary", key="draft"):
                         st.text_area("To the recruiter", d.eligibility_copy["field"]["draft"], height=160, key="draft-text")

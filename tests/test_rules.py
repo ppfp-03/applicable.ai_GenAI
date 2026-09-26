@@ -1,95 +1,56 @@
-"""Tests for deterministic eligibility.
+"""Tests for core/rules.py now that it no longer decides work authorisation.
 
-Work authorisation is never judged by a model. These tests pin the rules the
-product relies on, including the Swiss permit table for EU/EFTA citizens from
-design-system/10-ux-architecture.md.
+Permission to work comes only from the canonical HC_WORK_AUTH rule
+(core/eligibility.py; see tests/test_canonical_work_auth.py). core/rules.py
+takes that outcome as given and has no fallback of its own, so a second,
+conflicting work-authorisation implementation cannot come back unnoticed.
 """
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
-from core.rules import RULES_VERSION, swiss_permit_for_eu_citizen, work_authorisation
+from core import rules
+from core.rules import RULES_VERSION, Criterion, evaluate, verdict
+
+_DEMO = json.loads(
+    (Path(__file__).resolve().parent.parent / "data" / "demo.json").read_text("utf-8")
+)
+PROFILE = _DEMO["profile"]
+ROLES = {role["id"]: role for role in _DEMO["roles"]}
+
+GIVEN = Criterion("permission", "Permission to work", "check", "given", "given", "given")
 
 
-class TestSwissPermitTable:
-    """The three bands in the Swiss permit table, plus the unknown case."""
-
-    def test_up_to_three_months_needs_no_permit(self):
-        outcome = swiss_permit_for_eu_citizen(contract_months=3)
-        assert outcome.status == "met"
-        assert "No permit needed" in outcome.explanation
-
-    def test_between_three_and_twelve_months_is_an_l_permit(self):
-        outcome = swiss_permit_for_eu_citizen(contract_months=6)
-        assert outcome.status == "met"
-        assert "L permit" in outcome.explanation
-
-    def test_twelve_months_or_more_is_a_b_permit(self):
-        outcome = swiss_permit_for_eu_citizen(contract_months=18)
-        assert outcome.status == "met"
-        assert "B permit" in outcome.explanation
-        assert "5 years" in outcome.explanation
-
-    def test_the_boundary_at_twelve_months_is_a_b_permit(self):
-        # 12 is the first month of the B band, not the last of the L band.
-        assert "B permit" in swiss_permit_for_eu_citizen(12).explanation
-        assert "L permit" in swiss_permit_for_eu_citizen(11).explanation
-
-    def test_the_boundary_at_three_months_needs_no_permit(self):
-        assert "No permit" in swiss_permit_for_eu_citizen(3).explanation
-        assert "L permit" in swiss_permit_for_eu_citizen(4).explanation
-
-    def test_unknown_duration_asks_rather_than_guesses(self):
-        # The posting did not say. Picking a band here would be inventing a
-        # fact about the user's legal status -- the one thing we never do.
-        outcome = swiss_permit_for_eu_citizen(contract_months=None)
-        assert outcome.status == "confirm"
-        assert outcome.evidence is None
-
-    def test_every_outcome_carries_a_rule_source(self):
-        for months in (3, 6, 18):
-            outcome = swiss_permit_for_eu_citizen(months)
-            assert outcome.evidence is not None
-            assert outcome.evidence.source.kind == "RULE"
-            # The locator names the rule that fired, so it can be audited.
-            assert "CH" in outcome.evidence.source.where
-
-    def test_rules_are_versioned(self):
-        # Rules change with the law; an outcome must be traceable to a version.
-        assert RULES_VERSION
+def test_there_is_no_legacy_permission_rule():
+    assert not hasattr(rules, "_permission")
+    assert not hasattr(rules, "work_authorisation")
 
 
-class TestWorkAuthorisation:
-    """The entry point that dispatches by country and citizenship."""
+def test_evaluate_requires_the_permission_outcome():
+    with pytest.raises(TypeError):
+        evaluate(PROFILE, {"uk_work": "yes"}, ROLES["replai-pa"])  # type: ignore[call-arg]
 
-    def test_italian_citizen_in_italy_is_met(self):
-        outcome = work_authorisation(
-            citizenship="IT", country="IT", contract_months=3
-        )
-        assert outcome.status == "met"
 
-    def test_eu_citizen_in_switzerland_uses_the_permit_table(self):
-        outcome = work_authorisation(
-            citizenship="IT", country="CH", contract_months=18
-        )
-        assert outcome.status == "met"
-        assert "B permit" in outcome.explanation
+@pytest.mark.parametrize("role_id", sorted(ROLES))
+def test_the_permission_outcome_is_used_unchanged(role_id):
+    crit = evaluate(PROFILE, {"uk_work": "yes"}, ROLES[role_id], permission=GIVEN)
+    assert [c.id for c in crit] == list(rules.CRITERIA)
+    assert crit[1] is GIVEN
 
-    def test_unknown_citizenship_asks(self):
-        outcome = work_authorisation(
-            citizenship=None, country="CH", contract_months=18
-        )
-        assert outcome.status == "confirm"
 
-    def test_country_we_have_no_rule_for_asks_rather_than_assumes(self):
-        # Silence is not permission. With no rule, we ask.
-        outcome = work_authorisation(
-            citizenship="IT", country="JP", contract_months=12
-        )
-        assert outcome.status == "confirm"
+def test_rules_are_versioned():
+    # Rules change with the law; an outcome must be traceable to a version.
+    assert RULES_VERSION
 
-    @pytest.mark.parametrize("months", [0, -1])
-    def test_nonsensical_duration_is_rejected(self, months):
-        with pytest.raises(ValueError):
-            swiss_permit_for_eu_citizen(contract_months=months)
+
+def test_verdict_order():
+    met = Criterion("x", "x", "met", "", "", "")
+    check = Criterion("x", "x", "check", "", "", "")
+    no = Criterion("x", "x", "not_met", "", "", "")
+    assert verdict([met, met]) == "eligible"
+    assert verdict([met, check]) == "verify"
+    assert verdict([check, no, met]) == "excluded"

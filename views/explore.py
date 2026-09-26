@@ -3,6 +3,9 @@
 No mockup covers this screen; it reuses the Home match cards and the Matches
 side panel. Every role is shown with its standing from core/rules.py,
 including the excluded ones, so nothing is hidden without a reason.
+
+New postings come only from the controlled "Simulated ingestion event"
+(FR-10), run from the header; every posting it added is labelled as such.
 """
 
 from __future__ import annotations
@@ -17,20 +20,26 @@ from ui.theme import page_css
 d = store.data()
 page_css("explore")
 
-FILTERS = ["All", "Eligible", "To verify", "New today", "Excluded"]
+SIM = d.simulated_event["label"]
+NEW = "Simulated event"
+FILTERS = ["All", "Eligible", "To verify", NEW, "Excluded"]
 qf = tabs.param("filter")
 if qf == "new" and st.session_state.get("_x_qf") != qf:
     st.session_state["_x_qf"] = qf
-    st.session_state["x-filter"] = "New today"
+    st.session_state["x-filter"] = NEW
 
 allv = sorted(store.views(), key=lambda v: (v.standing == "excluded", -v.score))
-new_n = sum(1 for v in allv if v.get("new"))
+new_n = sum(1 for v in allv if store.is_simulated(v))
+ran = store.simulated_event_ran()
 
 shell.topbar("explore", store.nav_counts())
 with shell.header(
     "Explore",
-    f"<b>{len(allv)} roles</b> tracked here · same rules for every role · {new_n} new today",
+    f"<b>{len(allv)} roles</b> tracked here · same rules for every role · "
+    + (f"{new_n} added by a {SIM.lower()}" if ran else f"{SIM.lower()} not run"),
 ):
+    if not ran:
+        st.button(f"Run {SIM.lower()}", type="primary", key="x-sim", on_click=store.run_simulated_event)
     q = st.text_input("Search", placeholder="Search company, role or city", key="x-q",
                       value=tabs.param("city", ""))
 
@@ -45,7 +54,7 @@ def keep(v) -> bool:
         "All": True,
         "Eligible": v.standing == "eligible",
         "To verify": v.standing == "verify",
-        "New today": bool(v.get("new")),
+        NEW: store.is_simulated(v),
         "Excluded": v.standing == "excluded",
     }[f]
 
@@ -62,14 +71,15 @@ def card(v) -> str:
     if v.standing == "excluded":
         small, why = "Excluded", "✕ " + next(c.value for c in v.criteria if c.status == "not_met")
     else:
-        small = "New" if v.get("new") else ("To verify" if v.standing == "verify" else "Priority")
+        small = "Simulated" if store.is_simulated(v) else ("To verify" if v.standing == "verify" else "Priority")
         why = ("! " if v.get("highlight_kind") == "gap" else "✓ ") + v.highlight
     return (
         f'<div class="mc tile{" sel" if sel else ""}{" x2" if v.standing == "excluded" else ""}">'
         f'<div class="h">{logo(v.mono, v.bg, 36, 13)}<div class="sc">{v.shown if v.standing != "excluded" else "—"}<small>{small}</small></div></div>'
         f'<div class="t">{esc(v.title)}</div><div class="m">{esc(v.company)} · {esc(v.city)}</div>'
         f'<div class="why">{esc(why)}</div><div class="b" style="margin-top:auto"><i style="width:{v.shown if v.standing != "excluded" else 0}%"></i></div>'
-        f'<div class="f"><span class="{"u" if hot else ""}">{esc(close)}</span><span>Verified today</span></div></div>'
+        + (f'<div class="f"><span>{SIM}</span></div></div>' if store.is_simulated(v) else
+           f'<div class="f"><span class="{"u" if hot else ""}">{esc(close)}</span><span>Demo data</span></div></div>')
     )
 
 
@@ -94,6 +104,9 @@ with st.container(key="ex-main"):
                 f'<div class="pan"><div class="kk">{esc(v.company)} · {esc(v.city)} · {esc(v.mode)}</div>'
                 f'<h3>{esc(v.title)}<span class="chip {chip}">{label}</span></h3></div>'
             )
+            if store.is_simulated(v):
+                html(f'<div style="font-size:12px;line-height:1.45;color:var(--t2)"><b>{SIM}</b> · '
+                     f'{esc(d.simulated_event["disclaimer"])}</div>')
             if v.standing != "excluded":
                 html(
                     f'<div><div class="hero2"><div class="n">{v.shown}<small> /100</small></div>'
