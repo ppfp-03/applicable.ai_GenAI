@@ -49,7 +49,9 @@ DOT = {"excluded": "#D9443C", "verify": "#E3A03A", "eligible": "#30A14E"}
 shell.topbar("matches", store.nav_counts())
 with shell.header(
     TITLE[v.standing],
-    f"{esc(role.title)} · <b>{esc(role.company)}</b> · {esc(role.city)} · checked today {role.get('checked', d.updated)}",
+    f"{esc(role.title)} · <b>{esc(role.company)}</b> · {esc(role.city)} · "
+    + (f"<b>{esc(d.simulated_event['label'])}</b>" if store.is_simulated(role)
+       else f"checked today {role.get('checked', d.updated)}"),
 ):
     if st.button("‹ Matches", key="back"):
         tabs.go("matches")

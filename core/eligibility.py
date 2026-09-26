@@ -8,7 +8,9 @@ the same engine the pipeline uses. This module only translates:
   a CandidateProfile. Citizenship is not copied over: it is not a declaration;
 - a demo role becomes a JobRecord in its country with one mandatory
   HC_WORK_AUTH requirement, and its `sponsors_visa` flag becomes the
-  employer-sponsorship parameter;
+  employer-sponsorship parameter. Every demo role is a `synthetic_scenario`
+  record with no `source_published_at`; a role added by the simulated
+  ingestion event carries that event's `first_seen_at`;
 - the engine's HC_WORK_AUTH outcome becomes the "permission" tile.
 
 Nothing here decides anything. Every status comes from the engine unchanged.
@@ -140,8 +142,15 @@ def _job_id(role_id: str) -> str:
     return f"demo:{role_id}"
 
 
+def job(role: Mapping[str, Any]) -> JobRecord:
+    """One demo role as the JobRecord the engine receives."""
+    return _job(role["id"], role["country"], role["city"], role["company"], role["title"],
+                role.get("first_seen_at") or _AT)
+
+
 @lru_cache(maxsize=None)
-def _job(role_id: str, country: str, city: str, company: str, title: str) -> JobRecord:
+def _job(role_id: str, country: str, city: str, company: str, title: str,
+         first_seen_at: str = _AT) -> JobRecord:
     """The role as a JobRecord: one location, one mandatory HC_WORK_AUTH requirement."""
     doc = f"job-{role_id}"
     return JobRecord.model_validate({
@@ -157,8 +166,8 @@ def _job(role_id: str, country: str, city: str, company: str, title: str) -> Job
                         "content_hash": doc, "source_ref": "data/demo.json"},
         "source_documents": [],
         "locations": [{"country_code": country, "city": city, "evidence_ids": ["ev-location"]}],
-        "first_seen_at": _AT,
-        "last_seen_at": _AT,
+        "first_seen_at": first_seen_at,
+        "last_seen_at": first_seen_at,
         "active_state": "active",
         "discovery_kind": "synthetic_scenario",
         "facts": {
@@ -199,10 +208,10 @@ def _parameters(role_id: str, sponsors_visa: Optional[bool]) -> JobParameterSet:
 
 @lru_cache(maxsize=256)
 def _work_auth(role_id: str, country: str, city: str, company: str, title: str,
-               sponsors_visa: Optional[bool], decls: tuple) -> RuleOutcome:
+               first_seen_at: str, sponsors_visa: Optional[bool], decls: tuple) -> RuleOutcome:
     result = assess_eligibility(
         candidate(decls),
-        _job(role_id, country, city, company, title),
+        _job(role_id, country, city, company, title, first_seen_at),
         catalogue(),
         job_parameters=_parameters(role_id, sponsors_visa),
     )
@@ -212,7 +221,7 @@ def _work_auth(role_id: str, country: str, city: str, company: str, title: str,
 def work_auth(role: Mapping[str, Any], answers: Mapping[str, Any]) -> RuleOutcome:
     """The engine's HC_WORK_AUTH outcome for one demo role under `answers`."""
     return _work_auth(role["id"], role["country"], role["city"], role["company"], role["title"],
-                      role.get("sponsors_visa"), declarations(answers))
+                      role.get("first_seen_at") or _AT, role.get("sponsors_visa"), declarations(answers))
 
 
 def permission(role: Mapping[str, Any], answers: Mapping[str, Any]) -> Criterion:

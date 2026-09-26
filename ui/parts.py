@@ -73,7 +73,7 @@ def application_for(role_id: str) -> dict | None:
 
 
 def tag(v) -> tuple[str, str]:
-    """The one chip a list row shows: applied, closing soon, or how fresh.
+    """The one chip a list row shows: applied, simulated, closing soon, or how fresh.
 
     Returns:
         (chip class, text) -- class "g" green, "u" amber, "" neutral.
@@ -82,6 +82,8 @@ def tag(v) -> tuple[str, str]:
     if app and app["stage"] in ("applied", "interview"):
         when = app["note"].split(" · ")[0].replace("Sent", "Applied")
         return "g", when
+    if store.is_simulated(v):
+        return "", store.data().simulated_event["label"]
     n = clock.days_until(v.closes)
     if n <= 9:
         return "u", f"Closes in {n} days"

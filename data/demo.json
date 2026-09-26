@@ -3,6 +3,11 @@
   "today": "2026-09-24",
   "now": "10:55",
   "ranking_updated": "09:12",
+  "simulated_event": {
+    "id": "SIM-INGEST-01",
+    "label": "Simulated ingestion event",
+    "disclaimer": "A controlled demo scenario: predefined synthetic postings are added when you run it. It is not live monitoring, the postings are not real newly published jobs, and no detection latency is measured."
+  },
   "profile": {
     "name": "Giulia Rossi",
     "first_name": "Giulia",
@@ -95,8 +100,8 @@
     {
       "id": "unicreda-pa", "company": "UniCreda", "mono": "UC", "bg": "#1C1C1E",
       "title": "Product Analyst", "city": "Singapore", "country": "SG", "mode": "Hybrid",
-      "closes": "2026-10-25", "closes_label": "25 Oct", "posted_days_ago": 1, "found": "2026-09-24", "sponsors_visa": true, "new": true,
-      "factors": {"profile": [78, "Fintech · product analytics"], "preference": [74, "Product role · Singapore"], "urgency": [60, "Closes 25 Oct"], "freshness": [88, "Posted yesterday · verified today"]},
+      "closes": "2026-10-25", "closes_label": "25 Oct", "posted_days_ago": null, "found": "2026-09-24", "sponsors_visa": true, "new": true, "scenario": "SIM-INGEST-01", "first_seen_at": "2026-09-24T10:55:00+00:00",
+      "factors": {"profile": [78, "Fintech · product analytics"], "preference": [74, "Product role · Singapore"], "urgency": [60, "Closes 25 Oct"], "freshness": [88, "Simulated ingestion event · no source publication date"]},
       "why": "Fintech in your city", "highlight": "Fintech · Singapore", "gaps": [],
       "card_checks": [["ok", "Fintech · Singapore"]],
       "requirements": {"degree_level": "master", "fields": ["Finance", "Economics"], "graduation": ["2026-06", "2027-12"], "experience_min": 1, "student": true, "languages": {"English": "C1"}}
@@ -113,8 +118,8 @@
     {
       "id": "mediobanco-growth", "company": "Mediobanco", "mono": "MB", "bg": "#3A3A3C",
       "title": "Growth Intern", "city": "Milan", "country": "IT", "mode": "Hybrid",
-      "closes": "2026-10-28", "closes_label": "28 Oct", "posted_days_ago": 1, "found": "2026-09-24", "sponsors_visa": false, "new": true,
-      "factors": {"profile": [72, "Growth analytics · Mediobanco alumna"], "preference": [72, "Growth role · Milan"], "urgency": [65, "Closes 28 Oct"], "freshness": [88, "Posted yesterday · verified today"]},
+      "closes": "2026-10-28", "closes_label": "28 Oct", "posted_days_ago": null, "found": "2026-09-24", "sponsors_visa": false, "new": true, "scenario": "SIM-INGEST-01", "first_seen_at": "2026-09-24T10:55:00+00:00",
+      "factors": {"profile": [72, "Growth analytics · Mediobanco alumna"], "preference": [72, "Growth role · Milan"], "urgency": [65, "Closes 28 Oct"], "freshness": [88, "Simulated ingestion event · no source publication date"]},
       "why": "You interned here before", "highlight": "Mediobanco alumna", "gaps": [],
       "card_checks": [["ok", "Mediobanco alumna"]],
       "requirements": {"degree_level": "bachelor", "fields": ["Finance", "Economics", "Business"], "graduation": ["2026-06", "2027-12"], "experience_min": 1, "student": true, "languages": {"Italian": "C1", "English": "C1"}}
@@ -122,8 +127,8 @@
     {
       "id": "roshe-basel", "company": "Roshe", "mono": "RO", "bg": "#636366",
       "title": "Strategy Intern", "city": "Basel", "country": "CH", "mode": "Onsite", "contract_months": 6,
-      "closes": "2026-10-22", "closes_label": "22 Oct", "posted_days_ago": 1, "found": "2026-09-24", "sponsors_visa": false, "new": true,
-      "factors": {"profile": [70, "Strategy projects · finance"], "preference": [74, "Strategy role · Basel"], "urgency": [60, "Closes 22 Oct"], "freshness": [90, "Posted yesterday · verified today"]},
+      "closes": "2026-10-22", "closes_label": "22 Oct", "posted_days_ago": null, "found": "2026-09-24", "sponsors_visa": false, "new": true, "scenario": "SIM-INGEST-01", "first_seen_at": "2026-09-24T10:55:00+00:00",
+      "factors": {"profile": [70, "Strategy projects · finance"], "preference": [74, "Strategy role · Basel"], "urgency": [60, "Closes 22 Oct"], "freshness": [90, "Simulated ingestion event · no source publication date"]},
       "why": "Strategy role in finance", "highlight": "Strategy projects · finance", "gaps": [],
       "card_checks": [["ok", "Strategy projects · finance"]],
       "requirements": {"degree_level": "master", "fields": ["Finance", "Economics"], "graduation": ["2026-06", "2027-12"], "experience_min": 1, "student": true, "languages": {"English": "C1"}}
@@ -131,8 +136,8 @@
     {
       "id": "deutsch-frankfurt", "company": "Deutsch Bank", "mono": "DB", "bg": "#8E8E93",
       "title": "Product Intern", "city": "Frankfurt", "country": "DE", "mode": "Hybrid",
-      "closes": "2026-10-26", "closes_label": "26 Oct", "posted_days_ago": 1, "found": "2026-09-24", "sponsors_visa": false, "new": true,
-      "factors": {"profile": [70, "Product analytics · SQL"], "preference": [68, "Product role · Frankfurt"], "urgency": [60, "Closes 26 Oct"], "freshness": [86, "Posted yesterday · verified today"]},
+      "closes": "2026-10-26", "closes_label": "26 Oct", "posted_days_ago": null, "found": "2026-09-24", "sponsors_visa": false, "new": true, "scenario": "SIM-INGEST-01", "first_seen_at": "2026-09-24T10:55:00+00:00",
+      "factors": {"profile": [70, "Product analytics · SQL"], "preference": [68, "Product role · Frankfurt"], "urgency": [60, "Closes 26 Oct"], "freshness": [86, "Simulated ingestion event · no source publication date"]},
       "why": "Your SQL fits product analytics", "highlight": "SQL · product analytics", "gaps": [],
       "card_checks": [["ok", "SQL · product analytics"]],
       "requirements": {"degree_level": "master", "fields": ["Finance", "Economics", "Computer Science"], "graduation": ["2026-06", "2027-12"], "experience_min": 1, "student": true, "languages": {"English": "C1"}}
@@ -158,12 +163,8 @@
     {"role": "replai-pa", "stage": "progress", "progress": [2, 3], "note": "2 of 3 ready · closes Sun 27 Sep", "actions": ["Continue", "Preview"]},
     {"role": "jpmorrow-strategy", "stage": "interview", "note": "Applied 12 Sep · interview today 15:00", "actions": ["Open prep", "Add notes"]},
     {"role": "nestella-strategy", "stage": "saved", "note": "Saved 22 Sep · closes Sat 3 Oct", "actions": ["Prepare application", "Remove"]},
-    {"role": "unicreda-pa", "stage": "saved", "note": "Saved today · closes 25 Oct", "actions": ["Prepare application", "Remove"]},
     {"role": "morgan-product", "stage": "saved", "note": "Saved today · closes 20 Oct", "actions": ["Prepare application", "Remove"]},
-    {"role": "mediobanco-growth", "stage": "saved", "note": "Saved today · closes 28 Oct", "actions": ["Prepare application", "Remove"]},
-    {"role": "roshe-product", "stage": "progress", "progress": [1, 3], "note": "1 of 3 ready · closes 20 Oct", "actions": ["Continue", "Preview"]},
-    {"role": "deutsch-frankfurt", "stage": "applied", "note": "Sent 18 Sep · typical reply in 14 days", "actions": ["View application", "Add note"]},
-    {"role": "roshe-basel", "stage": "applied", "note": "Sent 16 Sep · typical reply in 12 days", "actions": ["View application", "Add note"]}
+    {"role": "roshe-product", "stage": "progress", "progress": [1, 3], "note": "1 of 3 ready · closes 20 Oct", "actions": ["Continue", "Preview"]}
   ],
   "week": [
     {"kind": "done", "role": "lazarde-ba", "dot": "#30A14E", "kicker": "Done · Mon 21 Sep", "title": "Applied to Lazarde & Co.",
@@ -187,9 +188,12 @@
      "waiting": "6 roles are waiting: J.P. Morrow, Morgan Stanfield, UniCreda and 3 more.",
      "results": {"No": "6 roles will move to <b>Excluded</b>. You can undo this.", "Not sure yet": "6 roles stay <b>To verify</b>. We will ask again later.", "*": "6 roles will be re-checked and ranked. <b>Estimated +4 eligible.</b>"},
      "buttons": [["Save answer", true], ["Later", false]], "note": "You can change it anytime in <b>Profile</b>"},
-    {"kind": "new", "dot": "#5AA2F0", "kicker": "New · since Tue 22 Sep", "title": "4 new matches",
-     "sub": "Found on company career pages and LinkedIn · checked today 08:30",
-     "buttons": [["Review 4 matches", true]]}
+    {"kind": "new", "dot": "#5AA2F0", "kicker": "Simulated ingestion event", "title": "4 new matches",
+     "sub": "Predefined synthetic postings · controlled demo refresh, not live monitoring",
+     "buttons": [["Review 4 matches", true]],
+     "before": {"kicker": "Controlled demo scenario", "title": "Simulated ingestion event",
+                "sub": "Adds 4 predefined synthetic postings · not live monitoring",
+                "buttons": [["Run simulated ingestion event", true]]}}
   ],
   "timeline": {
     "start": "2026-09-21", "days": 14, "label": "21 Sep – 4 Oct · tap an event to open it",
