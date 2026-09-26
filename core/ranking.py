@@ -27,6 +27,35 @@ FACTOR_NAMES = {
 }
 
 
+#: Importance levels a confirmed preference can take, in display order, and
+#: how much each weighs in preference fit (D-045; TO VALIDATE). "Must have"
+#: only weighs most: preferences order roles, they never exclude one.
+IMPORTANCE = ("must", "important", "nice", "none")
+IMPORTANCE_WEIGHT = {"must": 1.5, "important": 1.0, "nice": 0.5, "none": 0.0}
+
+
+def preference_fit(role: Mapping, prefs: Sequence[Mapping]) -> tuple[int, str]:
+    """Preference fit (0-100) of one role and the note that explains it.
+
+    Args:
+        role: The role's fields; each preference reads one of them.
+        prefs: Confirmed preferences: {"field": role field, "values": the
+            values that match, "level": one of IMPORTANCE}.
+
+    Raises:
+        ValueError: If no preference carries weight; the fit would be
+            undefined, and a missing factor must never silently become zero.
+    """
+    total = sum(IMPORTANCE_WEIGHT[p["level"]] for p in prefs)
+    if total <= 0:
+        raise ValueError("No confirmed preference carries weight.")
+    hits = [p for p in prefs if IMPORTANCE_WEIGHT[p["level"]] > 0 and role.get(p["field"]) in p["values"]]
+    # Whole points, like every other factor score.
+    score = shown(100 * sum(IMPORTANCE_WEIGHT[p["level"]] for p in hits) / total)
+    note = " · ".join(str(role[p["field"]]) for p in hits) or "None of your preferences"
+    return score, note
+
+
 def contributions(factors: Mapping[str, Sequence], weights: Mapping[str, float]) -> list[float]:
     """Each factor's weighted points, in FACTORS order.
 

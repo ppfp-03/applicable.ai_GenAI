@@ -2,7 +2,9 @@
 
 Every value in the "What we're learning about you" panel is derived here,
 deterministically, from the stories (data/stories.json) and the verdicts
-given so far. Nothing here feeds the ranking: the panel is for the candidate.
+given so far. Nothing here feeds the ranking directly: the role families and
+industries the likes point to are only suggested, and count once the
+candidate confirms them in Fine-tune (D-045).
 
 A verdict is "r" (I'd enjoy this), "l" (Not for me) or "u" (Not sure);
 verdict i is the one given to story i.
@@ -70,24 +72,37 @@ def top_interests(values: list[float], n: int = 2) -> list[int]:
     return sorted(above, key=lambda i: -values[i])[:n]
 
 
-def direction(stories: list[dict], verdicts: list[str]) -> tuple[list[str], dict | None]:
-    """The directions the likes point to (up to two) and the role type to consider.
+def _leading(stories: list[dict], verdicts: list[str], key: str, n: int = 2) -> list[str]:
+    """The values of `key` the likes point to, strongest first (up to n).
 
-    A direction scores one per story liked and minus one per story passed;
-    only directions with a positive score count. Ties go to the direction
-    liked first. The role type is that of the latest liked story in the
-    leading direction.
+    A value scores one per story liked and minus one per story passed; only
+    values with a positive score count, and stories without one are skipped.
+    Ties go to the value swiped first.
     """
     score: dict[str, int] = {}
     for story, verdict in zip(stories, verdicts):
-        if verdict in (LIKE, PASS):
-            score[story["direction"]] = score.get(story["direction"], 0) + (1 if verdict == LIKE else -1)
-    ranked = sorted((d for d, s in score.items() if s > 0), key=lambda d: -score[d])
+        if verdict in (LIKE, PASS) and story.get(key):
+            score[story[key]] = score.get(story[key], 0) + (1 if verdict == LIKE else -1)
+    return sorted((v for v, s in score.items() if s > 0), key=lambda v: -score[v])[:n]
+
+
+def direction(stories: list[dict], verdicts: list[str]) -> tuple[list[str], dict | None]:
+    """The directions the likes point to (up to two) and the role type to consider.
+
+    Directions are scored as in `_leading`. The role type is that of the
+    latest liked story in the leading direction.
+    """
+    ranked = _leading(stories, verdicts, "direction")
     if not ranked:
         return [], None
     lead = ranked[0]
     role = [s for s, v in zip(stories, verdicts) if v == LIKE and s["direction"] == lead][-1]
-    return ranked[:2], role
+    return ranked, role
+
+
+def industries(stories: list[dict], verdicts: list[str]) -> list[str]:
+    """The industries the likes point to (up to two), scored as in `_leading`."""
+    return _leading(stories, verdicts, "industry")
 
 
 def history(stories: list[dict], verdicts: list[str], n: int = 5) -> list[tuple[str, str]]:

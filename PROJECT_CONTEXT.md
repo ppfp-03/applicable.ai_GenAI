@@ -4,7 +4,7 @@
 
 | Control | Value |
 |---|---|
-| Context version | 0.4.10-draft - evidence quote normalization approved (D-044) |
+| Context version | 0.4.11-draft - preference fit from confirmed Explore suggestions (D-045; Marco co-approval pending) |
 | Contract version | 0.2.0-draft core frozen; JobSnapshot 0.2.1-draft jointly approved; result/config envelopes remain separately unfrozen |
 | Created | 2026-09-17 |
 | Last updated | 2026-09-26 |
@@ -484,6 +484,8 @@ Confirmed factor families:
 | Deadline urgency | Higher urgency when a reliable explicit future application deadline is near; exact function TO VALIDATE |
 | Freshness | Use only a defensible source publication time or clearly labeled discovery-time signal; exact function TO VALIDATE |
 
+Preference fit in the onboarding demo follows D-045: Explore swipes only *suggest* role-family and industry preferences; they count only once the candidate confirms them in Fine-tune, and never affect eligibility.
+
 Exact weights are **not confirmed**. Treat them as explicit engineering heuristics: test on development examples, record changes and freeze before held-out evaluation. A missing factor is `null` and must not silently become zero; the missing-factor normalization rule is TO VALIDATE and then frozen.
 
 For the initial snapshot, missing publication dates do not turn all jobs into fresh discoveries. A later first-seen time can support a **discovery freshness** factor, not a claim about posting age. Unexpected future timestamps are invalid/flagged.
@@ -643,6 +645,7 @@ These decisions were provided in the kick-off discussion and are integrated into
 | D-042 | The application accesses the demo snapshot through one loading boundary, `get_demo_snapshot()` (A-04). Consumers do not depend on the snapshot file path. The boundary only loads and validates the snapshot; it contains no intelligence, eligibility, ranking or transformation logic. | Approved by Marco, Pierpaolo + Giorgio G, 2026-09-24 |
 | D-043 | The Greenhouse Batch 01 snapshot (D-041) of real job postings is approved for project development and demo use. The repository may temporarily contain these postings and is expected to become private after project completion. Before any future external publication or continued public access, the team verifies that sharing the stored job content is appropriate. Source strategy is unchanged (D-021). | Approved by Marco, Pierpaolo + Giorgio G, 2026-09-24 |
 | D-044 | Evidence quote containment is checked after (1) collapsing runs of whitespace (spaces, tabs and newlines) to one space, (2) trimming leading and trailing whitespace, and (3) requiring the normalized quote to be an exact substring of the normalized referenced `SourceDocument` text. Matching is case-sensitive and punctuation-sensitive. Whitespace-only quotes are invalid. No fuzzy or semantic matching is part of contract validation. Rationale: makes the already-approved `EvidenceRef` grounding invariant deterministic and consistent with the existing extraction/reference-validation implementation, without changing serialized contract fields. Affected boundary: `EvidenceRef`/`SourceDocument` quote-containment validation and the associated contract/reference tests (section 6A). | Approved by Marco + Pierpaolo, 2026-09-26 |
+| D-045 | Onboarding step 3 (Preferences) starts with Explore, which is mandatory (all 12 stories), followed by Fine-tune; the free-text "Your ideal internship" block is removed. Explore swipes produce **suggestions**, not preferences: the role families (story `direction`, scored +1 per like and -1 per pass, positive only, top 2) and industries (story `industry`, same scoring, top 2) of the stories liked. A suggestion becomes an explicit preference only when the candidate confirms it in Fine-tune, where each row (suggested role families and industries, preferred cities, hybrid work) takes an importance: Must have 1.5, Important 1, Nice to have 0.5, Don't mind 0. Preference fit = 100 x sum(weight x match) / sum(weight), where match is 1 when the role's `role_family`, `industry`, `city` or `mode` equals the row's value; demo roles and stories carry these fields. Must have only gives the highest weight: preferences change the order and never exclude a role or decide eligibility. Fine-tune cannot be confirmed with every row at Don't mind, so preference fit is never null and never silently zero. RIASEC interests and work-design sliders stay informational and are not ranked. The importance weights are engineering heuristics, TO VALIDATE with the other ranking weights (D-022). Affected: `data/stories.json`, `data/demo.json` (role_family, industry), `core/explore.py`, `core/ranking.py`, `core/store.py`, `views/onboarding.py` and their tests. | Approved by Pierpaolo, 2026-09-26; Marco co-approval pending |
 
 ### Proposed implementation defaults - review/freeze before independent implementation
 

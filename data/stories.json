@@ -1,5 +1,5 @@
 {
- "_comment": "Day-in-the-life stories for the Explore step of onboarding (00_Onboarding.html), shown in this order. Synthetic content. Each story carries how much it expresses each Holland RIASEC interest (R, I, A, S, E, C; 0-3), its lean on the four work-design sliders (negative = left label, positive = right label), the direction and role type it points to, and the text a demo role title must contain to count as that role type. Swipes only update the 'What we're learning about you' panel; they never change the ranking.",
+ "_comment": "Day-in-the-life stories for the Explore step of onboarding (00_Onboarding.html), shown in this order. Synthetic content. Each story carries how much it expresses each Holland RIASEC interest (R, I, A, S, E, C; 0-3), its lean on the four work-design sliders (negative = left label, positive = right label), the direction and role type it points to, its industry (null when none applies), and the text a demo role title must contain to count as that role type. The direction (role family) and industry of the stories liked become suggested preferences, which change the ranking only once the candidate confirms them in Fine-tune (D-045); the RIASEC and slider values only update the 'What we're learning about you' panel.",
  "sliders": [
   [
    "Structured",
@@ -49,6 +49,7 @@
     1
    ],
    "direction": "Product analytics",
+   "industry": "Fintech",
    "role": "Product Analyst",
    "match": "Product Analyst"
   },
@@ -82,6 +83,7 @@
     1
    ],
    "direction": "Strategy",
+   "industry": "Fintech",
    "role": "Strategy Analyst",
    "match": "Strategy"
   },
@@ -115,6 +117,7 @@
     3
    ],
    "direction": "Sales",
+   "industry": null,
    "role": "Sales Associate",
    "match": "Sales"
   },
@@ -148,6 +151,7 @@
     3
    ],
    "direction": "Operations",
+   "industry": "Fintech",
    "role": "Operations Analyst",
    "match": "Operations"
   },
@@ -181,6 +185,7 @@
     2
    ],
    "direction": "User research",
+   "industry": "Consumer & retail",
    "role": "UX Researcher",
    "match": "Research"
   },
@@ -214,6 +219,7 @@
     0
    ],
    "direction": "Consulting",
+   "industry": "Consulting",
    "role": "Business Analyst",
    "match": "Business Analyst"
   },
@@ -247,6 +253,7 @@
     -2
    ],
    "direction": "Finance",
+   "industry": "Banking",
    "role": "Investment Banking Analyst",
    "match": "Investment"
   },
@@ -280,6 +287,7 @@
     -1
    ],
    "direction": "Growth",
+   "industry": "Consumer & retail",
    "role": "Growth Analyst",
    "match": "Growth"
   },
@@ -313,6 +321,7 @@
     -3
    ],
    "direction": "Audit",
+   "industry": null,
    "role": "Audit Associate",
    "match": "Audit"
   },
@@ -346,6 +355,7 @@
     3
    ],
    "direction": "Marketing",
+   "industry": "Consumer & retail",
    "role": "Marketing Intern",
    "match": "Marketing"
   },
@@ -379,6 +389,7 @@
     3
    ],
    "direction": "Product management",
+   "industry": "Fintech",
    "role": "Product Intern",
    "match": "Product Intern"
   },
@@ -412,6 +423,7 @@
     -3
    ],
    "direction": "Product analytics",
+   "industry": "Consumer & retail",
    "role": "Data Analyst",
    "match": "Data Analyst"
   }

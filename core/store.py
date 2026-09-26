@@ -101,6 +101,9 @@ class RoleView:
     raw: float
     score: float
     parts: list[float] = field(default_factory=list)
+    #: factor -> (score, note), as scored now: the role's own, except for
+    #: preference fit once the candidate has confirmed preferences.
+    factors: dict = field(default_factory=dict)
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self.role, name)
@@ -145,6 +148,7 @@ REVIEWED = "new_reviewed"
 CANDIDATE = "candidate_profile"
 EXTRACTION_ERROR = "extraction_error"
 SIMULATED = "simulated_event_ran"
+PREFERENCES = "confirmed_preferences"
 
 
 def init() -> None:
@@ -244,6 +248,21 @@ def set_uk(choice: Optional[str]) -> None:
 def set_answer(key: str, value: Any) -> None:
     """Record any other answer (e.g. the Fudan letter was uploaded)."""
     st.session_state[ANSWERS] = {**answers(), key: value}
+
+
+def preferences() -> Optional[list[dict]]:
+    """The preferences the candidate confirmed in onboarding, or None before
+    they do (the demo roles' own preference fit applies until then)."""
+    try:
+        return st.session_state.get(PREFERENCES)
+    except Exception:  # outside a Streamlit session (tests)
+        return None
+
+
+def set_preferences(prefs: list[dict]) -> None:
+    """Confirm preferences (see ranking.preference_fit); every score follows."""
+    ranking.preference_fit({}, prefs)  # raises if none carries weight
+    st.session_state[PREFERENCES] = [dict(p, values=list(p["values"])) for p in prefs]
 
 
 def candidate() -> Optional[CandidateProfile]:
@@ -412,9 +431,13 @@ def view(role: RoleDef, ans: Optional[dict] = None) -> RoleView:
     ans = answers() if ans is None else ans
     crit = rules.evaluate(d.profile, ans, role.raw, permission=eligibility.permission(role.raw, ans))
     standing = rules.verdict(crit)
-    raw = ranking.raw_score(role.factors, d.weights)
+    factors = role.factors
+    prefs = preferences()
+    if prefs:
+        factors = {**factors, "preference": list(ranking.preference_fit(role.raw, prefs))}
+    raw = ranking.raw_score(factors, d.weights)
     return RoleView(role, crit, standing, raw, ranking.priority(raw, standing, d.penalty),
-                    ranking.contributions(role.factors, d.weights))
+                    ranking.contributions(factors, d.weights), factors)
 
 
 def views(ans: Optional[dict] = None, as_of: Optional[str] = None) -> list[RoleView]:
