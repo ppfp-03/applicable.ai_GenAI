@@ -88,6 +88,9 @@ class FakeModelClient:
             raise self.error
         return self.fields
 
+    def extract_job_fields(self, description_text: str) -> Any:
+        raise AssertionError("candidate extraction must not extract job fields")
+
 
 # --- extract_candidate ----------------------------------------------------
 

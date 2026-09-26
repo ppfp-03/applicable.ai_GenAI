@@ -10,9 +10,10 @@ should define privately: the schema the model is asked to fill in, the
 extraction prompt, and the error type raised when a provider cannot deliver a
 usable answer.
 
-Providers return `ExtractedFields`, never a domain contract. Turning model
-output into a `CandidateProfile` -- verifying quotes, minting evidence ids,
-recording provenance -- is `oi.intelligence.extraction`'s job.
+Providers return `ExtractedFields` or `ExtractedJobFields`, never a domain
+contract. Turning model output into a `CandidateProfile` or an enriched
+`JobRecord` -- verifying quotes, minting evidence ids, recording provenance --
+is `oi.intelligence.extraction`'s and `oi.intelligence.job_extraction`'s job.
 """
 
 from __future__ import annotations
@@ -25,11 +26,13 @@ from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from oi.contracts import RequirementClassification, RequirementModality
+
 #: Extraction instructions live in version control as a reviewable file,
 #: not inline, so prompt changes show up in diffs.
-CANDIDATE_PROMPT_PATH = (
-    Path(__file__).resolve().parents[3] / "prompts" / "candidate_extraction.md"
-)
+_PROMPTS_DIR = Path(__file__).resolve().parents[3] / "prompts"
+CANDIDATE_PROMPT_PATH = _PROMPTS_DIR / "candidate_extraction.md"
+JOB_PROMPT_PATH = _PROMPTS_DIR / "job_extraction.md"
 
 
 class ExtractionError(RuntimeError):
@@ -71,20 +74,33 @@ def model_input_version(text: str, schema: dict[str, Any]) -> str:
     return f"sha256:{hashlib.sha256(canonical.encode('utf-8')).hexdigest()[:16]}"
 
 
+def _load_prompt(path: Path, output: type[BaseModel]) -> Prompt:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise ExtractionError(
+            f"Could not read the extraction prompt at {path}."
+        ) from exc
+    schema = output.model_json_schema()
+    return Prompt(text=text, schema=schema, version=model_input_version(text, schema))
+
+
 def load_candidate_prompt() -> Prompt:
     """Read the candidate extraction prompt and version it with its schema.
 
     Raises:
         ExtractionError: If the prompt file cannot be read.
     """
-    try:
-        text = CANDIDATE_PROMPT_PATH.read_text(encoding="utf-8")
-    except OSError as exc:
-        raise ExtractionError(
-            f"Could not read the extraction prompt at {CANDIDATE_PROMPT_PATH}."
-        ) from exc
-    schema = ExtractedFields.model_json_schema()
-    return Prompt(text=text, schema=schema, version=model_input_version(text, schema))
+    return _load_prompt(CANDIDATE_PROMPT_PATH, ExtractedFields)
+
+
+def load_job_prompt() -> Prompt:
+    """Read the job extraction prompt and version it with its schema.
+
+    Raises:
+        ExtractionError: If the prompt file cannot be read.
+    """
+    return _load_prompt(JOB_PROMPT_PATH, ExtractedJobFields)
 
 
 class ExtractedFact(BaseModel):
@@ -114,6 +130,54 @@ class ExtractedFields(BaseModel):
     experience: list[ExtractedFact]
 
 
+class ExtractedJobFact(BaseModel):
+    """One fact the model read from a job description, with its support."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    value: str = Field(description="The fact, kept close to the posting's wording.")
+    quote: str = Field(
+        description="A passage copied verbatim from the posting that states the fact."
+    )
+
+
+class ExtractedRequirement(BaseModel):
+    """One requirement the model read from a job description.
+
+    Classification, modality and constraint id are the model's proposal. The
+    intelligence layer decides whether a proposed hard constraint is allowed
+    to stand.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(description="The requirement, kept close to the posting's wording.")
+    quote: str = Field(
+        description="A passage copied verbatim from the posting that states it."
+    )
+    classification: RequirementClassification
+    modality: RequirementModality
+    constraint_id: str | None = Field(
+        description="An approved constraint id for a hard constraint, else null."
+    )
+
+
+class ExtractedJobFields(BaseModel):
+    """What a model is asked to produce from a job description -- and no more.
+
+    As with `ExtractedFields`, ids, evidence ids and provenance are absent so
+    the application assigns them. Every field is required and extra keys are
+    forbidden, which keeps the JSON schema valid for strict structured output.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    skills: list[ExtractedJobFact]
+    experience: list[ExtractedJobFact]
+    education: list[ExtractedJobFact]
+    requirements: list[ExtractedRequirement]
+
+
 @runtime_checkable
 class ModelClient(Protocol):
     """What the intelligence layer requires of any LLM provider.
@@ -136,6 +200,15 @@ class ModelClient(Protocol):
 
         Raises:
             ValueError: If `document_text` is empty.
+            ExtractionError: If the request fails or the reply is unusable.
+        """
+        ...
+
+    def extract_job_fields(self, description_text: str) -> ExtractedJobFields:
+        """Extract job facts and requirements, each with a quote, from a posting.
+
+        Raises:
+            ValueError: If `description_text` is empty.
             ExtractionError: If the request fails or the reply is unusable.
         """
         ...
