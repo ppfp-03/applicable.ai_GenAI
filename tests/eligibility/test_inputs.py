@@ -155,7 +155,14 @@ def test_absent_entry_is_silent() -> None:
         (
             "HC_LANGUAGE",
             "HC_LANGUAGE",
-            {"kind": "language", "language": "ja", "min_level": "B2"},
+            {"kind": "language", "language": "pt", "scale": "CEFR", "min_level": "B2"},
+            None,
+        ),
+        # Scale the language's answer key does not take.
+        (
+            "HC_LANGUAGE",
+            "HC_LANGUAGE",
+            {"kind": "language", "language": "en", "scale": "HSK", "min_level": "4"},
             None,
         ),
         # Field outside the vocabulary.

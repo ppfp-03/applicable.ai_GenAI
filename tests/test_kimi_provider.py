@@ -23,6 +23,7 @@ VALID_REPLY = json.dumps(
         "skills": [{"value": "Python", "quote": "Skills: Python"}],
         "education": [],
         "experience": [],
+        "languages": [],
     }
 )
 

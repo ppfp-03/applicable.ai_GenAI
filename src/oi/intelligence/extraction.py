@@ -19,10 +19,13 @@ from datetime import datetime, timezone
 
 from oi.contracts import (
     CONTRACT_VERSION,
+    AnswerState,
+    AnswerType,
     CandidatePreferences,
     CandidateProfile,
     CandidateProvenance,
     DocumentKind,
+    EligibilityAnswer,
     EvidenceRef,
     ExtractionMode,
     ExtractionReceipt,
@@ -30,8 +33,14 @@ from oi.contracts import (
     SupportedText,
     UserDeclarations,
 )
+from oi.intelligence.eligibility.catalogue import (
+    LANGUAGE_CONSTRAINT_ID,
+    LANGUAGE_SCALES,
+    LanguageLevel,
+    language_level_key,
+)
 from oi.providers.model_client import (
-    ExtractedFact,
+    ExtractedLanguage,
     ModelClient,
     load_candidate_prompt,
 )
@@ -45,6 +54,31 @@ CV_FIELDS = (
     ("experience", "experience"),
 )
 
+#: An ISO 639-1 language code, as the prompt asks the model to write it.
+LANGUAGE_CODE = re.compile(r"^[a-z]{2}$")
+
+
+def _level_pattern(level: LanguageLevel) -> re.Pattern[str]:
+    """How a CV writes `level`: "C1", "HSK 4", "N2", "fluent", "native"."""
+    if level.scale == "HSK":
+        body = rf"HSK\s*-?\s*(?:level\s*)?{level.level}"
+    elif level == LanguageLevel("SELF", "native"):
+        body = r"(?<!non-)(?<!non )native"
+    else:
+        body = re.escape(level.level)
+    return re.compile(rf"\b{body}\b", re.IGNORECASE)
+
+
+#: Every supported level, with the pattern that recognises it in text.
+LEVEL_PATTERNS = {
+    level: _level_pattern(level)
+    for level in (
+        LanguageLevel(scale, name)
+        for scale, names in LANGUAGE_SCALES.items()
+        for name in names
+    )
+}
+
 
 def extract_candidate(
     document: SourceDocument,
@@ -57,7 +91,9 @@ def extract_candidate(
     A fact survives only if its quote can be found in the document. Each
     surviving fact gets an EvidenceRef holding the quote exactly as it appears
     in the document, and an ExtractionReceipt records how the profile was
-    produced. Everything the CV cannot tell us (preferences, declarations,
+    produced. Each language the CV states becomes an HC_LANGUAGE answer,
+    known when its level can be read (`_read_level`) and unknown otherwise.
+    Everything the CV cannot tell us (preferences, declarations, other
     eligibility answers) starts empty for the questionnaire to fill.
 
     Args:
@@ -94,7 +130,7 @@ def extract_candidate(
     for field_name, short_name in CV_FIELDS:
         supported[field_name] = []
         for fact in getattr(fields, field_name):
-            quote = _find_quote(fact, document.text)
+            quote = _find_quote(fact.value, fact.quote, document.text)
             if quote is None:
                 logger.warning(
                     "Dropped %s fact %r from '%s': quote not found in document.",
@@ -118,6 +154,8 @@ def extract_candidate(
             supported[field_name].append(
                 SupportedText(value=fact.value.strip(), evidence_ids=[evidence_id])
             )
+
+    languages = _language_answers(fields.languages, document, evidence)
 
     receipt = ExtractionReceipt(
         mode=ExtractionMode.LIVE,
@@ -146,7 +184,7 @@ def extract_candidate(
             additional_citizenships=[],
             work_authorizations=[],
         ),
-        eligibility_answers={},
+        eligibility_answers={LANGUAGE_CONSTRAINT_ID: languages} if languages else {},
         provenance=CandidateProvenance(
             questionnaire_document_ids=[],
             clarification_document_ids=[],
@@ -157,7 +195,71 @@ def extract_candidate(
     )
 
 
-def _find_quote(fact: ExtractedFact, text: str) -> str | None:
+def _language_answers(
+    stated: list[ExtractedLanguage],
+    document: SourceDocument,
+    evidence: list[EvidenceRef],
+) -> list[EligibilityAnswer]:
+    """HC_LANGUAGE answers for the languages the CV states, sourced to the CV.
+
+    A language survives only with a valid ISO 639-1 code and a quote found in
+    the document; its EvidenceRef is appended to `evidence`. The level keeps
+    the scale it was stated on.
+    """
+    answers: list[EligibilityAnswer] = []
+    for language in stated:
+        code = language.language.strip().lower()
+        quote = _find_quote(code, language.quote, document.text)
+        if not LANGUAGE_CODE.match(code) or quote is None:
+            logger.warning(
+                "Dropped language %r from '%s': invalid code or quote not found "
+                "in document.",
+                language.language,
+                document.document_id,
+            )
+            continue
+        key = language_level_key(code)
+        evidence_id = f"ev-{document.document_id}-language-{len(answers) + 1:03d}"
+        evidence.append(
+            EvidenceRef(
+                evidence_id=evidence_id,
+                document_id=document.document_id,
+                quote=quote,
+                field_path=f"eligibility_answers.{LANGUAGE_CONSTRAINT_ID}.{key}",
+            )
+        )
+        level = _read_level(language.level, quote)
+        answers.append(
+            EligibilityAnswer(
+                constraint_id=LANGUAGE_CONSTRAINT_ID,
+                answer_key=key,
+                state=AnswerState.KNOWN if level else AnswerState.UNKNOWN,
+                answer_type=AnswerType.SINGLE_CHOICE,
+                value=level.code if level else None,
+                evidence_ids=[evidence_id],
+                source_document_id=document.document_id,
+            )
+        )
+    return answers
+
+
+def _read_level(level_text: str, quote: str) -> LanguageLevel | None:
+    """The one supported level `level_text` names, if the quote states it too.
+
+    A level on a named scale (CEFR, HSK, JLPT) wins over "fluent" or "native"
+    stated beside it. Anything else -- no level, several levels, a level the
+    CV does not state in the quote, a scale outside LANGUAGE_SCALES -- reads
+    as None: an unknown level is never mapped onto a known one.
+    """
+    found = [level for level, pattern in LEVEL_PATTERNS.items() if pattern.search(level_text)]
+    named = [level for level in found if level.scale != "SELF"] or found
+    if len(named) != 1:
+        return None
+    (level,) = named
+    return level if LEVEL_PATTERNS[level].search(quote) else None
+
+
+def _find_quote(value: str, quote: str, text: str) -> str | None:
     """Locate a fact's quote in the document and return it verbatim.
 
     Matching tolerates differences in whitespace only: PDF text breaks lines
@@ -167,9 +269,9 @@ def _find_quote(fact: ExtractedFact, text: str) -> str | None:
 
     Returns None when the fact or its quote is blank, or the quote is absent.
     """
-    if not fact.value.strip():
+    if not value.strip():
         return None
-    words = fact.quote.split()
+    words = quote.split()
     if not words:
         return None
     match = re.search(r"\s+".join(map(re.escape, words)), text)
