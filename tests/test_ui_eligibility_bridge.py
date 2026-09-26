@@ -138,8 +138,8 @@ def test_candidate_carries_the_structured_facts():
         (eligibility.FIELD, "field_of_study"): "finance",
         (eligibility.STUDENT, "current_status"): "enrolled_student",
         (eligibility.EXPERIENCE, "prior_experience_months"): 10,
-        (eligibility.LANGUAGE, "level_en"): "C1",
-        (eligibility.LANGUAGE, "level_it"): "native",
+        (eligibility.LANGUAGE, "level_en"): "CEFR:C1",
+        (eligibility.LANGUAGE, "level_it"): "SELF:native",
     }
     assert [e.value for e in c.education] == ["MSc Finance", "BSc Economics"]
 

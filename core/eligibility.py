@@ -153,6 +153,11 @@ def canonical_language(name: str, level: Optional[str]) -> Optional[str]:
     return LANGUAGES[name]
 
 
+def level_code(level: str) -> str:
+    """A CEFR level or "native" as the catalogue's "<SCALE>:<LEVEL>" value."""
+    return "SELF:native" if level == "native" else f"CEFR:{level}"
+
+
 def in_progress_policy(graduation: Optional[str], start: Optional[str]) -> str:
     """Demo configuration: a degree in progress counts if it completes before start.
 
@@ -252,11 +257,11 @@ def _candidate(key: str) -> CandidateProfile:
     for name, level in sorted(facts["languages"].items()):
         code = canonical_language(name, level)
         if code and name not in facts["certificates"]:
-            answer(LANGUAGE, f"level_{code}", level, _CV, f"{name}: {level}")
+            answer(LANGUAGE, f"level_{code}", level_code(level), _CV, f"{name}: {level}")
     for name, level in sorted(facts["certificates"].items()):
         code = canonical_language(name, level)
         if code:
-            answer(LANGUAGE, f"level_{code}", level, _QUESTIONNAIRE, f"Certificate · {name}: {level}")
+            answer(LANGUAGE, f"level_{code}", level_code(level), _QUESTIONNAIRE, f"Certificate · {name}: {level}")
 
     rows = []
     for country, authorized, sponsorship in facts["declarations"]:
@@ -374,7 +379,8 @@ def _requirements(role: Mapping[str, Any]) -> list[dict]:
             out.append({
                 "requirement_id": f"req-language-{code}", "text": f"{name} {level}",
                 "classification": "hard_constraint", "modality": "mandatory", "constraint_id": LANGUAGE,
-                "parameters": {"kind": "language", "language": code, "min_level": level},
+                "parameters": {"kind": "language", "language": code, "scale": "CEFR",
+                               "min_level": level},
             })
         else:
             # Stated as required, but no supported rule can check it: it
