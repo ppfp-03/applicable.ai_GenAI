@@ -51,6 +51,8 @@ class WarningCode(str, Enum):
     UNKNOWN_ANSWER_KEY = "unknown_answer_key"
     INVALID_JOB_PARAMETER = "invalid_job_parameter"
     ORPHAN_JOB_PARAMETER = "orphan_job_parameter"
+    #: A job-side evidence ID the engine reads does not resolve in job.evidence.
+    UNRESOLVED_EVIDENCE = "unresolved_evidence"
 
 
 class EligibilityWarning(ContractModel):
@@ -60,12 +62,15 @@ class EligibilityWarning(ContractModel):
     message: NonEmptyStr
     constraint_id: str | None = None
     requirement_id: str | None = None
+    #: The evidence reference the warning is about, when there is one.
+    evidence_id: str | None = None
 
-    def sort_key(self) -> tuple[str, str, str, str]:
+    def sort_key(self) -> tuple[str, str, str, str, str]:
         return (
             self.code.value,
             self.constraint_id or "",
             self.requirement_id or "",
+            self.evidence_id or "",
             self.message,
         )
 

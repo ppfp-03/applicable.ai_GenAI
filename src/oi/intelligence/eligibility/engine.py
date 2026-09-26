@@ -29,6 +29,7 @@ from oi.intelligence.eligibility.inputs import (
     orphan_parameter_warnings,
     resolvable_job_evidence,
     resolve_parameters,
+    unresolved_evidence_warnings,
 )
 from oi.intelligence.eligibility.models import (
     UNRESOLVED_LOCATION,
@@ -144,6 +145,7 @@ def assess_eligibility(
     warnings: list[EligibilityWarning] = [
         *answer_key_warnings(candidate, rule_catalogue),
         *orphan_parameter_warnings(job, job_parameters),
+        *unresolved_evidence_warnings(job),
     ]
     for requirement in requirements:
         if rule_catalogue.get(requirement.constraint_id or "") is None:

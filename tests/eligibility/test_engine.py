@@ -230,3 +230,7 @@ def test_cited_evidence_always_resolves() -> None:
     for outcome in result.outcomes:
         assert set(outcome.job_evidence_ids) <= job_ids
         assert set(outcome.candidate_evidence_ids) <= candidate_ids
+    # Not cited, but not silently lost either (FR-06).
+    assert [(w.code, w.evidence_id) for w in result.warnings] == [
+        (WarningCode.UNRESOLVED_EVIDENCE, "ev-dangling")
+    ]

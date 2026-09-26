@@ -201,6 +201,54 @@ def resolvable_job_evidence(job: JobRecord, evidence_ids: Iterable[str]) -> list
     return seen
 
 
+def unresolved_evidence_warnings(job: JobRecord) -> list[EligibilityWarning]:
+    """One warning per job-side evidence ID the engine reads but cannot resolve.
+
+    resolvable_job_evidence keeps such IDs out of every outcome, since nothing
+    may be cited that a reader cannot open; this reports each one, so a
+    provenance failure is visible rather than silently dropped. It covers the
+    references the engine reads: hard-constraint requirements and locations.
+    Checked once per job, so evaluating several locations never repeats it.
+    """
+
+    registry = {reference.evidence_id for reference in job.evidence}
+    warnings: list[EligibilityWarning] = []
+
+    for requirement in hard_requirements(job):
+        for evidence_id in dict.fromkeys(requirement.evidence_ids):
+            if evidence_id not in registry:
+                warnings.append(
+                    EligibilityWarning(
+                        code=WarningCode.UNRESOLVED_EVIDENCE,
+                        message=(
+                            f"Evidence '{evidence_id}' of requirement "
+                            f"'{requirement.requirement_id}' does not resolve in the "
+                            "job's evidence; it was not cited."
+                        ),
+                        constraint_id=requirement.constraint_id,
+                        requirement_id=requirement.requirement_id,
+                        evidence_id=evidence_id,
+                    )
+                )
+
+    for index, location in enumerate(job.locations):
+        label = location.country_code or "unresolved"
+        for evidence_id in dict.fromkeys(location.evidence_ids):
+            if evidence_id not in registry:
+                warnings.append(
+                    EligibilityWarning(
+                        code=WarningCode.UNRESOLVED_EVIDENCE,
+                        message=(
+                            f"Evidence '{evidence_id}' of location {index} ({label}) "
+                            "does not resolve in the job's evidence; it was not cited."
+                        ),
+                        evidence_id=evidence_id,
+                    )
+                )
+
+    return warnings
+
+
 # ──────────────────────────── Parameter layer ─────────────────────────────
 
 
