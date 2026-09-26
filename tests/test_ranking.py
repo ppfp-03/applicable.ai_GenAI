@@ -1,7 +1,10 @@
 """Ranking arithmetic and the orders the screens show.
 
-The expected lists are the approved mockups': the dashboard/matches top five
-after "Yes", and the question screen's preview for each answer.
+The expected lists are the dashboard/matches top five after "Yes" and the
+question screen's preview for each answer. Work authorisation comes from the
+canonical HC_WORK_AUTH rule, so they differ from the approved mockups wherever
+the mockups assumed a permit nobody declared: sponsoring Singapore roles are
+"to verify" (no Singapore declaration), not eligible.
 """
 
 from __future__ import annotations
@@ -35,25 +38,28 @@ def test_to_verify_roles_lose_the_penalty():
 
 
 def test_top_five_after_yes():
-    assert top("yes") == [("RP", 87), ("BC", 83), ("LZ", 81), ("MS", 77), ("NE", 76)]
+    assert top("yes") == [("RP", 87), ("BC", 83), ("LZ", 81), ("MS", 77), ("NE", 61)]
 
 
 def test_question_preview_for_no_and_not_sure():
-    assert [m for m, _ in top("no")] == ["NE", "JP", "BC", "RO", "MS"]
-    assert [m for m, _ in top("unsure")] == ["NE", "JP", "RP", "BC", "RO"]
+    # "No" + a sponsoring employer is MET under HC_WORK_AUTH; non-sponsors are excluded.
+    assert [m for m, _ in top("no")] == ["BC", "MS", "NE", "JP", "RO"]
+    assert [m for m, _ in top("unsure")] == ["RP", "BC", "LZ", "MS", "NE"]
 
 
 def test_onboarding_shortlist_before_the_answer():
     assert top(None, as_of=store.data().profile["onboarded"]) == [
-        ("NE", 76), ("JP", 74), ("RP", 72), ("BC", 68), ("RO", 66)
+        ("RP", 72), ("BC", 68), ("LZ", 66), ("MS", 62), ("NE", 61)
     ]
 
 
-def test_movement_after_yes_matches_the_mockup():
+def test_movement_after_yes():
+    # Every role in the top five is "to verify" before the answer, so "Yes"
+    # lifts their scores without reordering them.
     moves = store.movement({"uk_work": None}, {"uk_work": "yes"})
     assert moves == {
-        "replai-pa": "↑ 2", "bolton-strategy": "↑ 2", "lazarde-ba": "New",
-        "morgan-product": "New", "nestella-strategy": "↓ 4",
+        "replai-pa": "—", "bolton-strategy": "—", "lazarde-ba": "—",
+        "morgan-product": "—", "nestella-strategy": "—",
     }
 
 

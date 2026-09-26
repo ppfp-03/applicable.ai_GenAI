@@ -3,8 +3,11 @@
 `data/demo.json` stands in for the pipeline's output. What is stored there is
 what the pipeline would read or measure (a posting's requirements, a factor
 score); what the product concludes is never stored: every page asks this
-module, which runs core/rules.py and core/ranking.py against the current
-answers. Change an answer and every screen follows.
+module, which runs the eligibility checks and core/ranking.py against the
+current answers. Change an answer and every screen follows.
+
+Work authorisation comes from the canonical engine (core/eligibility.py,
+HC_WORK_AUTH); the other seven criteria still come from core/rules.py.
 
 The one answer that moves the most roles is the UK question. The demo starts
 where the dashboard mockup does -- the user finished onboarding and said
@@ -22,7 +25,7 @@ from typing import Any, Optional
 
 import streamlit as st
 
-from core import ranking, rules
+from core import eligibility, ranking, rules
 from oi.contracts import CandidateProfile
 
 _DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "demo.json"
@@ -271,7 +274,7 @@ def view(role: RoleDef, ans: Optional[dict] = None) -> RoleView:
     """Check and score one role under `ans` (default: the current answers)."""
     d = data()
     ans = answers() if ans is None else ans
-    crit = rules.evaluate(d.profile, ans, role.raw)
+    crit = rules.evaluate(d.profile, ans, role.raw, permission=eligibility.permission(role.raw, ans))
     standing = rules.verdict(crit)
     raw = ranking.raw_score(role.factors, d.weights)
     return RoleView(role, crit, standing, raw, ranking.priority(raw, standing, d.penalty),

@@ -1,10 +1,11 @@
 """Role — how eligibility was decided for one role (03_Eligibility.html).
 
-Eight fixed criteria, decided by core/rules.py. What needs attention comes
+Eight fixed criteria: permission to work from the canonical HC_WORK_AUTH rule
+(core/eligibility.py), the rest from core/rules.py. What needs attention comes
 first, one tile per open criterion; the side panel shows the posting's words,
 the rule that compared them with the profile, and what the user can do. The
-primary action feeds a new fact back (a certificate, a letter, an answer) and
-the same rules run again.
+primary action feeds a new fact back (a certificate, an answer) and the same
+rules run again.
 """
 
 from __future__ import annotations
@@ -104,16 +105,6 @@ def copy(c) -> dict:
             "AI only read the posting. It didn’t make this decision."
         )
         out["name"] = c.name
-    elif c.id == "permission" and role.country == "CN":
-        out["viz"] = '<div class="cmp"><span class="pill">X1 study visa</span><span class="ar">+</span><span class="pill q">Fudan letter ?</span></div>'
-        out["big"] = (
-            '<h4>One document missing</h4><div class="sub">China · X1 study visa + internship letter</div>'
-            '<div class="cmp" style="justify-content:flex-start"><span class="pill">X1 study visa <span style="color:var(--green)">✓</span></span>'
-            '<span class="ar">+</span><span class="pill q">Fudan internship letter ?</span></div>'
-        )
-        out["dec"] = (
-            f"Rule <code>{esc(c.rule)}</code>. Your visa is in your CV (p.2). The letter is not stated in your CV."
-        )
     elif c.id == "permission" and role.country == "GB":
         out.update(
             act="Answer 1 question", btn="Answer 1 question",
@@ -126,7 +117,7 @@ def copy(c) -> dict:
             dec=f"Rule <code>{esc(c.rule)}</code>. Your nationality is in your CV (p.2). UK right to work is not stated in your CV.",
         )
     elif c.id == "permission":
-        # Any other country: nothing answers it yet, and citizenship is not an answer.
+        # Outside the UK nothing answers it yet, and citizenship is not an answer.
         out.update(
             act="Confirm with the employer", btn="Open job posting",
             say=f"Citizenship alone does not settle whether you can work in {role.city}. "
@@ -284,13 +275,6 @@ with st.container(key="main"):
                             langs = {**(store.answers().get("languages") or {}), c.name.split()[0]: level}
                             store.set_answer("languages", langs)
                             st.session_state["flash"] = f"Certificate added · {c.name} = {level} · checked again"
-                            st.rerun()
-                elif c.id == "permission" and role.country == "CN":
-                    with st.popover(k["btn"], type="primary", key="letter"):
-                        up = st.file_uploader("Internship letter from Fudan (PDF)", type=["pdf"], key="letter-file")
-                        if st.button("Check again with this letter", type="primary", disabled=up is None):
-                            store.set_answer("cn_letter", True)
-                            st.session_state["flash"] = "Letter added · permission checked again"
                             st.rerun()
                 elif c.id == "permission" and role.country == "GB":
                     if st.button(k["btn"], type="primary", key="ask"):

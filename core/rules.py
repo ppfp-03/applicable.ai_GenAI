@@ -206,13 +206,18 @@ def _language(profile: dict, role: dict, answers: dict | None = None) -> Criteri
                               "The posting sets no language requirement.", "none → allowed")
 
 
-def evaluate(profile: dict, answers: dict, role: dict) -> list[Criterion]:
+def evaluate(
+    profile: dict, answers: dict, role: dict, *, permission: Optional[Criterion] = None
+) -> list[Criterion]:
     """Check one role against the eight fixed criteria.
 
     Args:
         profile: The candidate profile (from the CV and confirmed by the user).
         answers: The user's answers to our questions, e.g. {"uk_work": "yes"}.
         role: The role, with the `requirements` read from its posting.
+        permission: The permission outcome decided elsewhere. The screens pass
+            the canonical engine's (core/eligibility.py); the legacy
+            `_permission` below runs only when this is None.
 
     Returns:
         Eight Criterion outcomes, in CRITERIA order.
@@ -224,7 +229,7 @@ def evaluate(profile: dict, answers: dict, role: dict) -> list[Criterion]:
     out.append(Criterion("location", CRITERION_NAMES["location"], "met",
                          f"{role['city']} · {role['mode'].lower()}",
                          "The role’s location is stated in the posting.", "location_stated → met"))
-    out.append(_permission(profile, answers, role))
+    out.append(permission or _permission(profile, answers, role))
 
     if req.get("student") and not profile.get("enrolled"):
         out.append(Criterion("student", CRITERION_NAMES["student"], "not_met", "Not enrolled",
