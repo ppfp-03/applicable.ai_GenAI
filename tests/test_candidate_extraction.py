@@ -241,6 +241,30 @@ def test_prompt_keeps_programming_languages_and_leaves_out_human_languages() -> 
     assert "Leave out spoken or written human languages" in skills_rule
 
 
+def test_prompt_asks_for_one_entry_per_role_and_per_degree() -> None:
+    text = load_candidate_prompt().text
+    education_rule = text.split("- **education**", 1)[1].split("- **experience**", 1)[0]
+    experience_rule = text.split("- **experience**", 1)[1].split("##", 1)[0]
+
+    assert "One entry per\n  degree" in education_rule
+    assert "One\n  entry per role" in experience_rule
+    assert "Never merge\n  roles" in experience_rule
+
+
+def test_several_roles_become_distinct_experience_entries() -> None:
+    text = CV_TEXT + "Analyst, Acme, 2024\nIntern, Acme, 2023\n"
+    roles = [
+        fact("Summer Analyst at Mediobanco", "Summer Analyst, Mediobanco, June-August 2025"),
+        fact("Analyst at Acme", "Analyst, Acme, 2024"),
+        fact("Intern at Acme", "Intern, Acme, 2023"),
+    ]
+
+    profile = extract_candidate(make_cv(text), FakeModelClient(fields=make_fields(experience=roles)))
+
+    assert [e.value for e in profile.experience] == ["Summer Analyst at Mediobanco", "Analyst at Acme", "Intern at Acme"]
+    assert len({e.evidence_ids[0] for e in profile.experience}) == 3
+
+
 def test_model_input_version_is_deterministic() -> None:
     schema = ExtractedFields.model_json_schema()
     reordered = dict(reversed(list(schema.items())))

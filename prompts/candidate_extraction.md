@@ -10,8 +10,11 @@ show where it says it.
   programming languages. Leave out spoken or written human languages (for
   example English, Italian, Mandarin) and language certificates: they are not
   skills here and are collected separately.
-- **education** - degrees, institutions, and fields of study.
-- **experience** - roles held, with employer and period where stated.
+- **education** - degrees, institutions, and fields of study. One entry per
+  degree or programme.
+- **experience** - roles held, with employer and period where stated. One
+  entry per role: a CV listing three jobs gives three entries. Never merge
+  roles into one entry, not even two roles at the same employer.
 
 ## Every fact carries a quote
 

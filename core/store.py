@@ -23,6 +23,7 @@ postings available, and the same checks and ranking then run over them.
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -261,6 +262,78 @@ def has_candidate_for(content_hash: str) -> bool:
     so uploading the same file again need not call the model again."""
     profile = candidate()
     return profile is not None and profile.provenance.extraction.input_hash == content_hash
+
+
+#: Profile sections the user can edit, with the short name used in evidence ids.
+EDITABLE = (("skills", "skill"), ("education", "education"), ("experience", "experience"))
+#: Prefix of the documents that hold the user's own edits to the profile.
+EDIT_DOC = "profile-edit-"
+
+
+def apply_edits(profile: CandidateProfile, edits: dict[str, list[str]]) -> CandidateProfile:
+    """The profile with the user's version of its CV sections (FR-02).
+
+    `edits` maps a section name in EDITABLE to the values the user kept, in
+    order. A value identical to one already in the section keeps that value's
+    evidence, so what the CV said stays backed by the CV. Every other value is
+    the user's word: all of them go into one questionnaire SourceDocument,
+    each backed by a quote of itself, so a correction has provenance of its
+    own and is never passed off as read from the CV. Blank values are dropped,
+    and so is any evidence or edit document nothing refers to any more.
+    """
+    raw = profile.model_dump()
+    prov = raw["provenance"]
+    edit_ids = [int(d[len(EDIT_DOC):]) for d in prov["documents"] if d.startswith(EDIT_DOC)]
+    doc_id = f"{EDIT_DOC}{max(edit_ids, default=0) + 1}"
+    new_evidence: list[dict] = []
+    for field, short in EDITABLE:
+        old = list(raw[field])
+        section = []
+        for value in edits.get(field, [v["value"] for v in old]):
+            value = " ".join(value.split())
+            if not value:
+                continue
+            same = next((o for o in old if o["value"] == value), None)
+            if same is not None:
+                old.remove(same)
+                section.append(same)
+                continue
+            evidence_id = f"ev-{doc_id}-{short}-{sum(e['field_path'] == field for e in new_evidence) + 1:03d}"
+            new_evidence.append({"evidence_id": evidence_id, "document_id": doc_id, "quote": value, "field_path": field})
+            section.append({"value": value, "evidence_ids": [evidence_id]})
+        raw[field] = section
+    if new_evidence:
+        text = "\n".join(e["quote"] for e in new_evidence)
+        prov["documents"][doc_id] = {
+            "document_id": doc_id,
+            "kind": "questionnaire",
+            "text": text,
+            "content_hash": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            "source_ref": "profile_edit",
+        }
+        prov["questionnaire_document_ids"].append(doc_id)
+        prov["evidence"].extend(new_evidence)
+
+    used = {i for field, _ in EDITABLE for v in raw[field] for i in v["evidence_ids"]}
+    used |= {i for d in raw["declarations"]["work_authorizations"] for i in d["evidence_ids"]}
+    used |= {i for answers in raw["eligibility_answers"].values() for a in answers for i in a["evidence_ids"]}
+    prov["evidence"] = [e for e in prov["evidence"] if e["evidence_id"] in used]
+    live = {e["document_id"] for e in prov["evidence"]}
+    stale = {d for d in prov["documents"] if d.startswith(EDIT_DOC) and d not in live}
+    prov["documents"] = {k: v for k, v in prov["documents"].items() if k not in stale}
+    prov["questionnaire_document_ids"] = [d for d in prov["questionnaire_document_ids"] if d not in stale]
+    return CandidateProfile.model_validate(raw)
+
+
+def save_edits(edits: dict[str, list[str]]) -> None:
+    """Replace the stored profile with the user's edited version of it."""
+    st.session_state[CANDIDATE] = apply_edits(candidate(), edits)
+
+
+def is_edited(profile: CandidateProfile, fact) -> bool:
+    """Whether a profile value is the user's word rather than read from the CV."""
+    docs = {e.evidence_id: e.document_id for e in profile.provenance.evidence}
+    return any(docs[i] != profile.cv_document_id for i in fact.evidence_ids)
 
 
 def extraction_error() -> Optional[str]:

@@ -111,3 +111,48 @@ def test_cv_text_is_escaped() -> None:
 
     assert "&lt;img src=x onerror=alert(1)&gt;" in page
     assert "<img src=x" not in page
+
+
+ROLES = [fact(f"Role {i}", "Summer Analyst, Mediobanco, June-August 2025") for i in range(1, 6)]
+
+
+def test_each_role_is_its_own_line() -> None:
+    page = step2(profile(experience=ROLES[:3]))
+
+    for i in range(1, 4):
+        assert f'<div class="p-v p-e" title="Summer Analyst, Mediobanco, June-August 2025">Role {i}</div>' in page
+    assert "more</div>" not in page
+
+
+def test_roles_beyond_the_card_are_counted() -> None:
+    page = step2(profile(experience=ROLES))
+
+    assert ">Role 3</div>" in page
+    assert "Role 4" not in page
+    assert '<div class="p-m">+2 more</div>' in page
+
+
+def test_edited_values_are_marked_and_kept_off_the_cv_panel() -> None:
+    edited = store.apply_edits(profile(), {"experience": ["Summer Analyst at Mediobanco", "Intern at Acme"]})
+
+    page = step2(edited)
+
+    assert '<div class="p-v p-e" title="Edited by you">Intern at Acme</div>' in page
+    assert "From your CV · 1 quote · 1 edited by you</div>" in page
+    assert "Intern at Acme" not in page.split('<div class="p-page">', 1)[1]
+    assert "Your CV<span>3 quotes</span>" in page
+
+
+def test_the_edit_button_needs_a_profile() -> None:
+    def buttons(p=None) -> list[str]:
+        at = AppTest.from_file(ONBOARDING, default_timeout=30)
+        at.session_state["ob_step"] = "2"
+        if p is not None:
+            at.session_state[store.CANDIDATE] = p
+        at.run()
+        return [b.label for b in at.button]
+
+    assert "Edit profile" not in buttons()
+    assert "Edit profile" in buttons(profile())
+    assert "Edit profile" in step2(profile())
+    assert "Edit profile" not in step2()

@@ -19,6 +19,7 @@ import math
 import re
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 from core import clock, explore, store
@@ -65,6 +66,9 @@ FILT_7 = [(33, 107, 56, 26), (91, 107, 157, 26), (249, 107, 75, 26)]
 #: Where a CV reading error sits: in the file card's place, below the drop zone.
 CV_STATUS = (428, 458, 664)
 BTN_7 = [(1336, 194, 135, 34), (1405, 324, 66, 34), (1405, 454, 66, 34), (1405, 583, 66, 34), (1405, 713, 66, 34)]
+#: The "Edit profile" chip beside the step 2 title, as (right, y, w, h): its
+#: panel stretches with the window, the fixed-width CV panel to its right does not.
+EDIT_2 = (509, 29, 107, 27)
 
 IMPORTANCE = ["Must have", "Important", "Nice to have", "Don’t mind"]
 
@@ -172,7 +176,7 @@ CV_SECTIONS = [("Skills", "skills"), ("Education", "education"), ("Experience", 
 UNREAD_SECTIONS = ["Work authorization", "Sponsorship", "Languages"]
 #: How many skills a card lists before summarising the rest as "+N".
 SKILL_CHIPS = 8
-#: How many values an education or experience card lists before "+N more".
+#: How many entries an education or experience card lists before "+N more".
 CARD_LINES = 3
 #: How many quotes each section shows on the CV page, which does not scroll.
 PAGE_QUOTES = 3
@@ -183,6 +187,12 @@ DOC_ICON = re.search(r'<div class="p-src">(<svg.*?</svg>)', M.S_2).group(1)
 FOUND = '<span class="w-b ok"><i></i>Found</span>'
 NOT_FOUND = '<span class="w-b ne"><i></i>Not found</span>'
 NOT_READ = '<span class="w-b ne"><i></i>Not read</span>'
+#: Hover text of a value the user edited, which no CV quote backs.
+EDITED = "Edited by you"
+PENCIL = (
+    '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M10.5 2.5l3 3L6 13H3v-3z" stroke="currentColor" '
+    'stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>'
+)
 
 
 def profile_card(title: str, badge: str, body: str, src: str = "") -> str:
@@ -195,14 +205,18 @@ def profile_card(title: str, badge: str, body: str, src: str = "") -> str:
 
 def fact_quote(profile, fact) -> str:
     """The CV text a fact rests on, for hovering over the fact."""
+    if store.is_edited(profile, fact):
+        return EDITED
     quotes = {e.evidence_id: e.quote for e in profile.provenance.evidence}
     return " … ".join(" ".join(quotes[i].split()) for i in fact.evidence_ids)
 
 
 def section_quotes(profile, field: str) -> list[str]:
     """The distinct CV quotes behind one section, in order. Several facts
-    often rest on the same line of the CV; that line counts once."""
-    return list(dict.fromkeys(fact_quote(profile, f) for f in getattr(profile, field)))
+    often rest on the same line of the CV; that line counts once. Values the
+    user edited rest on no CV quote and are left out."""
+    facts = [f for f in getattr(profile, field) if not store.is_edited(profile, f)]
+    return list(dict.fromkeys(fact_quote(profile, f) for f in facts))
 
 
 def quote_count(n: int) -> str:
@@ -239,12 +253,15 @@ def cv_card(profile, title: str, field: str) -> str:
         if len(facts) > SKILL_CHIPS:
             chips += f'<span class="w-chip">+{len(facts) - SKILL_CHIPS}</span>'
         body = f'<div class="p-chips">{chips}</div>'
-    else:
-        first, rest = facts[0], facts[1:CARD_LINES]
-        more = len(facts) - CARD_LINES
-        lines = " · ".join(item(f, "span") for f in rest) + (f" · +{more} more" if more > 0 else "")
-        body = f'<div class="p-v">{item(first, "span")}</div>' + (f'<div class="p-m">{lines}</div>' if lines else "")
-    return profile_card(title, FOUND, body, f"From your CV · {quote_count(len(section_quotes(profile, field)))}")
+    else:  # one line per entry, so three roles read as three roles
+        body = "".join(item(f, "div", ' class="p-v p-e"') for f in facts[:CARD_LINES])
+        if len(facts) > CARD_LINES:
+            body += f'<div class="p-m">+{len(facts) - CARD_LINES} more</div>'
+    quotes = len(section_quotes(profile, field))
+    edited = sum(store.is_edited(profile, f) for f in facts)
+    src = [f"From your CV · {quote_count(quotes)}"] if quotes else []
+    src += [f"{edited} edited by you"] if edited else []
+    return profile_card(title, FOUND, body, " · ".join(src))
 
 
 def cv_page(profile) -> str:
@@ -285,6 +302,12 @@ def step2() -> str:
     cards = [cv_card(profile, title, field) for title, field in CV_SECTIONS] + [
         profile_card(title, NOT_READ, '<div class="p-v">Not read from your CV</div>') for title in UNREAD_SECTIONS
     ]
+    if profile is not None:
+        body = swap(
+            body, re.escape('<div class="w-h1">Here’s what we found</div>'),
+            f'<div class="p-top"><div class="w-h1">Here’s what we found</div>'
+            f'<span class="w-chip p-edit">{PENCIL}Edit profile</span></div>',
+        )
     body = swap(body, r'<div class="w-sub">.*?</div>', f'<div class="w-sub">{sub}</div>')
     body = swap(
         body, r'<div class="p-grid">.*?</div></div>\n<div class="p-r">',
@@ -292,6 +315,31 @@ def step2() -> str:
     )
     body = swap(body, re.escape("Your CV<span>Page 2 of 2</span>"), f"Your CV<span>{quotes}</span>")
     return swap(body, r'<div class="p-page">.*?</div></div>$', f'<div class="p-page">{cv_page(profile)}</div></div>')
+
+
+@st.dialog("Edit your profile", width="large")
+def edit_profile() -> None:
+    """Change what was read from the CV: edit, add or remove entries.
+
+    Saved values the CV does not say are kept as the user's own statements,
+    apart from the CV quotes (store.apply_edits)."""
+    profile = store.candidate()
+    st.caption("One entry per row. Add a row for anything we missed; select a row and delete it to remove it. "
+               "What you change is saved as your own statement, not as read from your CV.")
+    edits = {}
+    for title, field in CV_SECTIONS:
+        rows = pd.DataFrame({title: [f.value for f in getattr(profile, field)]}, dtype="string")
+        table = st.data_editor(
+            rows, key=f"ed-{field}", num_rows="dynamic", hide_index=True, width="stretch",
+            column_config={title: st.column_config.TextColumn(title, width="large")},
+        )
+        edits[field] = [v for v in table[title] if isinstance(v, str)]
+    save, cancel = st.columns(2)
+    if save.button("Save changes", type="primary", key="ed-save", width="stretch"):
+        store.save_edits(edits)
+        st.rerun()
+    if cancel.button("Cancel", key="ed-cancel", width="stretch"):
+        st.rerun()
 
 
 def step3a() -> str:
@@ -768,6 +816,11 @@ with st.container(key="obody"):
                 status.error(f"We couldn’t read your CV. {store.extraction_error()}")
     elif step == "2":
         html(f'<section class="w-sec">{step2()}</section>')
+        if store.candidate() is not None:
+            right, y, w, h = EDIT_2
+            st.markdown(f"<style>.stApp .st-key-oo-edit{{left:auto!important;right:{right}px}}</style>", unsafe_allow_html=True)
+            if overlay("edit", (0, y, w, h), "Edit profile"):
+                edit_profile()
     elif step == "3a":
         html(f'<section class="w-sec">{step3a()}</section>')
         overlay("to3b", SEG_3A[1], "2 · Explore", on_click=go, args=("3b",))
