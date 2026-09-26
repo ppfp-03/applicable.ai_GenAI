@@ -1,95 +1,100 @@
 """Tests for deterministic eligibility.
 
-Work authorisation is never judged by a model. These tests pin the rules the
-product relies on, including the Swiss permit table for EU/EFTA citizens from
-design-system/10-ux-architecture.md.
+Work authorisation is never judged by a model, and never inferred from
+citizenship: PROJECT_CONTEXT.md treats the two separately until a
+country-specific inference is approved (Q-04). These tests pin that.
 """
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
-from core.rules import RULES_VERSION, swiss_permit_for_eu_citizen, work_authorisation
+from core.rules import RULES_VERSION, evaluate, verdict
+
+_DEMO = json.loads(
+    (Path(__file__).resolve().parent.parent / "data" / "demo.json").read_text("utf-8")
+)
+PROFILE = _DEMO["profile"]
+ROLES = {role["id"]: role for role in _DEMO["roles"]}
 
 
-class TestSwissPermitTable:
-    """The three bands in the Swiss permit table, plus the unknown case."""
-
-    def test_up_to_three_months_needs_no_permit(self):
-        outcome = swiss_permit_for_eu_citizen(contract_months=3)
-        assert outcome.status == "met"
-        assert "No permit needed" in outcome.explanation
-
-    def test_between_three_and_twelve_months_is_an_l_permit(self):
-        outcome = swiss_permit_for_eu_citizen(contract_months=6)
-        assert outcome.status == "met"
-        assert "L permit" in outcome.explanation
-
-    def test_twelve_months_or_more_is_a_b_permit(self):
-        outcome = swiss_permit_for_eu_citizen(contract_months=18)
-        assert outcome.status == "met"
-        assert "B permit" in outcome.explanation
-        assert "5 years" in outcome.explanation
-
-    def test_the_boundary_at_twelve_months_is_a_b_permit(self):
-        # 12 is the first month of the B band, not the last of the L band.
-        assert "B permit" in swiss_permit_for_eu_citizen(12).explanation
-        assert "L permit" in swiss_permit_for_eu_citizen(11).explanation
-
-    def test_the_boundary_at_three_months_needs_no_permit(self):
-        assert "No permit" in swiss_permit_for_eu_citizen(3).explanation
-        assert "L permit" in swiss_permit_for_eu_citizen(4).explanation
-
-    def test_unknown_duration_asks_rather_than_guesses(self):
-        # The posting did not say. Picking a band here would be inventing a
-        # fact about the user's legal status -- the one thing we never do.
-        outcome = swiss_permit_for_eu_citizen(contract_months=None)
-        assert outcome.status == "confirm"
-        assert outcome.evidence is None
-
-    def test_every_outcome_carries_a_rule_source(self):
-        for months in (3, 6, 18):
-            outcome = swiss_permit_for_eu_citizen(months)
-            assert outcome.evidence is not None
-            assert outcome.evidence.source.kind == "RULE"
-            # The locator names the rule that fired, so it can be audited.
-            assert "CH" in outcome.evidence.source.where
-
-    def test_rules_are_versioned(self):
-        # Rules change with the law; an outcome must be traceable to a version.
-        assert RULES_VERSION
+def permission(role: dict, answers: dict | None = None, profile: dict = PROFILE):
+    return next(c for c in evaluate(profile, answers or {}, role) if c.id == "permission")
 
 
-class TestWorkAuthorisation:
-    """The entry point that dispatches by country and citizenship."""
+def in_country(country: str, **extra) -> dict:
+    """A demo role moved to `country`, everything else unchanged."""
+    return {**ROLES["deutsch-frankfurt"], "country": country, **extra}
 
-    def test_italian_citizen_in_italy_is_met(self):
-        outcome = work_authorisation(
-            citizenship="IT", country="IT", contract_months=3
-        )
-        assert outcome.status == "met"
 
-    def test_eu_citizen_in_switzerland_uses_the_permit_table(self):
-        outcome = work_authorisation(
-            citizenship="IT", country="CH", contract_months=18
-        )
-        assert outcome.status == "met"
-        assert "B permit" in outcome.explanation
+class TestCitizenshipIsNotWorkAuthorisation:
+    @pytest.mark.parametrize("country", ["IT", "DE", "FR", "NL", "CH", "JP"])
+    def test_eu_citizen_is_asked_not_assumed(self, country):
+        assert PROFILE["citizenship"] == "IT"
+        c = permission(in_country(country))
+        assert c.status == "check"
+        assert c.rule == f"{country}_right_to_work = unknown → ask"
 
-    def test_unknown_citizenship_asks(self):
-        outcome = work_authorisation(
-            citizenship=None, country="CH", contract_months=18
-        )
-        assert outcome.status == "confirm"
+    def test_own_country_is_asked_too(self):
+        c = permission(in_country("IT"), profile={**PROFILE, "citizenship": "IT"})
+        assert c.status == "check"
 
-    def test_country_we_have_no_rule_for_asks_rather_than_assumes(self):
-        # Silence is not permission. With no rule, we ask.
-        outcome = work_authorisation(
-            citizenship="IT", country="JP", contract_months=12
-        )
-        assert outcome.status == "confirm"
+    @pytest.mark.parametrize("months", [None, 3, 6, 18])
+    def test_contract_length_no_longer_picks_a_swiss_permit(self, months):
+        c = permission(in_country("CH", contract_months=months))
+        assert c.status == "check"
+        assert "permit" not in c.value.lower()
 
-    @pytest.mark.parametrize("months", [0, -1])
-    def test_nonsensical_duration_is_rejected(self, months):
-        with pytest.raises(ValueError):
-            swiss_permit_for_eu_citizen(contract_months=months)
+    def test_the_answer_says_why_it_asks(self):
+        c = permission(in_country("DE"))
+        assert "Citizenship alone does not settle it" in c.detail
+
+    @pytest.mark.parametrize("role_id", ["mediobanco-growth", "roshe-basel", "deutsch-frankfurt"])
+    def test_demo_eu_roles_need_verifying(self, role_id):
+        assert verdict(evaluate(PROFILE, {"uk_work": "yes"}, ROLES[role_id])) == "verify"
+
+
+class TestSingaporeDoesNotAssumeAnEmploymentPass:
+    """Nothing in the profile says whether the user needs a pass.
+
+    An employer that sponsors one covers either case, so the role stays open.
+    Without sponsorship the answer depends on that unknown, so ask; never
+    exclude on an assumption about the user's status.
+    """
+
+    def test_employer_sponsorship_covers_either_case(self):
+        c = permission(in_country("SG", sponsors_visa=True))
+        assert c.status == "met"
+        assert "if you need one" in c.detail
+
+    def test_no_sponsorship_asks_instead_of_excluding(self):
+        c = permission(in_country("SG", sponsors_visa=False))
+        assert c.status == "check"
+        assert c.rule == "SG_right_to_work = unknown + no_sponsorship → ask"
+
+    @pytest.mark.parametrize("sponsors", [True, False])
+    def test_never_states_that_the_user_needs_a_pass(self, sponsors):
+        c = permission(in_country("SG", sponsors_visa=sponsors))
+        assert "You need an Employment Pass" not in c.detail
+        assert "SG_EP_required" not in c.rule
+
+    @pytest.mark.parametrize("role_id", ["nestella-strategy", "jpmorrow-strategy", "unicreda-pa"])
+    def test_demo_singapore_roles_all_sponsor_and_stay_eligible(self, role_id):
+        assert ROLES[role_id]["sponsors_visa"] is True
+        assert verdict(evaluate(PROFILE, {"uk_work": "yes"}, ROLES[role_id])) == "eligible"
+
+
+class TestExplicitAnswersStillDecide:
+    def test_uk_yes_is_met(self):
+        assert permission(in_country("GB"), {"uk_work": "yes"}).status == "met"
+
+    def test_uk_unknown_asks(self):
+        assert permission(in_country("GB"), {"uk_work": None}).status == "check"
+
+
+def test_rules_are_versioned():
+    # Rules change with the law; an outcome must be traceable to a version.
+    assert RULES_VERSION

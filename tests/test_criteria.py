@@ -55,10 +55,10 @@ def test_uk_answer_drives_uk_roles():
     assert by_id(criteria("replai-pa", uk_work="no"))["permission"].status == "not_met"
 
 
-def test_swiss_role_uses_the_eu_permit_table():
+def test_swiss_role_asks_instead_of_reading_citizenship_as_a_permit():
     crit = by_id(criteria("roshe-basel"))
-    assert crit["permission"].status == "met"
-    assert "L permit" in crit["permission"].value
+    assert crit["permission"].status == "check"
+    assert "permit" not in crit["permission"].value.lower()
 
 
 def test_level_gap_handles_known_scales_only():

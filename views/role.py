@@ -125,6 +125,14 @@ def copy(c) -> dict:
                 '<span class="ar">+</span><span class="pill q">UK right to work ?</span></div>',
             dec=f"Rule <code>{esc(c.rule)}</code>. Your nationality is in your CV (p.2). UK right to work is not stated in your CV.",
         )
+    elif c.id == "permission":
+        # Any other country: nothing answers it yet, and citizenship is not an answer.
+        out.update(
+            act="Confirm with the employer", btn="Open job posting",
+            say=f"Citizenship alone does not settle whether you can work in {role.city}. "
+                "Check the posting or ask the employer before you apply.",
+            alt=["Similar roles", "Explore more roles"],
+        )
     elif c.id == "field":
         out["viz"] = (
             f'<div class="cmp"><span class="pill">{esc(c.have)}</span><span class="ar">≈</span>'
@@ -287,6 +295,9 @@ with st.container(key="main"):
                 elif c.id == "permission" and role.country == "GB":
                     if st.button(k["btn"], type="primary", key="ask"):
                         tabs.go("question")
+                elif c.id == "permission":
+                    if st.button(k["btn"], type="primary", key="posting-f"):
+                        st.toast("Opening the job posting")
                 elif c.id == "field":
                     with st.popover(k["btn"], type="primary", key="draft"):
                         st.text_area("To the recruiter", d.eligibility_copy["field"]["draft"], height=160, key="draft-text")

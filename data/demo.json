@@ -124,8 +124,8 @@
       "title": "Strategy Intern", "city": "Basel", "country": "CH", "mode": "Onsite", "contract_months": 6,
       "closes": "2026-10-22", "closes_label": "22 Oct", "posted_days_ago": 1, "found": "2026-09-24", "sponsors_visa": false, "new": true,
       "factors": {"profile": [70, "Strategy projects · finance"], "preference": [74, "Strategy role · Basel"], "urgency": [60, "Closes 22 Oct"], "freshness": [90, "Posted yesterday · verified today"]},
-      "why": "Strategy role, permit handled by rule", "highlight": "L permit for 6 months", "gaps": [],
-      "card_checks": [["ok", "L permit (EU/EFTA)"]],
+      "why": "Strategy role in finance", "highlight": "Strategy projects · finance", "gaps": [],
+      "card_checks": [["ok", "Strategy projects · finance"]],
       "requirements": {"degree_level": "master", "fields": ["Finance", "Economics"], "graduation": ["2026-06", "2027-12"], "experience_min": 1, "student": true, "languages": {"English": "C1"}}
     },
     {
@@ -133,7 +133,7 @@
       "title": "Product Intern", "city": "Frankfurt", "country": "DE", "mode": "Hybrid",
       "closes": "2026-10-26", "closes_label": "26 Oct", "posted_days_ago": 1, "found": "2026-09-24", "sponsors_visa": false, "new": true,
       "factors": {"profile": [70, "Product analytics · SQL"], "preference": [68, "Product role · Frankfurt"], "urgency": [60, "Closes 26 Oct"], "freshness": [86, "Posted yesterday · verified today"]},
-      "why": "EU role, no permit needed", "highlight": "SQL · product analytics", "gaps": [],
+      "why": "Your SQL fits product analytics", "highlight": "SQL · product analytics", "gaps": [],
       "card_checks": [["ok", "SQL · product analytics"]],
       "requirements": {"degree_level": "master", "fields": ["Finance", "Economics", "Computer Science"], "graduation": ["2026-06", "2027-12"], "experience_min": 1, "student": true, "languages": {"English": "C1"}}
     },
