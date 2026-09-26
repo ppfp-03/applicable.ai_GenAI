@@ -2,7 +2,8 @@
 
 Pins FR-02 / FR-04 for work authorisation: citizenship alone never makes a
 role MET, a missing declaration is UNKNOWN ("to verify"), an explicit
-declaration is respected, an explicit conflict excludes, and the production
+declaration is respected, only an explicit "sponsorship not offered" conflicts
+(unstated sponsorship is UNKNOWN), and the production
 path (core.store) no longer runs the legacy core/rules.py permission rule.
 """
 
@@ -58,7 +59,8 @@ def test_citizenship_of_the_role_country_still_does_not_prove_it(monkeypatch):
     profile["citizenship"] = "GB"
     monkeypatch.setattr(D, "profile", profile)
     assert tile("replai-pa", uk=None).status == "check"
-    assert eligibility.candidate(eligibility.declarations({})).declarations.work_authorizations == []
+    decl = eligibility.candidate(profile, {}).declarations
+    assert decl.work_authorizations == [] and decl.additional_citizenships == []
 
 
 @pytest.mark.parametrize("uk", [None, "unsure"])
@@ -83,17 +85,31 @@ def test_explicit_yes_is_met():
 
 
 def test_needs_sponsorship_with_a_sponsoring_employer_is_met():
-    assert role("bolton-strategy")["sponsors_visa"] is True
+    assert role("bolton-strategy")["sponsorship"] == "offered"
     assert outcome("bolton-strategy", "no").status is RuleStatus.MET
 
 
 def test_needs_sponsorship_without_one_is_a_conflict_and_excludes():
-    assert role("replai-pa")["sponsors_visa"] is False
+    assert role("replai-pa")["sponsorship"] == "not_offered"
     assert outcome("replai-pa", "no").status is RuleStatus.CONFLICT
     v = store.view(D.role("replai-pa"), {"uk_work": "no"})
     assert v.criterion("permission").status == "not_met"
     assert v.standing == "excluded"
     assert "replai-pa" not in {x.id for x in store.ranked({"uk_work": "no"}, include_new=True)}
+
+
+def test_needs_sponsorship_when_it_is_not_stated_is_unknown(monkeypatch):
+    monkeypatch.setitem(D.role("replai-pa").raw, "sponsorship", "not_stated")
+    got = outcome("replai-pa", "no")
+    assert got.status is RuleStatus.UNKNOWN
+    assert got.unknown_cause.value == "job_parameter_missing"
+    assert store.view(D.role("replai-pa"), {"uk_work": "no"}).standing == "verify"
+
+
+def test_sponsorship_is_explicit_three_state_never_a_boolean():
+    for r in D.roles:
+        assert "sponsors_visa" not in r.raw
+        assert r.raw["sponsorship"] in eligibility.SPONSORSHIP
 
 
 def test_a_uk_answer_says_nothing_about_other_countries():

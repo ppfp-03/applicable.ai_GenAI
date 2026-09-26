@@ -1,7 +1,7 @@
 """Explore — the whole catalogue we track, under the same rules.
 
 No mockup covers this screen; it reuses the Home match cards and the Matches
-side panel. Every role is shown with its standing from core/rules.py,
+side panel. Every role is shown with its standing from the canonical engine,
 including the excluded ones, so nothing is hidden without a reason.
 
 New postings come only from the controlled "Simulated ingestion event"

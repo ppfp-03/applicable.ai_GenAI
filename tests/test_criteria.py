@@ -1,9 +1,10 @@
 """The eight fixed criteria, as the screens get them (core.store.view).
 
-Permission to work comes from the canonical HC_WORK_AUTH rule; the other seven
-from core/rules.py. These pin the outcomes the screens show for the demo
-profile: Deutsch Bank Shanghai is 5 of 8 with one conflict, UK roles follow
-the UK answer, and a high semantic match never overrides a rule.
+All eight come from the canonical engine (core/eligibility.py ->
+oi.intelligence.eligibility -> core/eligibility_view.py). These pin the
+outcomes the screens show for the demo profile: Deutsch Bank Shanghai is 6 of
+8 and "to verify" (Mandarin HSK is outside canonical eligibility, so it is a
+limitation, not a conflict), and UK roles follow the UK answer.
 """
 
 from __future__ import annotations
@@ -26,20 +27,33 @@ def test_always_eight_criteria_in_fixed_order():
     assert [c.id for c in crit] == list(rules.CRITERIA)
 
 
-def test_deutsch_shanghai_is_five_of_eight_with_one_conflict():
-    crit = by_id(criteria("deutsch-shanghai", uk_work="yes"))
-    assert crit["language"].status == "not_met"
-    assert (crit["language"].have, crit["language"].need) == ("HSK 4", "HSK 6")
+def test_deutsch_shanghai_is_six_of_eight_and_to_verify():
+    v = store.view(D.role("deutsch-shanghai"), {"uk_work": "yes"})
+    crit = by_id(v.criteria)
     assert crit["permission"].status == "check"  # no China work-authorisation declaration
     assert crit["field"].status == "check"  # "related field" is undecidable
-    assert sum(c.status == "met" for c in crit.values()) == 5
-    assert rules.verdict(list(crit.values())) == "excluded"
+    assert crit["language"].status == "met"  # no CEFR requirement: HC_LANGUAGE not applicable
+    assert crit["language"].rule.endswith("→ not_applicable")
+    assert v.met == 6
+    assert v.standing == "verify"
 
 
-def test_a_certificate_clears_the_language_conflict():
-    crit = by_id(criteria("deutsch-shanghai", uk_work="yes", languages={"Mandarin": "HSK 6"}))
-    assert crit["language"].status == "met"
-    assert rules.verdict(list(crit.values())) == "verify"
+def test_hsk_is_a_limitation_that_never_changes_the_standing():
+    before = store.view(D.role("deutsch-shanghai"), {"uk_work": "yes"})
+    after = store.view(D.role("deutsch-shanghai"), {"uk_work": "yes", "languages": {"Mandarin": "HSK 6"}})
+    assert [n.name for n in before.limitations] == ["Mandarin level"]
+    assert "HSK 6" in before.limitations[0].text and "HSK 4" in before.limitations[0].text
+    assert before.standing == after.standing == "verify"
+    assert before.criteria == after.criteria
+
+
+def test_a_cefr_certificate_is_read_by_the_canonical_language_rule(monkeypatch):
+    profile = {**D.profile, "languages": {**D.profile["languages"], "English": "B2"}}
+    monkeypatch.setattr(D, "profile", profile)
+    low = by_id(criteria("replai-pa", uk_work="yes"))["language"]
+    assert (low.status, low.have, low.need) == ("not_met", "B2", "C1")
+    cert = by_id(criteria("replai-pa", uk_work="yes", languages={"English": "C1"}))["language"]
+    assert cert.status == "met"
 
 
 def test_uk_answer_drives_uk_roles():

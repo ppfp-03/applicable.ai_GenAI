@@ -1,7 +1,8 @@
 """Role — how eligibility was decided for one role (03_Eligibility.html).
 
-Eight fixed criteria: permission to work from the canonical HC_WORK_AUTH rule
-(core/eligibility.py), the rest from core/rules.py. What needs attention comes
+Eight fixed criteria, all decided by the canonical eligibility engine
+(core/eligibility.py -> engine -> core/eligibility_view.py); requirements no
+fixed rule checks are listed apart and never counted. What needs attention comes
 first, one tile per open criterion; the side panel shows the posting's words,
 the rule that compared them with the profile, and what the user can do. The
 primary action feeds a new fact back (a certificate, an answer) and the same
@@ -235,10 +236,22 @@ with st.container(key="main"):
             f'<div class="v">{esc(c.value)}</div></div></div>'
             for c in met
         )
+        # Requirements no fixed rule checks (e.g. Mandarin HSK): shown, never counted.
+        limits = "".join(
+            f'<div class="mt tile" style="margin-top:10px"><div style="min-width:0"><div class="n">{esc(n.name)}</div>'
+            f'<div class="v" style="white-space:normal">{esc(n.text)}</div></div></div>'
+            for n in v.limitations
+        )
+        if limits:
+            limits = (
+                '<div class="sh" style="margin-top:14px"><div><b>Not checked by fixed rules</b>'
+                "<span>For information · never changes eligibility</span></div></div>" + limits
+            )
         with st.container(key="gl-met"):
             html(
                 f'<div class="sh"><div><b>Criteria met</b><span>{len(met)} criteri{"on" if len(met) == 1 else "a"} · '
                 f'same rules for every role</span></div></div><div class="met" style="--n:{min(len(met), 5) or 1}">{tiles}</div>'
+                + limits
             )
 
     with st.container(key="pan-e"):
