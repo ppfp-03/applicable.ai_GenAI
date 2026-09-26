@@ -38,6 +38,13 @@ def work_auth_evidence_id(country_code: str) -> str:
     return f"ev-q-work-auth-{country_code}"
 
 
+def _document_text(heading: str, evidence: list[dict[str, Any]], document_id: str) -> str:
+    """Synthetic document text that contains every quote citing it."""
+
+    quotes = [row["quote"] for row in evidence if row["document_id"] == document_id]
+    return "\n".join([heading, *quotes])
+
+
 def _answer_type(value: Any) -> str:
     if isinstance(value, bool):
         return "boolean"
@@ -162,7 +169,7 @@ def candidate(
                     "q-1": {
                         "document_id": "q-1",
                         "kind": "questionnaire",
-                        "text": "Synthetic questionnaire.",
+                        "text": _document_text("Synthetic questionnaire.", evidence, "q-1"),
                         "content_hash": "h-q",
                         "source_ref": "synthetic",
                     },
@@ -259,7 +266,7 @@ def job(
             "description": {
                 "document_id": "job-doc",
                 "kind": "job",
-                "text": "Synthetic posting.",
+                "text": _document_text("Synthetic posting.", evidence, "job-doc"),
                 "content_hash": "h-job",
                 "source_ref": "synthetic",
             },

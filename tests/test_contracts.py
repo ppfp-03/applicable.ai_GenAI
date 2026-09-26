@@ -25,6 +25,7 @@ from oi.contracts import (
     SourceManifestEntry,
     UserDeclarations,
     WorkAuthorizationDeclaration,
+    quote_occurs_in,
 )
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "contracts" / "v0.2.0-draft"
@@ -1119,4 +1120,134 @@ def test_snapshot_rejects_job_evidence_document_missing_from_registry() -> None:
     payload["jobs"][0]["evidence"][0]["document_id"] = "job-doc-unknown"
 
     with pytest.raises(ValidationError):
+        JobSnapshot(**payload)
+
+
+# --- evidence quote containment (T-019 / FR-06) --------------------------
+
+
+@pytest.mark.parametrize(
+    ("quote", "text"),
+    [
+        ("financial models", "Built financial models in Excel"),
+        ("financial models", "Built financial\nmodels in Excel"),
+        ("financial   models", "Built financial models in Excel"),
+        ("\tfinancial models \n", "Built financial \t\n  models in Excel"),
+    ],
+)
+def test_quote_occurs_in_forgives_whitespace_only(quote: str, text: str) -> None:
+    assert quote_occurs_in(quote, text)
+
+
+@pytest.mark.parametrize(
+    "quote",
+    [
+        "Financial models",
+        "financial-models",
+        "financialmodels",
+        "financial models.",
+        "financial model in",
+        " \n\t ",
+    ],
+)
+def test_quote_occurs_in_rejects_any_other_difference(quote: str) -> None:
+    assert not quote_occurs_in(quote, "Built financial models in Excel")
+
+
+def test_candidate_profile_accepts_exact_quote() -> None:
+    profile = CandidateProfile(**make_candidate_profile())
+
+    assert profile.provenance.evidence[0].quote == (
+        "Built three-statement financial models in Excel"
+    )
+
+
+def test_candidate_profile_accepts_whitespace_equivalent_quote() -> None:
+    payload = make_candidate_profile()
+    payload["provenance"]["evidence"][0]["quote"] = (
+        "Built  three-statement\nfinancial models\tin Excel"
+    )
+
+    CandidateProfile(**payload)
+
+
+def test_candidate_profile_rejects_quote_absent_from_document() -> None:
+    payload = make_candidate_profile()
+    payload["provenance"]["evidence"][0]["quote"] = "Led a team of twenty analysts"
+
+    with pytest.raises(ValidationError, match="quote is not found"):
+        CandidateProfile(**payload)
+
+
+def test_candidate_profile_rejects_quote_found_only_in_another_document() -> None:
+    payload = make_candidate_profile()
+    # The CV quote exists in cv-001, not in the questionnaire it now cites.
+    payload["provenance"]["evidence"][0]["document_id"] = "questionnaire-001"
+
+    with pytest.raises(ValidationError, match="quote is not found"):
+        CandidateProfile(**payload)
+
+
+def test_candidate_profile_still_rejects_unresolved_evidence_document() -> None:
+    payload = make_candidate_profile()
+    payload["provenance"]["evidence"][0]["document_id"] = "cv-unknown"
+
+    with pytest.raises(ValidationError, match="unknown document"):
+        CandidateProfile(**payload)
+
+
+def test_job_record_fixture_quotes_are_accepted() -> None:
+    JobRecord(**load_fixture("job_record.json"))
+
+
+def test_job_record_accepts_whitespace_equivalent_quote() -> None:
+    payload = load_fixture("job_record.json")
+    payload["evidence"][0]["quote"] = "Location:\n Amsterdam,   Netherlands"
+
+    JobRecord(**payload)
+
+
+def test_job_record_rejects_quote_absent_from_embedded_document() -> None:
+    payload = load_fixture("job_record.json")
+    payload["evidence"][0]["quote"] = "Location: Rotterdam, Netherlands"
+
+    with pytest.raises(ValidationError, match="quote is not found"):
+        JobRecord(**payload)
+
+
+def test_job_record_rejects_quote_found_only_in_another_embedded_document() -> None:
+    payload = load_fixture("job_record.json")
+    payload["evidence"][0]["document_id"] = "job-ats-001"
+
+    with pytest.raises(ValidationError, match="quote is not found"):
+        JobRecord(**payload)
+
+
+def test_snapshot_fixture_quotes_are_accepted() -> None:
+    JobSnapshot(**make_job_snapshot())
+
+
+def test_snapshot_rejects_quote_absent_from_registered_document() -> None:
+    payload = make_job_snapshot()
+    payload["jobs"][0]["evidence"][0]["quote"] = "Location: Rotterdam, Netherlands"
+
+    with pytest.raises(ValidationError, match="quote is not found"):
+        JobSnapshot(**payload)
+
+
+def test_snapshot_rejects_quote_found_only_in_another_registered_document() -> None:
+    payload = make_job_snapshot()
+    # job-doc-002 is registered but not embedded in this job, so only the
+    # snapshot registry can check the quote against it.
+    payload["jobs"][0]["evidence"][0]["document_id"] = "job-doc-002"
+
+    with pytest.raises(ValidationError, match="quote is not found"):
+        JobSnapshot(**payload)
+
+
+def test_snapshot_still_rejects_unresolved_evidence_document() -> None:
+    payload = make_job_snapshot()
+    payload["jobs"][0]["evidence"][0]["document_id"] = "job-doc-unknown"
+
+    with pytest.raises(ValidationError, match="unknown document"):
         JobSnapshot(**payload)

@@ -77,6 +77,45 @@ class EvidenceRef(ContractModel):
     field_path: str = Field(min_length=1)
 
 
+def _collapse_whitespace(value: str) -> str:
+    return " ".join(value.split())
+
+
+def quote_occurs_in(quote: str, text: str) -> bool:
+    """Whether `quote` is found in `text` under the evidence whitespace rule.
+
+    Only whitespace is forgiven: every run of whitespace counts as a single
+    space and leading/trailing whitespace is ignored, as PDF text breaks lines
+    mid-sentence. Every other character, including case and punctuation, must
+    match exactly. A quote that is blank after normalization is never found.
+    """
+
+    normalized_quote = _collapse_whitespace(quote)
+    return bool(normalized_quote) and normalized_quote in _collapse_whitespace(text)
+
+
+def validate_evidence_quotes(
+    evidence: list[EvidenceRef],
+    documents: dict[str, SourceDocument],
+    location: str,
+) -> None:
+    """Every quote must occur in the document its evidence references.
+
+    Only references that resolve in `documents` are checked here; resolution
+    itself stays with each aggregate's own reference validation.
+    """
+
+    for reference in evidence:
+        document = documents.get(reference.document_id)
+        if document is not None and not quote_occurs_in(
+            reference.quote, document.text
+        ):
+            raise ValueError(
+                f"{location}evidence '{reference.evidence_id}' quote is not "
+                f"found in document '{reference.document_id}'"
+            )
+
+
 class SupportedText(ContractModel):
     """Text value together with the evidence that supports it."""
 
@@ -254,6 +293,14 @@ class JobRecord(ContractModel):
 
         if self.last_seen_at < self.first_seen_at:
             raise ValueError("last_seen_at cannot be before first_seen_at")
+
+        # Evidence may also cite documents held only by a snapshot registry;
+        # those are checked by JobSnapshot, which can resolve them.
+        embedded = {
+            document.document_id: document
+            for document in (self.description, *self.source_documents)
+        }
+        validate_evidence_quotes(self.evidence, embedded, "")
 
         return self
 
@@ -547,6 +594,8 @@ class CandidateProvenance(ContractModel):
                     f"evidence '{reference.evidence_id}' references unknown "
                     f"document '{reference.document_id}'"
                 )
+
+        validate_evidence_quotes(self.evidence, self.documents, "")
 
         sourced_ids = (
             ("questionnaire", self.questionnaire_document_ids),
@@ -849,6 +898,10 @@ class JobSnapshot(ContractModel):
                         f"job '{job.job_id}' evidence '{reference.evidence_id}' "
                         f"references unknown document '{reference.document_id}'"
                     )
+
+            validate_evidence_quotes(
+                job.evidence, self.documents, f"job '{job.job_id}' "
+            )
 
         return self
 

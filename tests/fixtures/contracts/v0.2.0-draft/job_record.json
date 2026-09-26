@@ -9,7 +9,7 @@
   "description": {
     "document_id": "job-doc-001",
     "kind": "job",
-    "text": "Synthetic job description text for the shared contract fixture.",
+    "text": "Synthetic job description text for the shared contract fixture.\nLocation: Amsterdam, Netherlands\nYou will build and maintain financial models\nZero to one year of professional experience\nBachelor degree in economics, finance or management\nJunior Financial Analyst\nApplicants must hold a valid work permit for the Netherlands\nStrong interest in capital markets is a plus",
     "content_hash": "hash-job-doc-001",
     "source_ref": "synthetic_fixture"
   },
