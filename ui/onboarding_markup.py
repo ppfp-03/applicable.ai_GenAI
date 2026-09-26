@@ -14,7 +14,7 @@ S_1 = """<div class="u-wrap"><div class="u-col">
 <div class="w-sub">We’ll read it and build your candidate profile. You review every field before anything is used.</div>
 <div class="u-drop"><div class="u-doc"><svg width="24" height="24" viewBox="0 0 16 16"><path d="M8 10.5V3M5 6l3-3 3 3" stroke="#0071E3" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 10.5v2c0 .6.4 1 1 1h9c.6 0 1-.4 1-1v-2" stroke="#0071E3" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
 <div class="u-dt">Drop your CV here</div><div class="u-ds">PDF · up to 10 MB</div><div class="btn" style="margin-top:16px">Choose file</div></div>
-<div class="w-card u-file"><span class="u-pdf">PDF</span><div style="flex:1"><div style="display:flex;justify-content:space-between"><span class="u-fn">Synthetic_CV_Giulia_Rossi.pdf</span><span class="u-fm">Reading text · 64%</span></div><div class="u-fm">184 KB · 2 pages</div><div class="u-pb"><i></i></div></div></div>
+<!-- CV_FILE_CARD -->
 <div class="u-tr">
 <div class="w-card u-t"><div class="ic"><svg viewBox="0 0 16 16"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg></div><b>Private by default</b><span>Used only to match you with roles.</span></div>
 <div class="w-card u-t"><div class="ic"><svg viewBox="0 0 16 16"><path d="M3 8.5 6.3 12 13 4.5"/></svg></div><b>You confirm everything</b><span>Nothing is used until you review it.</span></div>
@@ -182,4 +182,3 @@ S_7 = """<div class="f7"><div class="f7-top"><div><div class="w-h1">Your priorit
 <div class="dt"><span class="cal u"><i>OCT</i><b>3</b></span><div><div class="k u">Closes in 9 days</div><small>Apply this week</small></div></div>
 <div class="fs"><span class="d" style="background:#30A14E"></span><div>5 days ago<small>Verified today</small></div></div>
 <div class="btn">Open</div></div></div></div>"""
-

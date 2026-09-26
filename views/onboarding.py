@@ -195,16 +195,18 @@ def step1(reading: tuple[str, int] | None = None) -> str:
     """The upload screen. Its file card shows the CV being read (`reading`) or the one read."""
     body = M.S_1
     shown = reading or S["ob_file"]
+    card = ""
     if shown:
         name, size = shown
         status, bar = ("Reading your CV…", '<div class="u-pb run"><i></i></div>') if reading else (
             "Read · 100%", '<div class="u-pb"><i style="width:100%"></i></div>')
-        body = swap(body, re.escape("Synthetic_CV_Giulia_Rossi.pdf"), esc(name))
-        body = swap(body, re.escape("Reading text · 64%"), status)
-        body = swap(body, re.escape("184 KB · 2 pages"), f"{max(1, round(size / 1024))} KB")
-        body = swap(body, re.escape('<div class="u-pb"><i></i></div>'), bar)
-    if store.extraction_error() and not reading:  # the error takes the file card's place
-        body = body.replace('<div class="w-card u-file">', '<div class="w-card u-file" style="visibility:hidden">')
+        card = (
+            '<div class="w-card u-file"><span class="u-pdf">PDF</span><div style="flex:1">'
+            f'<div style="display:flex;justify-content:space-between"><span class="u-fn">{esc(name)}</span>'
+            f'<span class="u-fm">{status}</span></div><div class="u-fm">{max(1, round(size / 1024))} KB</div>{bar}'
+            '</div></div>'
+        )
+    body = body.replace("<!-- CV_FILE_CARD -->", card)
     return body
 
 

@@ -58,6 +58,17 @@ def upload(pdf_bytes: bytes) -> AppTest:
     return at
 
 
+def test_a_new_account_does_not_show_the_demo_cv() -> None:
+    at = AppTest.from_file(ONBOARDING, default_timeout=30)
+    at.session_state["ob_step"] = "1"
+    at.run()
+
+    page = "".join(m.value for m in at.markdown)
+    assert "Synthetic_CV_Giulia_Rossi.pdf" not in page
+    assert "184 KB · 2 pages" not in page
+    assert "Reading text · 64%" not in page
+
+
 def test_a_text_pdf_is_read_into_a_profile(model, ocr_used) -> None:
     at = upload(build_text_pdf("Skills: Python"))
 
