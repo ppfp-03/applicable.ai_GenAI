@@ -225,11 +225,11 @@
      "vals": [["China", "Not stated"], ["Singapore", "Not stated"]], "tag": "CV", "qs": "Page 2 · Personal details · line 14",
      "q": "Nationality: <mark>Italian (EU citizen)</mark>. Currently based in Shanghai on an <mark>X1 study visa</mark>, valid until Jul 2027.", "note": "Your CV doesn’t state sponsorship needs, and we don’t infer them from nationality or visa type. Only your own answer for each country counts.",
      "chk": [[0, "Explicit sponsorship statement found", "Missing"], [1, "Nothing inferred from citizenship or visa", "Pass"]], "sig": [["u", "Needs your answer"], ["", "Not inferred"]]},
-    {"id": "decl", "icon": "decl", "name": "Your declarations", "status": "pend", "cta": "Sign declarations",
-     "v1": "Accuracy attestation · Data processing consent", "v2": "Required before your profile is used for matching", "ev": "<b>Your form</b> · unsigned",
-     "vals": [["Accuracy attestation", "Not signed"], ["Data processing consent", "Not signed"]], "tag": "YOU", "qs": "Declarations form",
-     "q": "“I confirm that the information in my profile is accurate, and I agree that Applicable.ai processes it to check and rank opportunities.”", "note": "Nothing is sent to employers.",
-     "chk": [[0, "Accuracy attestation signed", "Missing"], [0, "Data processing consent given", "Missing"]], "sig": [["", "Required"], ["", "One tap"]]}
+    {"id": "decl", "icon": "decl", "name": "Data processing consent", "status": "pend", "cta": "Give consent",
+     "v1": "Data processing consent", "v2": "Required before anything else in your profile", "ev": "<b>Your form</b> · not given",
+     "vals": [["Data processing consent", "Not given"]], "tag": "YOU", "qs": "Consent form",
+     "q": "“I agree that Applicable.ai processes my CV and profile to check and rank opportunities.”", "note": "Uploading your CV gives this consent. Nothing is sent to employers.",
+     "chk": [[0, "Data processing consent given", "Missing"]], "sig": [["", "Required"], ["", "One tap"]]}
   ],
   "value_options": {
     "Technical": ["Python, SQL, modelling", "Python, SQL", "SQL, modelling"],
@@ -245,9 +245,7 @@
     "Citizenship": ["Italian"],
     "Visa (China)": ["X1 study visa", "Not stated"],
     "China": ["Not stated", "Required", "Not required"],
-    "Singapore": ["Not stated", "Required", "Not required"],
-    "Accuracy attestation": ["Not signed", "Signed"],
-    "Data processing consent": ["Not signed", "Given"]
+    "Singapore": ["Not stated", "Required", "Not required"]
   },
   "eligibility_copy": {
     "language": {"kind": "Language", "name": "Mandarin level", "act": "Add HSK certificate", "btn": "Add certificate",

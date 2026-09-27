@@ -56,3 +56,9 @@
 .st-key-pan-p{overflow:hidden}
 .st-key-pan-p:has(.st-key-uk-link) .st-key-note textarea{height:34px!important;min-height:34px!important;padding:8px 14px}
 .st-key-uk-link{margin-top:-4px}
+
+/* Data processing consent: until it is given, only its section opens. */
+.row.lk{opacity:.45;cursor:not-allowed}
+.consent-gate{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 14px;border-radius:12px;background:var(--redBg);font-size:12.5px;color:var(--t1)}
+.consent-gate i{width:8px;height:8px;border-radius:50%;background:var(--red);flex:none}
+.consent-gate b{font-weight:600}

@@ -9,6 +9,9 @@ element at the position it has on the mockup's stage. The ranking shown is
 the real one: the shortlist is ranked from the roles known on the day of
 onboarding with the UK question unanswered, and the answer given in step 6
 is saved and recomputes everything.
+
+Uploading the CV in step 1 gives the data processing consent, as the note
+under the drop zone says. Matching (step 4 on) does not start without it.
 """
 
 from __future__ import annotations
@@ -100,13 +103,32 @@ S.setdefault("ob_taught", False)  # the Explore practice card was swiped
 #: later step opens.
 GATE = KEYS.index("2")
 NEEDS_WORK_AUTH = "Add your work authorization and sponsorship in Edit profile to continue."
+#: The data processing consent, given by uploading a CV, must be in place
+#: before matching starts in step 4.
+MATCHING = KEYS.index("4")
+NEEDS_CONSENT = "Upload your CV in step 1 to continue: uploading it gives your consent to data processing."
+#: Shown under "Choose file": pressing it and uploading gives the consent.
+CONSENT_NOTE = (
+    '<div class="u-consent">By uploading your CV you consent to Applicable.ai processing your data '
+    "to check and rank opportunities. Nothing is sent to employers.</div>"
+)
 #: Shown when "Confirm profile" is pressed with a required card still empty.
 MISSING_INFO = "Complete the missing information to continue: work authorization and sponsorship."
 
 
+def refusal(k: str) -> str | None:
+    """Why step `k` cannot open yet: past step 2 without the declaration, or
+    at matching without the consent. None when it can."""
+    if KEYS.index(k) > GATE and not store.work_auth_complete():
+        return NEEDS_WORK_AUTH
+    if KEYS.index(k) >= MATCHING and not store.consent_given():
+        return NEEDS_CONSENT
+    return None
+
+
 def blocked(k: str) -> bool:
-    """Whether step `k` lies past step 2 while the declaration is missing."""
-    return KEYS.index(k) > GATE and not store.work_auth_complete()
+    """Whether step `k` cannot open yet (see refusal)."""
+    return refusal(k) is not None
 
 
 def uk_declared() -> bool:
@@ -123,7 +145,8 @@ def resolve_step(k: str) -> str:
 qs = st.query_params.get("step")
 if qs in KEYS and S.get("_ob_qs") != qs:
     S["_ob_qs"] = qs
-    S["ob_step"] = "2" if blocked(qs) else resolve_step(qs)
+    why = refusal(qs)
+    S["ob_step"] = resolve_step(qs) if why is None else "2" if why == NEEDS_WORK_AUTH else "1"
 
 step = S["ob_step"]
 idx = KEYS.index(step)
@@ -139,8 +162,8 @@ def finish() -> None:
 
 
 def go(k: str) -> None:
-    if blocked(k):
-        S["ob_notice"] = NEEDS_WORK_AUTH
+    if why := refusal(k):
+        S["ob_notice"] = why
         return
     S["ob_step"] = k = resolve_step(k)
     if k == "5":
@@ -221,6 +244,7 @@ def step1(reading: tuple[str, int] | None = None) -> str:
             f'<span class="u-fm">{status}</span></div><div class="u-fm">{max(1, round(size / 1024))} KB</div>{bar}'
             '</div></div>'
         )
+    body = body.replace("Choose file</div>", f"Choose file</div>{CONSENT_NOTE}", 1)
     body = body.replace("<!-- CV_FILE_CARD -->", card)
     return body
 
@@ -1409,6 +1433,7 @@ with st.container(key="obody"):
             status = st.empty()
             if up is not None and S["ob_cv"] != up.file_id:
                 S["ob_cv"] = up.file_id
+                store.give_consent()  # uploading is consenting, as the note says: before any reading
                 draw((up.name, up.size))
                 read_cv(up.getvalue())
                 S["ob_file"] = (up.name, up.size) if store.candidate() else None
@@ -1510,6 +1535,8 @@ if step == "3b" and not explored():
 unweighted = step == "3a" and not any(weight(r) for r in S["ob_prefs"])
 if unweighted:
     info = "<b>Step 3 of 7</b> · Mark at least one preference to continue"
+if step == "3a" and not unweighted and not store.consent_given():
+    info = f"<b>Step 3 of 7</b> · {NEEDS_CONSENT}"
 gated = step == "2" and not store.work_auth_complete()
 if gated:
     info = f"<b>Step 2 of 7</b> · {NEEDS_WORK_AUTH}"

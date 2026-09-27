@@ -170,6 +170,31 @@ def init() -> None:
     st.session_state.setdefault(EXTRACTION_ERROR, None)
     st.session_state.setdefault(SIMULATED, False)
     st.session_state.setdefault(WORK_AUTH, None)
+    st.session_state.setdefault(CONSENT, False)
+
+
+# ───────────────────────── Data processing consent ─────────────────────────
+#
+# Given by uploading a CV in onboarding step 1, or in the Profile's consent
+# section. Nothing is matched, and no other profile section opens, before it.
+
+CONSENT = "data_consent"
+#: The profile section that holds the consent, and its one value.
+CONSENT_SECTION = "decl"
+CONSENT_LABEL = "Data processing consent"
+
+
+def consent_given() -> bool:
+    """Whether the user has given their data processing consent."""
+    return st.session_state.get(CONSENT, False)
+
+
+def give_consent() -> None:
+    """Record the consent, and show it as given in the Profile's section."""
+    st.session_state[CONSENT] = True
+    if SECTIONS in st.session_state:  # the onboarding page alone does not run init()
+        st.session_state[SECTIONS][CONSENT_SECTION] = "ok"
+        st.session_state[VALUES][CONSENT_SECTION][CONSENT_LABEL] = "Given"
 
 
 # ───────────────────────── Access (demo only) ─────────────────────────

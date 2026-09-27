@@ -7,6 +7,10 @@
 [class*="st-key-dot-"] button:hover{background:rgba(0,0,0,.3)}
 [class*="st-key-dot-on-"] button,[class*="st-key-dot-on-"] button:hover{width:20px;background:var(--t1)}
 .st-key-ib-prev button,.st-key-ib-next button{width:34px;height:34px;min-height:34px}
+/* The "?" that opens the intro guide again (ui/home_guide.py). */
+.st-key-ib-help{margin-left:6px}
+.st-key-ib-help button{width:34px;height:34px;min-height:34px;font-size:15px;font-weight:650;color:var(--t2)}
+.st-key-ib-help button:hover{color:var(--blue)}
 
 /* Carousel */
 .st-key-car{position:relative;height:318px;margin-top:16px;touch-action:pan-y;cursor:grab}

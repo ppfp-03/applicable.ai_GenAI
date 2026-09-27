@@ -715,3 +715,6 @@
 .p-link{font-weight:600;color:var(--t1);text-decoration:underline;text-decoration-color:rgba(0,0,0,.28);text-underline-offset:2px;cursor:pointer}
 .stApp:has(.st-key-oo-wa-link button:hover) .p-link.wa-link,
 .stApp:has(.st-key-oo-sp-link button:hover) .p-link.sp-link{text-decoration-color:currentColor;color:#000}
+
+/* Step 1: the consent note under "Choose file" (uploading gives the consent). */
+.u-consent{max-width:440px;margin-top:14px;font-size:11.5px;line-height:16px;color:var(--t3);text-align:center}

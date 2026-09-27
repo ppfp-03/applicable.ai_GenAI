@@ -357,6 +357,7 @@ def at_step(step, authorized=None, saved=None):
     at = AppTest.from_file(ONBOARDING, default_timeout=30)
     at.session_state["ob_step"] = "2"
     at.session_state[store.ANSWERS] = {"uk_work": None}
+    at.session_state[store.CONSENT] = True  # given by uploading the CV in step 1
     if saved is not None:
         at.session_state[store.WORK_AUTH], uk = saved
         at.session_state[store.ANSWERS] = {"uk_work": uk}

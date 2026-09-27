@@ -5,6 +5,9 @@ from and the deterministic checks that ran on them. The user confirms or
 corrects each; only when every section is confirmed does the profile go to
 ranking. Nothing is inferred silently: an inferred value is marked, and a
 missing one says "Not stated in your CV".
+
+The data processing consent comes first: until it is given, the consent
+section is the only one that opens.
 """
 
 from __future__ import annotations
@@ -24,6 +27,11 @@ values = st.session_state[store.VALUES]
 sections = d.sections
 CUR = "profile_cur"
 st.session_state.setdefault(CUR, next((i for i, s in enumerate(sections) if s.get("focus_first")), 0))
+CONSENT_AT = next(i for i, s in enumerate(sections) if s["id"] == store.CONSENT_SECTION)
+consent = store.consent_given()
+if not consent:
+    st.session_state[CUR] = CONSENT_AT
+NEEDS_CONSENT = "Give your data processing consent first"
 left = [s for s in sections if status[s["id"]] != "ok"]
 CHIP = {"ok": ("g", "Confirmed"), "rev": ("u", "Needs review"), "pend": ("u", "Pending")}
 
@@ -36,8 +44,8 @@ def chip(st_: str) -> str:
 def confirm(i: int) -> None:
     s = sections[i]
     status[s["id"]] = "ok"
-    if s["id"] == "decl":
-        values["decl"] = {"Accuracy attestation": "Signed", "Data processing consent": "Given"}
+    if s["id"] == store.CONSENT_SECTION:
+        store.give_consent()
     note = st.session_state.get(f"note-{s['id']}", "").strip()
     if note:
         st.session_state[store.NOTES].setdefault(s["id"], []).append(note)
@@ -90,18 +98,24 @@ with st.container(key="pf-main"):
             f'tap a section to see the evidence</span></div><span class="chip {"u" if n else "g"}">'
             f'{f"{n} to review" if n else "All confirmed"}</span></div>'
         )
+        if not consent:
+            html(
+                f'<div class="consent-gate" role="status"><i></i><span><b>{NEEDS_CONSENT}.</b> '
+                "The other sections open once you agree to how we process your CV.</span></div>"
+            )
         with st.container(key="rows"):
             for i, s in enumerate(sections):
                 sel = i == cur
+                locked = not consent and i != CONSENT_AT
                 hit(
                     f"sec-{i}",
-                    f'<div class="row tile{" sel" if sel else ""}"><span class="ico">{glyph(s["icon"], "#0071E3" if sel else None)}</span>'
+                    f'<div class="row tile{" sel" if sel else ""}{" lk" if locked else ""}"><span class="ico">{glyph(s["icon"], "#0071E3" if sel else None)}</span>'
                     f'<div class="nm">{esc(s["name"])}</div><div style="min-width:0"><div class="v1">{esc(s["v1"])}</div>'
                     f'<div class="v2">{esc(s["v2"])}</div></div><div class="ev">{s["ev"]}</div>'
                     f'<div class="stc">{chip(status[s["id"]])}</div></div>',
                     f"Show {s['name']}",
-                    on_click=st.session_state.__setitem__,
-                    args=(CUR, i),
+                    on_click=st.toast if locked else st.session_state.__setitem__,
+                    args=(NEEDS_CONSENT,) if locked else (CUR, i),
                 )
         html(
             '<div class="pfoot"><b>Demo profile</b> · every value is linked to a page and line '
@@ -161,7 +175,8 @@ with st.container(key="pf-main"):
                 label_visibility="collapsed",
             )
         with st.container(key="pf-foot"):
-            if st.button("Mark as incorrect", key="bad"):
+            # Consent is given or not: there is nothing to correct.
+            if sid != store.CONSENT_SECTION and st.button("Mark as incorrect", key="bad"):
                 status[sid] = "rev"
                 st.toast("Correct the values above, then add a note")
             ok = status[sid] == "ok"

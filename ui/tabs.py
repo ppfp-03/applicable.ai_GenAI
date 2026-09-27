@@ -90,6 +90,7 @@ def host(front: str) -> None:
     finally:
         st.session_state[_RUNNING] = None
 
-    from ui import tour  # local: tour imports this module
+    from ui import home_guide, tour  # local: tour imports this module
 
     tour.render(shown)
+    home_guide.render(shown)

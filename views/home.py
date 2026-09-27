@@ -22,7 +22,7 @@ from pathlib import Path
 import streamlit as st
 
 from core import clock, store
-from ui import parts, shell, tabs
+from ui import home_guide, parts, shell, tabs
 from ui.html import CK, NEXT, PREV, WN, esc, html, logo, md_icon
 from ui.theme import page_css
 
@@ -100,6 +100,7 @@ with shell.header(
             st.button(" ", key=f"dot-{'on-' if i == cur else ''}{i}", on_click=go, args=(i,))
     st.button(md_icon(PREV, "Previous"), key="ib-prev", on_click=go, args=(cur - 1,))
     st.button(md_icon(NEXT, "Next"), key="ib-next", on_click=go, args=(cur + 1,))
+    st.button("?", key="ib-help", help="What is this page for?", on_click=home_guide.reopen)
 
 
 # ───────────────────────── Carousel ─────────────────────────
