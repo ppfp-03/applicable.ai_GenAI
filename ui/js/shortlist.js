@@ -26,10 +26,12 @@
   const offset = a => W * (a - SHRINK * a * a / 2) + GAP * a;
   const STEP = offset(1);    // centre to the next card
 
-  const S = { p: 0, n: 0, key: '', raf: 0, drag: null, wheel: null, swallow: false };
+  const S = { p: 0, to: null, n: 0, key: '', raf: 0, drag: null, wheel: null, swallow: false };
   const row = () => document.querySelector('.cr-row[data-done]');
   const ratio = el => { const w = el.getBoundingClientRect().width; return w ? el.offsetWidth / w : 1; };
   const clamp = p => Math.max(0, Math.min(S.n - 1, p));
+  // Where a press steps from: the card being glided to, so quick presses add up.
+  const base = () => S.to === null ? Math.round(S.p) : S.to;
 
   // cubic-bezier(.2,.8,.2,1), the app's carousel easing.
   function ease(u) {
@@ -70,12 +72,13 @@
     to = clamp(Math.round(to));
     cancelAnimationFrame(S.raf);
     const from = S.p, t0 = performance.now();
-    if (reduced || from === to) { S.p = to; place(to); return; }
+    if (reduced || from === to) { S.p = to; S.to = null; place(to); return; }
+    S.to = to;
     (function frame() {
       const u = Math.min(1, (performance.now() - t0) / DUR);
       S.p = from + (to - from) * ease(u);
       place(S.p);
-      if (u !== 1) S.raf = requestAnimationFrame(frame);
+      if (u !== 1) S.raf = requestAnimationFrame(frame); else S.to = null;
     })();
   }
 
@@ -89,7 +92,7 @@
     const cards = [...r.querySelectorAll('.cc')];
     const key = cards.map(c => c.querySelector('.cc-t') ? c.querySelector('.cc-t').textContent : '').join('|');
     S.n = cards.length;
-    cancelAnimationFrame(S.raf);
+    cancelAnimationFrame(S.raf); S.to = null;
     S.p = key === S.key ? clamp(Math.round(S.p)) : +r.dataset.cur || 0;
     S.key = key;
     place(S.p, 'transform .7s cubic-bezier(.2,.8,.2,1),opacity .7s,background-color .7s,box-shadow .7s');
@@ -110,7 +113,7 @@
     if (S.swallow) { stop(e); S.swallow = false; return; }
     if (!row()) return;
     const nav = e.target.closest('#cr-slots .cr-nav');
-    if (nav) { stop(e); go(Math.round(S.p) + (nav.classList.contains('next') ? 1 : -1)); return; }
+    if (nav) { stop(e); go(base() + (nav.classList.contains('next') ? 1 : -1)); return; }
     const hit = e.target.closest('.cr-row[data-done] .cc, #cr-slots .slot');
     if (hit) { stop(e); go(+hit.dataset.i); }
   }, true);
@@ -121,7 +124,7 @@
     if (e.target.closest && e.target.closest('input,textarea,select,[contenteditable="true"]')) return;
     if (document.querySelector('.st-key-guide')) return;  // the intro sheet is up (ui/guide.py)
     stop(e);
-    go(Math.round(S.p) + (e.key === 'ArrowRight' ? 1 : -1));
+    go(base() + (e.key === 'ArrowRight' ? 1 : -1));
   }, true);
 
   /* Pointer velocity over the last ~100 ms, in window px per ms. */
@@ -135,7 +138,7 @@
   window.addEventListener('pointerdown', e => {
     if (e.button !== 0) return;
     const r = e.target.closest('.cr-row[data-done]'); if (!r) return;
-    cancelAnimationFrame(S.raf);
+    cancelAnimationFrame(S.raf); S.to = null;
     S.drag = { x: e.clientX, y: e.clientY, p0: S.p, k: ratio(r), on: false, pts: [] };
     track(S.drag.pts, e);
   }, true);
@@ -179,7 +182,7 @@
     // The wheel at either end hands the scroll back to the page.
     if (!side && !S.wheel && ((delta < 0 && S.p <= 0) || (delta > 0 && S.p >= S.n - 1))) return;
     e.preventDefault();
-    cancelAnimationFrame(S.raf);
+    cancelAnimationFrame(S.raf); S.to = null;
     if (!S.wheel) S.wheel = { p0: Math.round(S.p), t: 0 };
     const raw = S.p + delta * ratio(r) / STEP, c = Math.max(-.2, Math.min(S.n - .8, raw));
     S.p = c;
