@@ -72,7 +72,7 @@ def test_a_step_pill_past_preferences_needs_the_consent() -> None:
 def test_a_step_link_to_matching_without_consent_lands_on_the_upload() -> None:
     at = AppTest.from_file(ONBOARDING, default_timeout=30)
     at.session_state[store.WORK_AUTH] = DECLARED
-    at.query_params["step"] = "5"
+    at.query_params["step"] = "4"
     at.run()
     assert not at.exception
     assert at.session_state["ob_step"] == "1"

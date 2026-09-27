@@ -5,7 +5,7 @@ Two layers, drawn over the mockup's stage without moving anything on it:
 - the intro sheet: a Liquid Glass panel shown the first time a step opens,
   saying what you'll do there, why it matters and how long it takes. Step 1's
   sheet is the journey map: the whole onboarding in three phases.
-- the guidance line: the footer's "Step N of 7 · …", which keeps the why in
+- the guidance line: the footer's "Step N of 6 · …", which keeps the why in
   one line once the sheet is closed. Its "?" button opens the sheet again.
 
 The copy only restates what the product already does. Nothing here decides
@@ -65,27 +65,20 @@ GUIDE = {
         "Only what you confirm here shapes your ranking",
     ),
     "4": Guide(
-        "We check every role",
-        "Watch each posting being read and checked against your profile.",
-        "Only roles you’re eligible for, or could be with one answer, get ranked, with the same rules for every role.",
-        "A few seconds",
-        "Same rules for every role · only eligible roles get ranked",
-    ),
-    "5": Guide(
         "Your shortlist takes shape",
         "Your top matches are checked one by one.",
         "Some of them need a single answer from you before they can be confirmed.",
         "About 20 seconds",
         "Some of your top matches need one answer",
     ),
-    "6": Guide(
+    "5": Guide(
         "One question",
         "Answer the one thing your CV doesn’t say.",
         "One answer updates one field of your profile and can unlock roles.",
         "About 10 seconds",
         "One answer updates one field",
     ),
-    "7": Guide(
+    "6": Guide(
         "Your ranking is ready",
         "See your roles ranked, each with its score.",
         "Open a role to see why it fits, or start your first application.",
@@ -98,7 +91,7 @@ GUIDE = {
 JOURNEY = [
     ("Your CV", ("1", "2"), "We read it, you check it"),
     ("What you enjoy", ("3b", "3a"), "Swipe, then confirm"),
-    ("Your shortlist", ("4", "5", "6", "7"), "Ranked and explained"),
+    ("Your shortlist", ("4", "5", "6"), "Ranked and explained"),
 ]
 JOURNEY_TIME = "About 4 minutes"
 

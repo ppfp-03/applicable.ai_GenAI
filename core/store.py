@@ -304,7 +304,7 @@ def uk() -> Optional[str]:
 
 
 def set_uk(choice: Optional[str]) -> None:
-    """Record the UK answer (step 6, the question page): set_work_answer for GB.
+    """Record the UK answer (step 5, the question page): set_work_answer for GB.
 
     The stored UK answer is kept in step with the declaration for a session
     without one; answers() reads it from the declaration otherwise.
@@ -362,7 +362,7 @@ def set_answer(key: str, value: Any) -> None:
 # never a declared country.
 #
 # It is the one session source of these facts: step 2, the UK question
-# (step 6, the question page) and the role page's country question all read
+# (step 5, the question page) and the role page's country question all read
 # and write it (answer_work_question, set_work_answer), and eligibility
 # reads every country in it (eligibility.declarations).
 
@@ -422,7 +422,7 @@ def work_auth_complete() -> bool:
 def set_work_auth(declaration: dict[str, list[str]]) -> None:
     """Record the declaration (see work_auth); lists left out are empty.
 
-    The UK part also answers the UK question, so step 6 and every screen
+    The UK part also answers the UK question, so step 5 and every screen
     start from it.
 
     Raises:
@@ -502,7 +502,7 @@ def _with_country(declaration: dict, country: str, facts: eligibility.Facts) -> 
 def uk_from_work_auth() -> Optional[str]:
     """The UK answer the declaration gives (eligibility.work_answer): "yes" or
     "no" only for a complete answer, "unsure" for anything partial ("None of
-    these" included), so step 6 still asks; None before a declaration."""
+    these" included), so step 5 still asks; None before a declaration."""
     decl = work_auth()
     if decl is None:
         return None

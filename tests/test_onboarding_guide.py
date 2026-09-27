@@ -73,7 +73,7 @@ def test_a_gate_still_speaks_before_the_guidance_line() -> None:
 
 
 def test_every_flow_step_has_a_guide_and_a_journey_phase() -> None:
-    steps = ["1", "2", "3b", "3a", "4", "5", "6", "7"]
+    steps = ["1", "2", "3b", "3a", "4", "5", "6"]
     assert set(guide.GUIDE) == set(steps)
     assert sorted(s for _, phase, _ in guide.JOURNEY for s in phase) == sorted(steps)
 
@@ -112,6 +112,6 @@ def test_after_practice_every_swipe_counts() -> None:
 
 
 def test_the_shortlist_waits_while_its_sheet_is_open() -> None:
-    at = open_step("5", ob_tick=0)
+    at = open_step("4", ob_tick=0)
     assert "guide-ok" in keys(at)
     assert at.session_state["ob_tick"] == 1  # drawn once, no timer behind the sheet

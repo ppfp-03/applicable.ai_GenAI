@@ -1,4 +1,4 @@
-"""Markup of the seven onboarding steps, taken verbatim from 00_Onboarding.html.
+"""Markup of the six onboarding steps, taken verbatim from 00_Onboarding.html.
 
 Generated once from the approved mockup so nothing is retyped by hand.
 views/onboarding.py fills the dynamic parts (counts, selections, the story
@@ -100,31 +100,7 @@ S_3B = """<div class="sw"><div class="sw-c">
 <div class="w-tip"><svg width="16" height="16" viewBox="0 0 16 16" style="flex:none;margin-top:1px"><path d="M8 2 13.5 4v3.8c0 3-2.3 5.3-5.5 6.2-3.2-.9-5.5-3.2-5.5-6.2V4z" stroke="#0071E3" stroke-width="1.5" fill="none"/><path d="M5.7 8.2 7.3 9.8 10.4 6.5" stroke="#0071E3" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg><div>This is for you, not employers. It adjusts your Preference fit only — you review it before it’s used.</div></div>
 </div></div>"""
 
-S_4 = """<div class="a4"><div class="a4-l">
-<div class="w-h1">Analyzing roles for you</div>
-<div class="w-sub">We read each job posting, check your eligibility, then rank what’s left. <b>About 20 seconds.</b></div>
-<div class="fun">
-<div class="f4"><div class="k">Roles in catalog<small>Updated today</small></div><div class="f4b"><i style="width:100%;background:#D1D1D6"></i></div><div class="n">1,284</div></div>
-<div class="f4"><div class="k">Match your preferences<small>Role type, location, dates</small></div><div class="f4b"><i style="width:24.3%;background:#AEAEB2"></i></div><div class="n">312</div></div>
-<div class="f4"><div class="k">Checked for eligibility<small>Mandatory requirements</small></div><div class="f4b"><i style="width:6.1%;background:#6E6E73"></i></div><div class="n">78</div></div>
-<div class="f4"><div class="k">Eligibility result<small>Fixed rules</small></div><div class="f4b" style="background:none"><i style="flex:38;background:#30A14E;border-radius:6px"></i><i style="flex:17;background:#E3A03A;border-radius:6px"></i><i style="flex:23;background:repeating-linear-gradient(135deg,#F3C9C5 0 3px,#FBEAE8 3px 6px);border-radius:6px"></i></div><div class="n">78</div></div>
-<div class="lg4"><span><i style="background:#30A14E"></i>38 eligible</span><span><i style="background:#E3A03A"></i>17 to verify</span><span><i style="background:#F3C9C5"></i>23 excluded · conflict</span></div>
-<div class="f4"><div class="k">Ranked for you<small>Eligible + to verify</small></div><div class="f4b"><i style="width:70.5%;background:var(--blue);border-radius:9px"></i></div><div class="n" style="color:var(--blue)">55</div></div>
-</div></div>
-<div class="a4-r"><div class="w-lab">Progress<span>Live</span></div>
-<div class="p4">
-<div class="p4-r"><span class="c" style="background:#30A14E"><svg width="10" height="10" viewBox="0 0 16 16"><path d="M3 8.5 6.3 12 13 4.5" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="t">Read job requirements</div><div class="s">AI extracts requirements from 312 postings</div></div><span class="tg w-b ne">AI</span></div>
-<div class="p4-r"><span class="c" style="background:#30A14E"><svg width="10" height="10" viewBox="0 0 16 16"><path d="M3 8.5 6.3 12 13 4.5" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="t">Sort into 8 fixed criteria</div><div class="s">Location, visa, degree, language…</div></div><span class="tg w-b ne">AI</span></div>
-<div class="p4-r"><span class="c" style="background:#30A14E"><svg width="10" height="10" viewBox="0 0 16 16"><path d="M3 8.5 6.3 12 13 4.5" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="t">Check eligibility</div><div class="s">78 roles · 23 conflicts removed</div></div><span class="tg w-b" style="color:var(--blue);background:var(--blueBg)">Rules</span></div>
-<div class="p4-r"><span class="spin"></span><div><div class="t">Rank 55 roles</div><div class="s">Profile, preference, urgency, freshness</div></div><span class="tg w-b" style="color:var(--blue);background:var(--blueBg)">Rules</span></div>
-</div>
-<div class="w-card" style="padding:16px 18px"><div class="w-lab">First results<span>Updating</span></div>
-<div style="display:flex;align-items:center;gap:12px"><span class="w-logo" style="background:#8E8E93;width:34px;height:34px">NE</span><div style="flex:1"><div style="font-size:13.5px;font-weight:600">Strategy Intern</div><div style="font-size:12px;color:var(--t2)">Nestella · Singapore</div></div><span style="font-size:22px;font-weight:700;letter-spacing:-0.03em">76</span></div>
-<div style="display:flex;align-items:center;gap:12px;margin-top:12px"><span class="w-logo" style="background:#AEAEB2;width:34px;height:34px">JP</span><div style="flex:1"><div style="font-size:13.5px;font-weight:600">Strategy Analyst Intern</div><div style="font-size:12px;color:var(--t2)">J.P. Morrow · Singapore</div></div><span style="font-size:22px;font-weight:700;letter-spacing:-0.03em">74</span></div></div>
-<div class="w-tip"><svg width="16" height="16" viewBox="0 0 16 16" style="flex:none;margin-top:1px"><path d="M8 2 13.5 4v3.8c0 3-2.3 5.3-5.5 6.2-3.2-.9-5.5-3.2-5.5-6.2V4z" stroke="#0071E3" stroke-width="1.5" fill="none"/><path d="M5.7 8.2 7.3 9.8 10.4 6.5" stroke="#0071E3" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg><div>AI only reads postings. Eligibility and ranking are decided by fixed rules — same inputs, same result.</div></div>
-</div></div>"""
-
-S_5 = """<div class="cr"><div class="cr-h"><div class="w-h1">Building your shortlist</div><div class="w-sub" id="cr-sub">Checking your top matches one by one · <b>1 of 5</b></div></div>
+S_4 = """<div class="cr"><div class="cr-h"><div class="w-h1">Building your shortlist</div><div class="w-sub" id="cr-sub">Checking your top matches one by one · <b>1 of 5</b></div></div>
 <div class="cr-row" id="cr-row"><div class="cc "><div class="cc-scan"><i></i></div><div class="cc-top"><span class="w-logo" style="background:#8E8E93;width:44px;height:44px">NE</span><div style="flex:1"><div class="cc-t">Strategy Intern</div><div class="cc-m">Nestella · Singapore · Onsite</div></div><span class="w-b ok"><i></i>Eligible</span></div>
 <div class="cc-sc"><b>76<small>/100</small></b><span style="font-size:12px;color:var(--amber);font-weight:600"></span></div><div class="cc-bar"><i style="flex:31.2;background:#0071E3"></i><i style="flex:20.5;background:#5AA2F0"></i><i style="flex:13.0;background:#A9CDF7"></i><i style="flex:11.2;background:#D6E7FB"></i><i style="flex:24.0"></i></div>
 <div class="cc-ck"><div><svg width="12" height="12" viewBox="0 0 16 16"><path d="M3 8.5 6.3 12 13 4.5" stroke="#248A3D" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg><span>Strategy internship</span></div><div><svg width="12" height="12" viewBox="0 0 16 16"><path d="M3 8.5 6.3 12 13 4.5" stroke="#248A3D" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg><span>Mandarin HSK 4</span></div></div><div class="cc-ft"><div class="cc-pill u">Closes in 9 days<small>3 Oct</small></div><div class="cc-pill">5 days ago<small>Verified today</small></div></div></div><div class="cc "><div class="cc-scan"><i></i></div><div class="cc-top"><span class="w-logo" style="background:#AEAEB2;width:44px;height:44px">JP</span><div style="flex:1"><div class="cc-t">Strategy Analyst Intern</div><div class="cc-m">J.P. Morrow · Singapore · Hybrid</div></div><span class="w-b ok"><i></i>Eligible</span></div>
@@ -138,7 +114,7 @@ S_5 = """<div class="cr"><div class="cr-h"><div class="w-h1">Building your short
 <div class="cc-ck"><div><svg width="12" height="12" viewBox="0 0 16 16"><path d="M3 8.5 6.3 12 13 4.5" stroke="#248A3D" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg><span>Fintech internship</span></div><div><svg width="12" height="12" viewBox="0 0 16 16"><path d="M3 8.5 6.3 12 13 4.5" stroke="#248A3D" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg><span>Based in Shanghai</span></div><div><svg width="12" height="12" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="#B25E09" stroke-width="1.6" fill="none"/><path d="M8 5v3.5M8 11h0" stroke="#B25E09" stroke-width="1.8" stroke-linecap="round"/></svg><span>Prefers CS degree</span></div></div><div class="cc-ft"><div class="cc-pill">Closes 20 Oct<small></small></div><div class="cc-pill">3 days ago<small>Verified today</small></div></div></div></div>
 <div class="slots" id="cr-slots"></div></div>"""
 
-S_6 = """<div class="c6"><div class="c6-col">
+S_5 = """<div class="c6"><div class="c6-col">
 <div class="c6-pr">1 question · about 10 seconds</div>
 <div class="w-h1">Can you work in the UK without visa sponsorship?</div>
 <div class="w-sub">It isn’t in your CV, and it’s the only thing still deciding <b>14 roles in London</b>.</div>
@@ -157,7 +133,7 @@ S_6 = """<div class="c6"><div class="c6-col">
 <div class="w-tip"><svg width="16" height="16" viewBox="0 0 16 16" style="flex:none;margin-top:1px"><path d="M8 2 13.5 4v3.8c0 3-2.3 5.3-5.5 6.2-3.2-.9-5.5-3.2-5.5-6.2V4z" stroke="#0071E3" stroke-width="1.5" fill="none"/><path d="M5.7 8.2 7.3 9.8 10.4 6.5" stroke="#0071E3" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg><div>Eligibility and ranking are recalculated by fixed rules from this one field.</div></div>
 </div>"""
 
-S_7 = """<div class="f7"><div class="f7-top"><div><div class="w-h1">Your priorities</div><div class="w-sub">Your answer unlocked 11 roles. <b>Start with Replai — it closes in 3 days.</b></div></div>
+S_6 = """<div class="f7"><div class="f7-top"><div><div class="w-h1">Your priorities</div><div class="w-sub">Your answer unlocked 11 roles. <b>Start with Replai — it closes in 3 days.</b></div></div>
 <div class="s5-sum"><div class="s5-k"><div class="l">Eligible</div><div class="v">49<small>+11</small></div></div><div class="s5-k"><div class="l">To verify</div><div class="v" style="color:var(--amber)">6</div></div><div class="s5-k"><div class="l">Excluded</div><div class="v" style="color:var(--t3)">23</div></div></div></div>
 <div class="f7-flt"><span class="segm"><span class="on">All 5</span><span>Closing this week · 2</span><span>New · 2</span></span>
 <div class="chg2"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M10.5 2.5l3 3L6 13H3v-3z" stroke="#6E6E73" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>Work authorization · UK <span style="color:var(--t3);text-decoration:line-through">Unknown</span> → <span class="w-b ok">Yes</span><span style="color:var(--t3);margin-left:8px">Recalculated 09:12</span></div></div>

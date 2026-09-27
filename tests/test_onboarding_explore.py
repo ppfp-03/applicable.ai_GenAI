@@ -190,13 +190,12 @@ def test_after_every_story_continue_opens_fine_tune_with_the_suggestions() -> No
         ("role_family", ["Product analytics"], "important"),
         ("role_family", ["Product management"], "important"),
         ("industry", ["Fintech"], "important"),
-        ("city", ["London", "Singapore", "Shanghai"], "important"),
         ("mode", ["Hybrid"], "nice"),
     ]
     page = page_of(at)
     for gone in ["Your ideal internship", "Describe it in your own words", "In 3 years I want to be"]:
         assert gone not in page
-    assert "Product analytics roles" in page and "Suggested by your swipes" in page
+    assert "Product analytics roles" in page and "Suggested by your swipes" not in page
 
 
 def fine_tune(verdicts=SWIPES) -> AppTest:
@@ -219,9 +218,9 @@ def test_nothing_counts_until_find_my_roles() -> None:
 
 def test_a_level_change_shows_in_the_live_preview() -> None:
     at = fine_tune()
-    at.button(key="oo-imp43").click().run()  # Hybrid work: Don't mind
+    at.button(key="oo-imp33").click().run()  # Hybrid work: Don't mind
 
-    assert at.session_state["ob_prefs"][4]["level"] == "none"
+    assert at.session_state["ob_prefs"][3]["level"] == "none"
     assert "Hybrid work<b>" not in page_of(at)  # no weight, no share in the bar
 
 
@@ -236,5 +235,30 @@ def test_fine_tune_cannot_be_confirmed_without_a_weighted_preference() -> None:
 
 def test_without_likes_fine_tune_offers_only_the_declared_rows() -> None:
     at = fine_tune(["l"] * 12)
-    assert [r["field"] for r in at.session_state["ob_prefs"]] == ["city", "mode"]
+    assert [r["field"] for r in at.session_state["ob_prefs"]] == ["mode"]
     assert "Like a few stories in Explore to get suggestions." in page_of(at)
+
+
+def test_undo_takes_the_last_verdict_back() -> None:
+    at, page = step3b()
+    assert "act sm undo" not in page  # nothing to take back yet
+    assert "oo-undo3b" not in [b.key for b in at.button]
+
+    at, _ = step3b(["r", "l", "r", "r", "u"])
+    at.button(key="oo-undo3b").click().run()
+    assert not at.exception
+    assert at.session_state["ob_swipes"] == ["r", "l", "r", "r"]
+    page = "".join(m.value for m in at.markdown)
+    assert "<b>Story 5 of 12</b>" in page  # its story is back on top, to be swiped again
+    assert esc(STORIES[4]["h"]) in page
+
+    swipe_buttons(at)["oo-swl"].click().run()
+    assert at.session_state["ob_swipes"] == ["r", "l", "r", "r", "l"]
+
+
+def test_undo_stays_once_every_story_has_a_verdict() -> None:
+    at, page = step3b(["r"] * 12)
+    assert "act sm undo" in page
+    at.button(key="oo-undo3b").click().run()
+    assert at.session_state["ob_swipes"] == ["r"] * 11
+    assert "<b>Story 12 of 12</b>" in "".join(m.value for m in at.markdown)

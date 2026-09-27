@@ -255,24 +255,6 @@
 
 
 
-.a4{flex:1;padding:32px 40px 48px;display:flex;gap:40px;align-items:center}
-.a4-l{flex:1;display:flex;flex-direction:column}
-.fun{margin-top:60px;display:flex;flex-direction:column;gap:38px}
-.f4{display:grid;grid-template-columns:210px 1fr 100px;align-items:center;gap:16px}
-.f4 .k{font-size:13px;font-weight:560}.f4 .k small{display:block;font-size:11.5px;color:var(--t3);font-weight:450;margin-top:2px}
-.f4 .f4b{height:50px;border-radius:9px;background:#F2F2F5;overflow:hidden;display:flex;gap:2px}
-.f4 .f4b i{display:block;height:100%}
-.f4 .n{font-size:22px;font-weight:680;letter-spacing:-0.025em;text-align:right;font-variant-numeric:tabular-nums}
-.a4-r{width:430px;display:flex;flex-direction:column;gap:14px}
-.p4{border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.p4-r{display:flex;align-items:center;gap:12px;padding:15px 16px;border-bottom:1px solid var(--line2)}
-.p4-r:last-child{border-bottom:0}
-.p4-r .c{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none}
-.p4-r .t{font-size:13px;font-weight:580}.p4-r .s{font-size:12px;color:var(--t2);margin-top:2px}
-.p4-r .tg{margin-left:auto}
-.spin{width:22px;height:22px;border-radius:50%;border:2.5px solid #D6E7FB;border-top-color:var(--blue)}
-.lg4{display:flex;gap:16px;font-size:12px;color:var(--t2);margin:-26px 0 0 226px}
-.lg4 span{display:flex;align-items:center;gap:6px}.lg4 i{width:9px;height:9px;border-radius:3px;display:block}
 
 
 
@@ -288,11 +270,13 @@
 .cr-h{text-align:center}.cr-h .w-sub{margin-top:6px}
 .cr-row{position:relative;width:100%;flex:1;min-height:520px;margin-top:10px}
 .cc{position:absolute;top:50%;left:50%;width:440px;border:1px solid var(--line);border-radius:22px;background:#fff;padding:24px 26px;display:flex;flex-direction:column}
-.cc.c0{transform:translate(-50%,-50%);box-shadow:0 14px 36px rgba(0,0,0,.09),0 1px 3px rgba(0,0,0,.05);z-index:3}
-.cc.l1{transform:translate(calc(-50% - 430px),-50%) scale(.84);opacity:.55;z-index:2}
-.cc.r1{transform:translate(calc(-50% + 430px),-50%) scale(.84);opacity:.55;z-index:2}
-.cc.l2{transform:translate(calc(-50% - 760px),-50%) scale(.7);opacity:.22}
-.cc.r2{transform:translate(calc(-50% + 760px),-50%) scale(.7);opacity:.3}
+/* Positions follow ui/js/shortlist.js: each card sits its neighbours' half-widths
+ * plus a gap away, so cards never overlap and none needs to be drawn over another. */
+.cc.c0{transform:translate(-50%,-50%);box-shadow:0 14px 36px rgba(0,0,0,.09),0 1px 3px rgba(0,0,0,.05)}
+.cc.l1{transform:translate(calc(-50% - 443px),-50%) scale(.85);opacity:.55}
+.cc.r1{transform:translate(calc(-50% + 443px),-50%) scale(.85);opacity:.55}
+.cc.l2{transform:translate(calc(-50% - 820px),-50%) scale(.7);opacity:.25}
+.cc.r2{transform:translate(calc(-50% + 820px),-50%) scale(.7);opacity:.25}
 .cc-scan{height:3px;border-radius:2px;background:#EAF3FE;overflow:hidden;margin:-8px 0 16px}.cc-scan i{display:block;height:100%;width:72%;background:var(--blue);border-radius:2px}
 .cc-top{display:flex;align-items:center;gap:12px}
 .cc-top .w-logo{width:44px;height:44px;border-radius:11px;font-size:16px}
@@ -416,6 +400,9 @@
 .stamp[data-d="l"]{right:auto;left:22px;border-color:#AEAEB2;color:#6E6E73;transform:rotate(8deg)}
 .stamp[data-d="u"]{right:auto;left:50%;border-color:#AEAEB2;color:#6E6E73;transform:translateX(-50%)}
 .acts.off{visibility:hidden}
+/* Undo sits left of the three verdicts without moving them, and stays once they are hidden. */
+.acts{position:relative}
+.act.undo{position:absolute;right:100%;margin-right:22px;visibility:visible}
 .hist .e{color:var(--t3)}
 .sw-r{gap:12px}
 .stamp{transition:opacity .2s}.act{cursor:pointer}.act .o{transition:transform .15s}.act:hover .o{transform:scale(1.06)}
@@ -424,8 +411,8 @@
 .u-pb.run i{width:35%;animation:u-run 1.3s ease-in-out infinite}
 @keyframes u-run{from{transform:translateX(-100%)}to{transform:translateX(290%)}}
 .cc{transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .7s,box-shadow .7s}
-.cc.hl{transform:translate(calc(-50% - 1100px),-50%) scale(.6);opacity:0}
-.cc.hr{transform:translate(calc(-50% + 1100px),-50%) scale(.6);opacity:0}
+.cc.hl{transform:translate(calc(-50% - 1131px),-50%) scale(.55);opacity:0}
+.cc.hr{transform:translate(calc(-50% + 1131px),-50%) scale(.55);opacity:0}
 .cc .cc-scan{opacity:0}.cc.c0 .cc-scan{opacity:1}
 .cc.c0.run .cc-scan i{animation:scan 1.5s linear forwards}
 @keyframes scan{from{width:0}to{width:100%}}
@@ -460,7 +447,7 @@
 .w-foot .btn{height:40px;padding:0 22px;font-size:13.5px}
 .w-h1{font-size:30px;font-weight:700;letter-spacing:-0.035em}
 .w-sub{font-size:14px;margin-top:6px}
-.w-card,.set,.v3-tb,.p4,.mini,.v3-box,.v3-el,.v3-goal,.chg,.s5-k,.st6>div,.u-t,.cal{border:0;border-radius:18px;background:rgba(255,255,255,.8);box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05)}
+.w-card,.set,.v3-tb,.mini,.v3-box,.v3-el,.v3-goal,.chg,.s5-k,.st6>div,.u-t,.cal{border:0;border-radius:18px;background:rgba(255,255,255,.8);box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05)}
 .w-card{background:rgba(255,255,255,.8)}
 .w-chip{border:0;border-radius:999px;background:rgba(0,0,0,.045);padding:6px 12px;font-weight:560}
 .w-chip.on{background:var(--blue);color:#fff}
@@ -475,7 +462,7 @@
 .segm span.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08),0 0 0 .5px rgba(0,0,0,.05)}
 /* shared panels */
 .p-r,.v3-r2,.sw-r,.c6-r{margin-left:20px;border-radius:22px;background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.85);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 8px 28px rgba(28,40,64,.07),0 0 0 .5px rgba(0,0,0,.05);border-left:1px solid rgba(255,255,255,.85)}
-.p-l,.v3-l,.f7,.a4-l{border-radius:22px;background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.85);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 8px 28px rgba(28,40,64,.07),0 0 0 .5px rgba(0,0,0,.05)}
+.p-l,.v3-l,.f7{border-radius:22px;background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.85);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 8px 28px rgba(28,40,64,.07),0 0 0 .5px rgba(0,0,0,.05)}
 /* 1 upload */
 .u-col{width:760px;padding:40px 48px;border:0;border-radius:26px;background:rgba(255,255,255,.93);box-shadow:0 1px 0 #fff inset,0 20px 50px rgba(28,40,64,.12),0 0 0 .5px rgba(0,0,0,.06)}
 .u-drop{border:1.5px dashed #C7C7CC;border-radius:22px;background:rgba(0,0,0,.02);height:230px;margin-top:26px}
@@ -589,14 +576,7 @@
 .sw-r{padding:22px 24px}
 .bp .tr{background:rgba(0,0,0,.08)}
 .hist span{border-radius:999px;padding:4px 10px}
-/* 4 analysis */
-.a4{padding:0;gap:20px;align-items:stretch}
-.a4-l{padding:28px 32px;justify-content:center}
-.fun{margin-top:44px;gap:34px}
-.f4 .f4b{border-radius:12px;background:rgba(0,0,0,.05)}
-.a4-r{justify-content:center;border-radius:22px;padding:24px 26px;background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.85);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 8px 28px rgba(28,40,64,.07),0 0 0 .5px rgba(0,0,0,.05)}
-.p4-r{border-bottom:1px solid rgba(0,0,0,.05)}
-/* 5 shortlist carousel */
+/* 4 shortlist carousel */
 .cr{padding:6px 0 36px}
 .cc{border:0;border-radius:26px;background:rgba(255,255,255,.93);box-shadow:0 1px 0 #fff inset,0 20px 50px rgba(28,40,64,.12),0 0 0 .5px rgba(0,0,0,.06);background:rgba(255,255,255,.8)}
 .cc.c0{background:rgba(255,255,255,.95);box-shadow:0 1px 0 #fff inset,0 20px 50px rgba(28,40,64,.14),0 0 0 .5px rgba(0,0,0,.06)}
@@ -608,14 +588,27 @@
 .slot.cur{background:#fff;box-shadow:0 0 0 2px var(--blue),0 12px 30px rgba(0,113,227,.14)}
 .slot.wait{background:rgba(255,255,255,.35);border:1px dashed #C7C7CC;box-shadow:none}
 .slot .w-logo,.c6-lg .w-logo,.mr .w-logo{font-size:10px!important}
-/* 6 clarify */
+/* 4 · Built shortlist: browsed by drag, scroll, arrows, cards and slots (ui/js/shortlist.js). */
+.cr-row[data-done]{cursor:grab;touch-action:pan-y}
+.aa-dragging .cr-row[data-done]{cursor:grabbing}
+.cr-row[data-done] .cc{will-change:transform,opacity}
+.cr-row[data-done] ~ .slots{align-items:center}
+.cr-row[data-done] ~ .slots .slot{cursor:pointer;transition:background-color .3s,box-shadow .3s,transform .35s cubic-bezier(.32,.72,0,1)}
+.cr-row[data-done] ~ .slots .slot:not(.cur):hover{transform:translateY(-2px)}
+.cr-nav{flex:none;width:38px;height:38px;padding:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.85);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 8px 28px rgba(28,40,64,.07),0 0 0 .5px rgba(0,0,0,.05);transition:background-color .2s,opacity .25s,transform .15s}
+.cr-nav.prev{margin-right:6px}.cr-nav.next{margin-left:6px}
+.cr-nav:hover{background:rgba(255,255,255,.85)}
+.cr-nav:active{transform:scale(.94)}
+.cr-nav:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.cr-nav.off{opacity:.35;pointer-events:none}
+/* 5 clarify */
 .c6{border:0;border:0;border-radius:26px;background:rgba(255,255,255,.93);box-shadow:0 1px 0 #fff inset,0 20px 50px rgba(28,40,64,.12),0 0 0 .5px rgba(0,0,0,.06);padding:0 40px}
 .o6{border:0;border-radius:18px;background:rgba(255,255,255,.8);box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05)}
 .o6.on{background:#fff;box-shadow:0 0 0 2px var(--blue),0 12px 30px rgba(0,113,227,.14)}
 .c6-r{padding:24px 26px;width:440px}
 .mr{border-bottom:1px solid rgba(0,0,0,.05)}.mr.nw{background:rgba(48,161,78,.06)}
 .st6>div{border-radius:16px}
-/* 7 priorities */
+/* 6 priorities */
 .f7{padding:22px 28px 18px}
 .s5-k{border-radius:16px}
 .f7-list{gap:8px;margin-top:14px}
@@ -710,25 +703,31 @@
 .xp-body .p-chips + .xp-q{margin-top:16px}
 .xp-in .p-src{margin-top:18px}
 
-/* Readability pass: step 2 profile, step 4 analysis panel. */
+/* Readability pass: step 2 profile. */
 /* 2 · "Edit profile" stays a neutral chip, just easier to find. */
 .p-top .p-edit{font-size:13.5px;font-weight:620;padding:8px 15px;gap:7px}
 .p-top .p-edit svg{width:13px;height:13px}
 /* 2 · Section titles lead their cards: title > value > source line. */
 .p-h b{font-size:15.5px;font-weight:650;letter-spacing:-0.015em}
-/* 4 · Right panel: Progress and First results, a step larger. */
-.a4-r .w-lab{font-size:13px;margin-bottom:10px}
-.a4-r .p4-r{padding:14px 18px;gap:13px}
-.a4-r .p4-r .t{font-size:14.5px;font-weight:600}
-.a4-r .p4-r .s{font-size:12.5px;margin-top:3px}
-.a4-r .p4-r .tg{font-size:12px;padding:4px 11px}
-.a4-r .w-card{padding:18px 20px!important}
-.a4-fr{display:flex;align-items:center;gap:13px}
-.a4-fr + .a4-fr{margin-top:14px}
-.a4-fr-m{flex:1;min-width:0}
-.a4-fr .t{font-size:15px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
-.a4-fr .s{font-size:13px;color:var(--t2);margin-top:2px}
-.a4-fr .n{font-size:24px;font-weight:700;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
+/* 2 · Without the CV panel: one wider panel, centred on the stage, in larger type.
+   Its width is fixed so the overlay buttons can be placed from the stage's middle (EDIT_2, CTA_2). */
+.p-l{flex:none;width:1240px;max-width:100%;margin:0 auto;padding:30px 36px;box-sizing:border-box}
+.p-l .w-h1{font-size:38px}
+.p-l .w-sub{font-size:16px;margin-top:8px}
+.p-grid{gap:16px;margin-top:24px}
+.p-s{padding:20px 24px}
+.p-h{gap:12px}
+.p-h .ic{width:34px;height:34px}
+.p-h .ic svg{width:18px;height:18px}
+.p-h b{font-size:18px}
+.p-h .w-b{font-size:12.5px;padding:5px 11px}
+.p-v{font-size:15px;margin-top:14px}
+.p-m{font-size:13.5px;margin-top:4px}
+.p-chips{gap:8px;margin-top:14px}
+.p-chips .w-chip{font-size:13.5px;padding:7px 13px}
+.p-src{font-size:12.5px}
+.p-s .p-cta{font-size:14px;padding:8px 16px}
+.p-top .p-edit{font-size:14.5px;padding:9px 17px}
 /* 2 · The one call to action of each required card: a filled pill.
    Its invisible overlay button takes the pointer, so hover is read from it. */
 .p-s .p-cta{background:var(--blue);color:#fff;font-weight:600;padding:7px 14px;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:filter .15s}

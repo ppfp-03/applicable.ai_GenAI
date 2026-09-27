@@ -311,7 +311,7 @@ def test_step_2_continues_with_sponsorship_unknown() -> None:
         assert at.session_state["ob_step"] == "3b", authorized
 
 
-def test_the_declared_uk_answer_prefills_step_6() -> None:
+def test_the_declared_uk_answer_prefills_step_5() -> None:
     # Only a chosen UK settles it; "None of these" and a left-out UK stay open.
     for authorized, uk in ((["GB"], "yes"), (["EU"], "unsure"), (["NONE"], "unsure")):
         at = answer(editor(at_step2()), authorized)
@@ -451,31 +451,31 @@ def at_step(step, authorized=None, saved=None):
     return at
 
 
-def test_a_declared_uk_answer_is_not_reset_to_unknown_in_step_5() -> None:
+def test_a_declared_uk_answer_is_not_reset_to_unknown_in_step_4() -> None:
     for authorized, uk in ((["GB"], "yes"), (["GB", "CH"], "yes")):
-        at = at_step("5", authorized)
+        at = at_step("4", authorized)
         assert at.session_state[store.ANSWERS]["uk_work"] == uk
         assert "Your UK work authorization is already declared" in page(at)
         assert at.button(key="next").label == "View shortlist"
 
 
-def test_none_of_these_leaves_the_uk_to_step_6() -> None:
-    # Not authorized, sponsorship unknown: not settled, so step 6 still asks.
-    at = at_step("5", ["NONE"])
+def test_none_of_these_leaves_the_uk_to_step_5() -> None:
+    # Not authorized, sponsorship unknown: not settled, so step 5 still asks.
+    at = at_step("4", ["NONE"])
     assert at.session_state[store.ANSWERS]["uk_work"] == "unsure"
     assert "Your UK work authorization is already declared" not in page(at)
     at.button(key="next").click().run()
-    assert at.session_state["ob_step"] == "6"
+    assert at.session_state["ob_step"] == "5"
     # Continuing on the prefilled "Not sure" keeps the declaration as it was.
     at.button(key="next").click().run()
     assert not at.exception
-    assert at.session_state["ob_step"] == "7"
+    assert at.session_state["ob_step"] == "6"
     assert facts(declared(at), "GB") == (False, None)
 
 
-def test_a_left_out_uk_is_asked_in_step_6_and_the_answer_is_saved() -> None:
+def test_a_left_out_uk_is_asked_in_step_5_and_the_answer_is_saved() -> None:
     for uk, gb in (("yes", (True, False)), ("no", (False, True))):
-        at = at_step("6", ["EU"])
+        at = at_step("5", ["EU"])
         at.button(key=f"oo-o6{uk}").click().run()
         at.button(key="next").click().run()
         assert not at.exception
@@ -485,25 +485,25 @@ def test_a_left_out_uk_is_asked_in_step_6_and_the_answer_is_saved() -> None:
 
 
 def test_a_known_uk_answer_is_not_asked_again() -> None:
-    at = at_step("5", ["GB"])
+    at = at_step("4", ["GB"])
     at.button(key="next").click().run()
-    assert at.session_state["ob_step"] == "7"  # step 6 skipped
+    assert at.session_state["ob_step"] == "6"  # step 5 skipped
     assert "Declared by you" in page(at)
     assert "text-decoration:line-through\">Unknown" not in page(at)
 
     at.button(key="back").click().run()
-    assert at.session_state["ob_step"] == "5"
+    assert at.session_state["ob_step"] == "4"
 
-    at.button(key="oo-st6").click().run()
-    assert at.session_state["ob_step"] == "7"
+    at.button(key="oo-st5").click().run()
+    assert at.session_state["ob_step"] == "6"
 
 
-def test_an_unsettled_uk_is_still_asked_in_step_6() -> None:
+def test_an_unsettled_uk_is_still_asked_in_step_5() -> None:
     # The editor always settles the UK; a declaration saved before it did may not.
-    at = at_step("5", saved=(chosen(*EU), "unsure"))
+    at = at_step("4", saved=(chosen(*EU), "unsure"))
     assert at.session_state[store.ANSWERS]["uk_work"] == "unsure"
     at.button(key="next").click().run()
-    assert at.session_state["ob_step"] == "6"
+    assert at.session_state["ob_step"] == "5"
     assert at.session_state["ob_uk"] == "unsure"
 
 
@@ -582,7 +582,7 @@ def back_to_step2(at):
 
 
 def test_a_later_sponsorship_answer_survives_a_step_2_resave() -> None:
-    at = at_step("6", ["EU"])  # GB left out: step 6 asks
+    at = at_step("5", ["EU"])  # GB left out: step 5 asks
     at.button(key="oo-o6no").click().run()
     at.button(key="next").click().run()
     assert facts(declared(at), "GB") == (False, True)
@@ -688,12 +688,12 @@ def test_a_partial_role_page_answer_before_step_2_invents_nothing() -> None:
 
 @pytest.mark.parametrize("gb", [decl(authorized=["GB"]), decl(not_authorized=["GB"]),
                                 decl(sponsorship=["GB"]), decl(no_sponsorship=["GB"])])
-def test_a_partial_uk_declaration_is_still_asked_in_step_6(gb) -> None:
+def test_a_partial_uk_declaration_is_still_asked_in_step_5(gb) -> None:
     saved = {k: gb[k] + chosen(*EU)[k] for k in gb}
-    at = at_step("5", saved=(saved, "unsure"))  # what store.uk_from_work_auth gives for it
+    at = at_step("4", saved=(saved, "unsure"))  # what store.uk_from_work_auth gives for it
     assert "Your UK work authorization is already declared" not in page(at)
     at.button(key="next").click().run()
-    assert at.session_state["ob_step"] == "6"
+    assert at.session_state["ob_step"] == "5"
     at.button(key="next").click().run()  # continue on the prefilled "Not sure"
     assert not at.exception
     assert facts(declared(at), "GB") == facts(gb, "GB")  # the partial fact is kept

@@ -1,13 +1,13 @@
-"""Onboarding — seven steps from CV to a first shortlist (00_Onboarding.html).
+"""Onboarding — six steps from CV to a first shortlist (00_Onboarding.html).
 
 Upload CV → Profile → Preferences (explore by swiping, then fine-tune) →
-Analysis → Shortlist → Clarify → Updated ranking.
+Shortlist → Clarify → Updated ranking.
 
 Every step renders the mockup's own markup (ui/onboarding_markup.py) with the
 live values filled in; native buttons sit invisibly over each interactive
 element at the position it has on the mockup's stage. The ranking shown is
 the real one: the shortlist is ranked from the roles known on the day of
-onboarding with the UK question unanswered, and the answer given in step 6
+onboarding with the UK question unanswered, and the answer given in step 5
 is saved and recomputes everything.
 
 Uploading the CV in step 1 gives the data processing consent, as the note
@@ -32,7 +32,7 @@ from oi.providers.kimi import KimiClient
 from oi.providers.model_client import ExtractionError
 from ui import onboarding_markup as M
 from ui import guide, parts, tabs
-from ui.html import CK12, CK_WHITE, WN12, esc, html, squash
+from ui.html import CK12, CK_WHITE, NEXT, PREV, WN12, esc, html, squash
 from ui.palette import orange
 from ui.theme import page_css
 
@@ -42,6 +42,7 @@ page_css("guide")
 STORIES = json.loads((Path(__file__).resolve().parent.parent / "data" / "stories.json").read_text("utf-8"))
 SWIPE_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "swipe.js").read_text(encoding="utf-8")
 EXPAND_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "expand.js").read_text(encoding="utf-8")
+SHORTLIST_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "shortlist.js").read_text(encoding="utf-8")
 
 #: (key, step number, call to action) — the mockup's own list. The footer's
 #: line beside the call to action comes from ui/guide.py.
@@ -50,42 +51,39 @@ FLOW = [
     ("2", 2, "Confirm profile"),
     ("3b", 3, "Continue"),
     ("3a", 3, "Find my roles"),
-    ("4", 4, "View shortlist"),
-    ("5", 5, "Answer 1 question"),
-    ("6", 6, "Save answer"),
-    ("7", 7, "Start application"),
+    ("4", 4, "Answer 1 question"),
+    ("5", 5, "Save answer"),
+    ("6", 6, "Start application"),
 ]
 KEYS = [f[0] for f in FLOW]
-STEP_NAMES = ["Upload CV", "Profile", "Preferences", "Analysis", "Shortlist", "Clarify", "Updated ranking"]
+STEP_NAMES = ["Upload CV", "Profile", "Preferences", "Shortlist", "Clarify", "Updated ranking"]
 
 #: Positions of interactive elements on the mockup stage, relative to the
 #: step body (x, y, w, h). Measured from 00_Onboarding.html.
-TOP = [(355, 6, 119, 36), (476, 6, 93, 36), (570, 6, 128, 36), (700, 6, 105, 36),
-       (807, 6, 104, 36), (914, 6, 93, 36), (1009, 6, 156, 36)]
+TOP = [(409, 6, 119, 36), (530, 6, 93, 36), (624, 6, 128, 36),
+       (754, 6, 104, 36), (861, 6, 93, 36), (956, 6, 156, 36)]
 SEG_3A = [(33, 27, 95, 28), (130, 27, 112, 28)]
 #: The Fine-tune table: first row's segment top, row pitch, segment lefts.
 IMP_Y0, IMP_DY = 189, 48
 IMP_X = [588, 697, 806, 915]
 ACTS_3B = [(422, 645, 61, 104), (505, 652, 49, 90), (576, 645, 72, 104)]
+#: The Undo button, left of "Not for me" (see UNDO).
+UNDO_3B = (354, 652, 46, 90)
 SEG_3B = [(24, 4, 95, 26), (121, 4, 111, 26)]
-OPTS_6 = [(230, 375, 600, 68), (230, 453, 600, 68), (230, 531, 600, 68)]
-FILT_7 = [(33, 107, 56, 26), (91, 107, 157, 26), (249, 107, 75, 26)]
+OPTS_5 = [(230, 375, 600, 68), (230, 453, 600, 68), (230, 531, 600, 68)]
+FILT_6 = [(33, 107, 56, 26), (91, 107, 157, 26), (249, 107, 75, 26)]
 #: Where a CV reading error sits: in the file card's place, below the drop zone.
 CV_STATUS = (428, 458, 664)
 #: The ✕ in the file card's top right corner, which removes the CV read.
 CV_REMOVE = (1058, 468, 24, 24)
-BTN_7 = [(1336, 194, 135, 34), (1405, 324, 66, 34), (1405, 454, 66, 34), (1405, 583, 66, 34), (1405, 713, 66, 34)]
-#: The "Edit profile" chip beside the step 2 title, as (right, y, w, h): its
-#: panel stretches with the window, the fixed-width CV panel to its right does not.
-EDIT_2 = (509, 27, 122, 32)
-#: The call to action on each empty required card: Work authorization, in the
-#: right column, measured from the stage's middle as its column stretches with
-#: the window; Sponsorship, in the left column, from the stage's left edge.
-CTA_2 = {"wa": (-216, 531, 176, 28), "sp": (47, 742, 138, 28)}
-#: The inline "Edit profile" link in the same two cards, placed like CTA_2
-#: (Work authorization from the stage's middle, Sponsorship from its left edge).
-LINK_2 = {"wa-link": (-99, 430, 70, 20), "sp-link": (211, 640, 70, 20)}
-LINK_CLASS = {"Work authorization": "wa-link", "Sponsorship": "sp-link"}
+BTN_6 = [(1336, 194, 135, 34), (1405, 324, 66, 34), (1405, 454, 66, 34), (1405, 583, 66, 34), (1405, 713, 66, 34)]
+#: Step 2's panel has a fixed width and is centred on the stage, so its
+#: controls are placed from the stage's middle: (dx, y, w, h).
+#: The "Edit profile" chip beside the title.
+EDIT_2 = (453, 35, 130, 35)
+#: The call to action on each empty required card: Work authorization in the
+#: left column, Sponsorship in the right one.
+CTA_2 = {"wa": (-559, 726, 201, 33), "sp": (32, 726, 158, 33)}
 
 IMPORTANCE = ["Must have", "Important", "Nice to have", "Don’t mind"]
 
@@ -143,13 +141,13 @@ def blocked(k: str) -> bool:
 
 def uk_declared() -> bool:
     """Whether step 2 settled the UK: authorized there, or needing sponsorship.
-    Step 6 then has nothing to ask and is skipped."""
+    Step 5 then has nothing to ask and is skipped."""
     return store.work_auth_complete() and store.uk() in ("yes", "no")
 
 
 def resolve_step(k: str) -> str:
-    """The step `k` leads to: step 6 is skipped once the UK is known."""
-    return "7" if k == "6" and uk_declared() else k
+    """The step `k` leads to: step 5 is skipped once the UK is known."""
+    return "6" if k == "5" and uk_declared() else k
 
 
 qs = st.query_params.get("step")
@@ -176,7 +174,7 @@ def go(k: str) -> None:
         S["ob_notice"] = why
         return
     S["ob_step"] = k = resolve_step(k)
-    if k == "5":
+    if k == "4":
         S["ob_tick"] = 0
 
 
@@ -287,8 +285,6 @@ LANGUAGE_NAMES = {
 SKILL_CHIPS = 8
 #: How many entries an education or experience card lists before "+N more".
 CARD_LINES = 3
-#: How many quotes each section shows on the CV page, which does not scroll.
-PAGE_QUOTES = 3
 
 #: The mockup's own icons, by card title, and its source-line document icon.
 ICONS = {title: icon for icon, title in re.findall(r'<div class="ic">(.*?)</div><b>(.*?)</b>', M.S_2)}
@@ -450,18 +446,18 @@ def work_auth_cards() -> list[str]:
         missing = S.get("ob_missing", False)
         badges = {"Work authorization": (MISSING, " miss") if missing else (REQUIRED, ""),
                   "Sponsorship": (NOT_DECLARED, "")}
-        state = {"Work authorization": "Required", "Sponsorship": "Not declared yet"}
         so_far = authorization_value(decl) if decl is not None else "Not declared yet"
         notes = {"Work authorization": f'<div class="p-m">Declared so far: {esc(so_far)}</div>'
                  if so_far != "Not declared yet" else "", "Sponsorship": ""}
         return [
             sponsorship_card(decl) if t == "Sponsorship" and decl is not None else profile_card(
                 t, badges[t][0],
-                f'<div class="p-v">{state[t]} · add it in <span class="p-link {LINK_CLASS[t]}">Edit profile</span></div>'
-                f'{notes[t]}<div class="p-act"><span class="w-chip add p-cta">{cta}</span></div>',
+                f'{notes[t]}<div class="p-act"><span class="w-chip add p-cta {key}">{cta}</span></div>',
                 cls=badges[t][1],
-                # Opened, the call to action would press nothing: it is left out.
-                full=f'<div class="p-v">{state[t]} · add it in Edit profile</div>{notes[t]}',
+                # Opened, the call to action would press nothing: it is left
+                # out, and the panel's own edit button opens the declaration.
+                full=f'<div class="p-v">Not added yet</div>{notes[t]}',
+                edit=True,
             )
             for key, (t, cta) in zip(CTA_2, REQUIRED_CTA.items())
         ]
@@ -512,25 +508,6 @@ def languages_card(profile) -> str:
     return cv_card(profile, *LANGUAGES)
 
 
-def cv_page(profile) -> str:
-    """The CV panel: the quotes each section was read from, highlighted."""
-    if profile is None:
-        return '<div class="p-m" style="margin-top:0">Quotes from your CV appear here once it has been read.</div>'
-    filler = '<div class="p-ln" style="width:92%"></div><div class="p-ln" style="width:78%"></div>'
-    blocks = []
-    for title, field in [*CV_SECTIONS, LANGUAGES]:
-        quotes = section_quotes(profile, field)
-        if not quotes:
-            continue
-        shown = "".join(
-            f'<div style="font-size:12px;line-height:1.5;color:var(--t1)">{esc(q)}</div>' for q in quotes[:PAGE_QUOTES]
-        )
-        if len(quotes) > PAGE_QUOTES:
-            shown += f'<div style="font-size:11.5px;color:var(--t3)">+{len(quotes) - PAGE_QUOTES} more</div>'
-        blocks.append(f'<div class="p-hl b"><span class="tg">{title}</span>{shown}</div>')
-    return filler.join(blocks)
-
-
 def step2() -> str:
     """What was read from the CV, each value backed by the quote it came from.
 
@@ -541,14 +518,13 @@ def step2() -> str:
     body = M.S_2
     if profile is None:
         sub = "No CV read yet. <b>Upload your CV in step 1</b> to fill in your profile."
-        quotes = "Not uploaded"
     else:
         found = sum(bool(getattr(profile, field)) for _, field in CV_SECTIONS)
         sub = f"{found} of {len(CV_SECTIONS)} sections found in your CV. <b>Each value is backed by a quote from it.</b>"
-        distinct = {q for _, field in [*CV_SECTIONS, LANGUAGES] for q in section_quotes(profile, field)}
-        quotes = quote_count(len(distinct))
     # The two cards the user fills in share the last row.
     cards = [cv_card(profile, title, field) for title, field in CV_SECTIONS] + [languages_card(profile)] + work_auth_cards()
+    # The mockup's CV panel is left out: each card shows its quotes when opened.
+    body = swap(body, r'\n<div class="p-r">.*', "")
     # Always offered: without a CV the editor still takes the mandatory declaration.
     body = swap(
         body, re.escape('<div class="w-h1">Here’s what we found</div>'),
@@ -556,12 +532,7 @@ def step2() -> str:
         f'<span class="w-chip p-edit">{PENCIL}Edit profile</span></div>',
     )
     body = swap(body, r'<div class="w-sub">.*?</div>', f'<div class="w-sub">{sub}</div>')
-    body = swap(
-        body, r'<div class="p-grid">.*?</div></div>\n<div class="p-r">',
-        f'<div class="p-grid">{"".join(cards)}</div></div>\n<div class="p-r">',
-    )
-    body = swap(body, re.escape("Your CV<span>Page 2 of 2</span>"), f"Your CV<span>{quotes}</span>")
-    return swap(body, r'<div class="p-page">.*?</div></div>$', f'<div class="p-page">{cv_page(profile)}</div></div>')
+    return swap(body, r'<div class="p-grid">.*</div></div>$', f'<div class="p-grid">{"".join(cards)}</div></div>')
 
 
 #: The editor's tabs: title, CandidateProfile field, entry icon and add button
@@ -931,16 +902,12 @@ NO_MATCH = ('<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4.5 4.5l7
 
 def pref_rows() -> list[dict]:
     """The Fine-tune rows (D-045): the role families and industries the likes
-    suggest, then the profile's cities and hybrid work. A row the candidate
-    already set keeps its level."""
+    suggest, then hybrid work. A row the candidate already set keeps its level."""
     stories, verdicts = STORIES["stories"], S["ob_swipes"]
     fams, _ = explore.direction(stories, verdicts)
-    cities = list(d.profile["preferred_cities"])
     rows = [{"field": "role_family", "values": [f], "label": f"{f} roles", "hint": SUGGESTED, "level": "important"} for f in fams]
     rows += [{"field": "industry", "values": [i], "label": i, "hint": SUGGESTED, "level": "important"}
              for i in explore.industries(stories, verdicts)]
-    rows.append({"field": "city", "values": cities, "label": ", ".join(cities[:-1]) + " or " + cities[-1] if len(cities) > 1 else cities[0],
-                 "hint": "From your profile", "level": "important"})
     rows.append({"field": "mode", "values": ["Hybrid"], "label": "Hybrid work", "hint": "Some days in the office", "level": "nice"})
     before = {(r["field"], tuple(r["values"])): r["level"] for r in (S["ob_prefs"] or store.preferences() or [])}
     return [dict(r, level=before.get((r["field"], tuple(r["values"])), r["level"])) for r in rows]
@@ -956,12 +923,12 @@ def pref_row(r: dict) -> str:
         f'<span class="{"on" + (" must" if i == 0 else " imp" if i == 1 else "") if i == on else ""}">{t}</span>'
         for i, t in enumerate(IMPORTANCE)
     )
-    return f'<div class="v3-r"><div class="k">{esc(r["label"])}<small>{esc(r["hint"])}</small></div><div class="v3-seg">{spans}</div></div>'
+    return f'<div class="v3-r"><div class="k">{esc(r["label"])}</div><div class="v3-seg">{spans}</div></div>'
 
 
 def short(r: dict) -> str:
     """A row's name in the two-column weight legend."""
-    return {"city": "Location", "mode": "Hybrid work"}.get(r["field"], r["values"][0])
+    return {"mode": "Hybrid work"}.get(r["field"], r["values"][0])
 
 
 def weights_box(rows: list[dict], total: float) -> str:
@@ -1167,6 +1134,14 @@ def time_left(remaining: int) -> str:
     return "less than a minute left" if secs < 60 else f"about {round(secs / 60)} minute{'s' if secs >= 90 else ''} left"
 
 
+#: Beside "Not for me": takes the last verdict back, so its story is on top again.
+UNDO = (
+    '<div class="act sm undo"><span class="o"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M5.5 3.5 2.5 6.5l3 3M3 6.5h6.5'
+    'a4 4 0 0 1 0 8H7" stroke="#6E6E73" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+    'Undo<kbd>⌫</kbd></div>'
+)
+
+
 def step3b() -> str:
     """The story stack and, beside it, everything the verdicts so far say."""
     stories, verdicts = STORIES["stories"], S["ob_swipes"]
@@ -1183,7 +1158,8 @@ def step3b() -> str:
     backs = ('<div class="sw-cb b2"></div>' if behind >= 2 else "") + ('<div class="sw-cb b1"></div>' if behind >= 1 else "")
     body = swap(
         body, r'<div class="sw-stack">.*?</div></div>\s*<div class="acts">',
-        f'<div class="sw-stack">{backs}{done_card(verdicts) if done else tutorial_card() if first else story_card(stories[seen])}</div>\n<div class="acts{" off" if done else ""}">',
+        f'<div class="sw-stack">{backs}{done_card(verdicts) if done else tutorial_card() if first else story_card(stories[seen])}</div>\n'
+        f'<div class="acts{" off" if done else ""}">{UNDO if seen else ""}',
     )
     body = swap(body, re.escape("Live · from 7 swipes"), f"Live · from {seen} swipe{'s' if seen != 1 else ''}")
     body = swap(body, r'<svg width="370" height="246".*?</svg>', radar(explore.interests(stories, verdicts)))
@@ -1211,68 +1187,11 @@ def step3b() -> str:
     )
 
 
-def funnel_row(label: str, small: str, width: float, n: int, color: str) -> str:
-    return (
-        f'<div class="f4"><div class="k">{label}<small>{small}</small></div>'
-        f'<div class="f4b"><i style="width:{width:.1f}%;background:{color}"></i></div><div class="n">{n}</div></div>'
-    )
-
-
-#: How many ranked roles the analysis screen previews.
-FIRST_RESULTS = 3
-
-
-def step4() -> str:
-    """The analysis funnel, counted over the demo roles actually available.
-
-    The demo has no larger catalogue behind it, so every number here is a
-    count of those roles under the same checks the other screens run.
-    """
-    c = store.counts(None, AS_OF)
-    total = sum(c.values())
-    ranked = c["eligible"] + c["verify"]
-    share = 100 * ranked / total if total else 0
-    fun = (
-        '<div class="fun">\n'
-        + funnel_row("Roles in the demo data", "Synthetic postings · not a live catalogue", 100, total, "#D1D1D6")
-        + funnel_row("Checked for eligibility", "Mandatory requirements", 100, total, "#6E6E73")
-        + '<div class="f4"><div class="k">Eligibility result<small>Fixed rules</small></div><div class="f4b" style="background:none">'
-        f'<i style="flex:{c["eligible"]};background:#30A14E;border-radius:6px"></i>'
-        f'<i style="flex:{c["verify"]};background:#E3A03A;border-radius:6px"></i>'
-        f'<i style="flex:{c["excluded"]};background:repeating-linear-gradient(135deg,#F3C9C5 0 3px,#FBEAE8 3px 6px);border-radius:6px"></i>'
-        f'</div><div class="n">{total}</div></div>'
-        f'<div class="lg4"><span><i style="background:#30A14E"></i>{c["eligible"]} eligible</span>'
-        f'<span><i style="background:#E3A03A"></i>{c["verify"]} to verify</span>'
-        f'<span><i style="background:#F3C9C5"></i>{c["excluded"]} excluded · conflict</span></div>'
-        + funnel_row("Ranked for you", "Eligible + to verify", share, ranked, "var(--blue);border-radius:9px")
-        .replace('<div class="n">', '<div class="n" style="color:var(--blue)">')
-        + '\n</div></div>\n<div class="a4-r">'
-    )
-    # A preview only: the first FIRST_RESULTS roles of the existing order, never padded.
-    first = "".join(
-        f'<div class="a4-fr">'
-        f'<span class="w-logo" style="background:{v.bg};width:36px;height:36px">{v.mono}</span>'
-        f'<div class="a4-fr-m"><div class="t">{esc(v.title)}</div>'
-        f'<div class="s">{esc(v.company)} · {esc(v.city)}</div></div>'
-        f'<span class="n">{v.shown}</span></div>'
-        for v in store.ranked(BEFORE, AS_OF)[:FIRST_RESULTS]
-    )
-    body = M.S_4
-    body = swap(body, r'<div class="fun">.*?\n</div></div>\n<div class="a4-r">', fun)
-    body = swap(
-        body, r'<div class="w-lab">First results<span>Updating</span></div>.*?</div>\n<div class="w-tip">.*?</div></div>\n',
-        f'<div class="w-lab">First results<span>Updating</span></div>{first}</div>\n',
-    )
-    body = swap(body, "from 312 postings", f"from {total} postings")
-    body = swap(body, "78 roles · 23 conflicts removed", f"{total} roles · {c['excluded']} conflict{'s' if c['excluded'] != 1 else ''} removed")
-    return swap(body, "Rank 55 roles", f"Rank {ranked} roles")
-
-
 def shortlist_roles():
     return store.ranked(BEFORE, AS_OF)[:5]
 
 
-def cc_card(v, cls: str, first_verify: bool) -> str:
+def cc_card(v, i: int, cls: str, first_verify: bool) -> str:
     badge = '<span class="w-b ok"><i></i>Eligible</span>' if v.standing == "eligible" else '<span class="w-b am"><i></i>To verify</span>'
     delta = f"{v.raw_shown} − {d.penalty:g} until verified" if v.standing == "verify" else ""
     segs = "".join(f'<i style="flex:{p:.1f};background:{parts.COL[i]}"></i>' for i, p in enumerate(v.parts))
@@ -1293,7 +1212,7 @@ def cc_card(v, cls: str, first_verify: bool) -> str:
         text = "One answer from you could make this your #1" if first_verify else "Same answer unlocks this role"
         need = f'<div class="cc-need">{WN12}{text}</div>'
     return (
-        f'<div class="cc {cls}"><div class="cc-scan"><i></i></div><div class="cc-top">'
+        f'<div class="cc {cls}" data-i="{i}"><div class="cc-scan"><i></i></div><div class="cc-top">'
         f'<span class="w-logo" style="background:{v.bg};width:44px;height:44px">{v.mono}</span>'
         f'<div style="flex:1"><div class="cc-t">{esc(v.title)}</div><div class="cc-m">{esc(v.company)} · {esc(v.city)} · {esc(v.mode)}</div></div>{badge}</div>'
         f'<div class="cc-sc"><b>{v.shown}<small>/100</small></b><span style="font-size:12px;color:var(--amber);font-weight:600">{delta}</span></div>'
@@ -1302,7 +1221,14 @@ def cc_card(v, cls: str, first_verify: bool) -> str:
     )
 
 
-def step5(cur: int, done: bool) -> str:
+def step4(cur: int, done: bool) -> str:
+    """The shortlist, checked one role at a time, then browsable.
+
+    Args:
+        cur: Role at the centre: the one being checked, then the #1 once done.
+        done: All five checked. The row then moves in the browser
+            (ui/js/shortlist.js): drag, scroll, arrows, a card or a slot.
+    """
     roles = shortlist_roles()
     pos = {-2: "l2", -1: "l1", 0: "c0", 1: "r1", 2: "r2"}
     first_v = next((i for i, v in enumerate(roles) if v.standing == "verify"), None)
@@ -1310,9 +1236,11 @@ def step5(cur: int, done: bool) -> str:
     for i, v in enumerate(roles):
         o = i - cur
         cls = pos.get(o, "hl" if o < 0 else "hr")
-        if i == cur:
-            cls += " doneck" if done else " run"
-        cards.append(cc_card(v, cls, i == first_v))
+        if done:
+            cls += " doneck"
+        elif i == cur:
+            cls += " run"
+        cards.append(cc_card(v, i, cls, i == first_v))
     slots = []
     for i, v in enumerate(roles):
         fin = done or i < cur
@@ -1323,7 +1251,7 @@ def step5(cur: int, done: bool) -> str:
         state = "Eligible" if v.standing == "eligible" else "Needs 1 answer"
         color = "color:var(--amber)" if fin and v.standing != "eligible" else ""
         slots.append(
-            f'<div class="slot{" cur" if now or (done and i == cur) else ""}">'
+            f'<div class="slot{" cur" if now or (done and i == cur) else ""}" data-i="{i}">'
             f'<span class="w-logo" style="background:{v.bg};width:28px;height:28px">{v.mono}</span>'
             f'<div><div class="t">{esc(v.company.replace(" Group", ""))}</div><div class="s" style="{color}">'
             f'{"Checking…" if now else state}</div></div><b>{"…" if now else v.shown}</b></div>'
@@ -1333,9 +1261,17 @@ def step5(cur: int, done: bool) -> str:
         f'All 5 checked · <b style="color:var(--amber)">{n_verify} need one answer from you</b>' if done
         else f"Checking your top matches one by one · <b>{cur + 1} of 5</b>"
     )
+    row, nav = f'id="cr-row" data-cur="{cur}"', ("", "")
+    if done:
+        row += " data-done"
+        nav = (
+            f'<button type="button" class="cr-nav prev{" off" if cur == 0 else ""}" aria-label="Previous">{PREV}</button>',
+            f'<button type="button" class="cr-nav next{" off" if cur == len(roles) - 1 else ""}" aria-label="Next">{NEXT}</button>',
+        )
     return (
         f'<div class="cr"><div class="cr-h"><div class="w-h1">Building your shortlist</div><div class="w-sub" id="cr-sub">{sub}</div></div>'
-        f'<div class="cr-row" id="cr-row">{"".join(cards)}</div><div class="slots" id="cr-slots">{"".join(slots)}</div></div>'
+        f'<div class="cr-row" {row}>{"".join(cards)}</div>'
+        f'<div class="slots" id="cr-slots">{nav[0]}{"".join(slots)}{nav[1]}</div></div>'
     )
 
 
@@ -1354,8 +1290,8 @@ def preview_rows(ans: dict) -> str:
     return "".join(rows)
 
 
-def step6() -> str:
-    body = M.S_6
+def step5() -> str:
+    body = M.S_5
     choice = S["ob_uk"]
     ks = ["yes", "no", "unsure"]
     opts = re.findall(r'<div class="o6[^"]*">', body)
@@ -1404,7 +1340,7 @@ def ring(score: int) -> str:
     )
 
 
-def step7() -> str:
+def step6() -> str:
     ans = store.answers()
     top = store.ranked(ans, AS_OF)[:5]
     moves = store.movement(BEFORE, ans, as_of=AS_OF)
@@ -1490,7 +1426,7 @@ with st.container(key="otop"):
         cls = " done" if n < num else " cur" if n == num else ""
         mark = CK_WHITE if n < num else str(n)
         pills.append(f'<span class="w-st{cls}"><span class="c">{mark}</span>{name}</span>')
-        if n < 7:
+        if n < len(STEP_NAMES):
             pills.append(f'<span class="w-ln{" done" if n + 1 <= num else ""}"></span>')
     with st.container(key="osteps"):
         html(f'<div class="w-steps gl">{"".join(pills)}</div>')
@@ -1549,19 +1485,16 @@ with st.container(key="obody"):
         # Pressing a card opens it in full: it flips over as it grows.
         with st.container(key="aa-js-expand"):
             st.html(f"<script>{EXPAND_JS}</script>", unsafe_allow_javascript=True)
-        right, y, w, h = EDIT_2
-        st.markdown(f"<style>.stApp .st-key-oo-edit{{left:auto!important;right:{right}px}}</style>", unsafe_allow_html=True)
-        opened = overlay("edit", (0, y, w, h), "Edit profile", on_click=open_editor)
+        def centred(name: str, box, label: str, **kw) -> bool:
+            dx, y, w, h = box
+            st.markdown(f"<style>.stApp .st-key-oo-{name}{{left:calc(50% + {dx}px)!important}}</style>", unsafe_allow_html=True)
+            return overlay(name, (0, y, w, h), label, **kw)
+
+        opened = centred("edit", EDIT_2, "Edit profile", on_click=open_editor)
         if not store.work_auth_complete():
-            mid = CTA_2["wa"][0]
-            st.markdown(f"<style>.stApp .st-key-oo-wa{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
             placeholders = 2 if store.work_auth() is None else 1
             for name, label in list(zip(CTA_2, REQUIRED_CTA.values()))[:placeholders]:
-                opened |= overlay(name, CTA_2[name], label, on_click=open_editor, args=(WORK_TAB,))
-            mid = LINK_2["wa-link"][0]
-            st.markdown(f"<style>.stApp .st-key-oo-wa-link{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
-            for name, title in list(zip(LINK_2, REQUIRED_CTA))[:placeholders]:
-                opened |= overlay(name, LINK_2[name], f"Edit profile · {title}", on_click=open_editor, args=(WORK_TAB,))
+                opened |= centred(name, CTA_2[name], label, on_click=open_editor, args=(WORK_TAB,))
         # Each opened card's own edit button (ui/js/expand.js) presses one of
         # these: the card's section, alone in the editor.
         alone = None
@@ -1602,12 +1535,14 @@ with st.container(key="obody"):
                 [("l", "Not for me", "ArrowLeft"), ("u", "Not sure", "ArrowUp"), ("r", "I’d enjoy this", "ArrowRight")]
             ):
                 overlay(f"sw{dirn}", ACTS_3B[i], label, on_click=swipe, args=(dirn,), shortcut=sc)
+        if S["ob_swipes"]:
+            # A wrong verdict is taken back: the story returns to the top of the stack.
+            overlay("undo3b", UNDO_3B, "Undo", on_click=S.__setitem__, args=("ob_swipes", S["ob_swipes"][:-1]),
+                    shortcut="Backspace")
         # Dragging the card: animates in the browser, then presses the button above.
         with st.container(key="aa-js-swipe"):
             st.html(f"<script>{SWIPE_JS}</script>", unsafe_allow_javascript=True)
     elif step == "4":
-        html(f'<section class="w-sec">{step4()}</section>')
-    elif step == "5":
         done_now = S["ob_tick"] >= 5
 
         # Held while the intro sheet is up, so the shortlist is built in view.
@@ -1615,8 +1550,8 @@ with st.container(key="obody"):
         def shortlist() -> None:
             tick = S["ob_tick"]
             done = tick >= 5
-            cur = 2 if done else tick
-            html(f'<section class="w-sec">{step5(cur, done)}</section>')
+            cur = 0 if done else tick  # once built, the #1 role leads
+            html(f'<section class="w-sec">{step4(cur, done)}</section>')
             if not done:
                 S["ob_tick"] = tick + 1
                 if S["ob_tick"] >= 6:
@@ -1625,36 +1560,40 @@ with st.container(key="obody"):
                 st.rerun()
 
         shortlist()
+        # Browsing the built shortlist: drag, scroll, arrows, cards and slots.
+        with st.container(key="aa-js-shortlist"):
+            st.html(f"<script>{SHORTLIST_JS}</script>", unsafe_allow_javascript=True)
+    elif step == "5":
+        html(f'<section class="w-sec">{step5()}</section>')
+        for i, k in enumerate(["yes", "no", "unsure"]):
+            overlay(f"o6{k}", OPTS_5[i], k, on_click=S.__setitem__, args=("ob_uk", k), shortcut=str(i + 1))
     elif step == "6":
         html(f'<section class="w-sec">{step6()}</section>')
-        for i, k in enumerate(["yes", "no", "unsure"]):
-            overlay(f"o6{k}", OPTS_6[i], k, on_click=S.__setitem__, args=("ob_uk", k), shortcut=str(i + 1))
-    elif step == "7":
-        html(f'<section class="w-sec">{step7()}</section>')
-        for i, box in enumerate(FILT_7):
+        for i, box in enumerate(FILT_6):
             overlay(f"flt{i}", box, ["All", "Closing this week", "New"][i], on_click=S.__setitem__, args=("ob_filter", i))
         top = store.ranked(store.answers(), AS_OF)[:5]
         if S["ob_filter"] == 0:
             for i, v in enumerate(top):
-                if overlay(f"it{i}", BTN_7[i], f"Open {v.company}"):
+                if overlay(f"it{i}", BTN_6[i], f"Open {v.company}"):
                     finish()
                     if i == 0:
                         store.save_application(v.id)
                         tabs.go("applications", id=v.id)
                     tabs.go("role", id=v.id)
 
+total = len(STEP_NAMES)
 if step == "3b" and not explored():
-    info = "<b>Step 3 of 7</b> · Swipe every story to continue — or use ← ↑ → on your keyboard"
+    info = f"<b>Step 3 of {total}</b> · Swipe every story to continue — or use ← ↑ → on your keyboard"
 unweighted = step == "3a" and not any(weight(r) for r in S["ob_prefs"])
 if unweighted:
-    info = "<b>Step 3 of 7</b> · Mark at least one preference to continue"
+    info = f"<b>Step 3 of {total}</b> · Mark at least one preference to continue"
 if step == "3a" and not unweighted and not store.consent_given():
-    info = f"<b>Step 3 of 7</b> · {NEEDS_CONSENT}"
+    info = f"<b>Step 3 of {total}</b> · {NEEDS_CONSENT}"
 gated = step == "2" and not store.work_auth_complete()
 if gated:
-    info = f"<b>Step 2 of 7</b> · {NEEDS_WORK_AUTH}"
-if step == "5" and uk_declared():
-    info, cta = "<b>Step 5 of 7</b> · Your UK work authorization is already declared", "View shortlist"
+    info = f"<b>Step 2 of {total}</b> · {NEEDS_WORK_AUTH}"
+if step == "4" and uk_declared():
+    info, cta = f"<b>Step 4 of {total}</b> · Your UK work authorization is already declared", "View shortlist"
 
 
 def flag_missing() -> None:
@@ -1669,19 +1608,19 @@ with st.container(key="ofoot"):
     if idx > 0:
         if st.button("Back", key="back"):
             back = KEYS[idx - 1]
-            go("5" if back == "6" and uk_declared() else back)  # step 6 is skipped both ways
+            go("4" if back == "5" and uk_declared() else back)  # step 5 is skipped both ways
             st.rerun()
-    waiting = (step == "5" and S["ob_tick"] < 5) or (step == "3b" and not explored()) or unweighted
+    waiting = (step == "4" and S["ob_tick"] < 5) or (step == "3b" and not explored()) or unweighted
     # With a required card still empty, pressing it says what is missing.
     if st.button(cta, type="primary", key="next", disabled=waiting, on_click=flag_missing if gated else None) and not gated:
         if step == "3b":
             S["ob_prefs"] = pref_rows()
         if step == "3a":
             store.set_preferences(S["ob_prefs"])
-        if step == "6":
+        if step == "5":
             store.set_uk(S["ob_uk"])
             st.toast(f"Answer saved · Work authorization · UK = {store.UK_LABELS[S['ob_uk']]}")
-        if step == "7":
+        if step == "6":
             v = store.ranked(store.answers(), AS_OF)[0]
             store.save_application(v.id)
             S["flash"] = f"Application started · {v.company}"

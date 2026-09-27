@@ -21,7 +21,7 @@ companies only). No real LLM is called yet.
 - **One quick question**: the UK work question. Saving the answer recomputes
   eligibility and ranking everywhere.
 - **Profile**: review and correct what was read from the CV.
-- **Onboarding**: seven steps, from uploading the CV to the updated ranking.
+- **Onboarding**: six steps, from uploading the CV to the updated ranking.
 - **Applications** and **Explore**: no mockup; built in the same visual
   language.
 
