@@ -493,6 +493,21 @@
 .p-hl .tg{border:0;border-radius:999px;padding:2px 8px;box-shadow:0 0 0 .5px rgba(0,0,0,.1)}
 .p-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .p-edit{gap:6px;flex:none}
+/* A required card left empty after "Confirm profile" was pressed. */
+.p-s.miss{box-shadow:0 0 0 1.5px var(--red),0 4px 14px rgba(28,40,64,.05)}
+.p-s .p-act{margin-top:auto;padding-top:10px}
+/* Why a press did not continue (Confirm profile, or a later step): centred on the viewport, in liquid glass. */
+.ob-notice{position:fixed;left:50%;top:50%;z-index:1000;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:10px;width:max-content;max-width:calc(100vw - 32px);padding:14px 24px 14px 20px;border-radius:999px;
+  font-size:14px;line-height:20px;font-weight:560;letter-spacing:-.005em;color:var(--t1);text-align:center;pointer-events:none;isolation:isolate;
+  background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.80));backdrop-filter:blur(30px) saturate(210%) brightness(1.05);-webkit-backdrop-filter:blur(30px) saturate(210%) brightness(1.05);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.45),inset 0 0 14px rgba(255,255,255,.35),0 14px 36px rgba(28,40,64,.16),0 2px 6px rgba(28,40,64,.08),0 0 0 .5px rgba(0,0,0,.08);
+  transform:translate(-50%,-50%);animation:ob-notice 4.2s cubic-bezier(.2,.8,.2,1) both}
+.ob-notice i{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px var(--redBg);flex:none}
+.ob-notice span{min-width:0}
+@keyframes ob-notice{0%{opacity:0;transform:translate(-50%,-50%) scale(.94)}8%,82%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.98)}}
+@media (max-width:640px){.ob-notice{border-radius:20px;padding:12px 18px;font-size:13px;line-height:18px}}
+@media (prefers-reduced-motion:reduce){.ob-notice{animation:ob-notice-fade 4.2s linear both}}
+@keyframes ob-notice-fade{0%,100%{opacity:0}6%,84%{opacity:1}}
 /* One-line entries must not widen their column: cut them, the tooltip has the rest. */
 .p-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .p-e{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -511,6 +526,8 @@
 [data-testid="stDialog"] [class*="st-key-ed-row-"] [data-testid="stTextInputRootElement"]{border:1px solid var(--line)!important;border-radius:10px!important;background:#fff;min-height:42px}
 [data-testid="stDialog"] [class*="st-key-ed-row-"] [data-testid="stTextInputRootElement"]:focus-within{border-color:var(--blue)!important}
 [data-testid="stDialog"] [class*="st-key-ed-row-"] input{font-size:14px;color:var(--t1)}
+[data-testid="stDialog"] [class*="st-key-ed-row-"] [data-testid="stSelectbox"] [role="group"]{border:1px solid var(--line)!important;border-radius:10px!important;background:#fff;min-height:42px;font-size:14px}
+[data-testid="stDialog"] [class*="st-key-ed-row-"] [data-testid="stSelectbox"] [role="group"]:focus-within{border-color:var(--blue)!important}
 [data-testid="stDialog"] [class*="st-key-ed-del-"] button{color:var(--t3);min-height:36px;width:36px;border-radius:10px}
 [data-testid="stDialog"] [class*="st-key-ed-del-"] button:hover{color:var(--red);background:var(--redBg)}
 [data-testid="stDialog"] [class*="st-key-ed-add-"] button{border:1.5px dashed rgba(0,113,227,.45);background:#fff;color:var(--blue);border-radius:12px;min-height:42px;font-weight:600;padding:0 16px}

@@ -68,10 +68,42 @@ def test_the_platform_countries_come_from_config() -> None:
 
 def test_without_a_declaration_step_2_cannot_be_confirmed() -> None:
     at = at_step2()
-    assert at.button(key="next").disabled
     shown = page(at)
     assert shown.count("Required · add it in Edit profile") == 2
     assert "Add your work authorization and sponsorship in Edit profile to continue." in shown
+    at.button(key="next").click().run()
+    assert not at.exception
+    assert at.session_state["ob_step"] == "2"
+    shown = page(at)
+    assert shown.count("Complete the missing information to continue: work authorization and sponsorship.") == 1
+    assert shown.count("p-s miss") == 2
+    at.run()  # said once: a later run does not repeat it
+    assert "Complete the missing information" not in page(at)
+
+
+def test_each_required_card_has_a_call_to_action_opening_the_editor() -> None:
+    at = at_step2()
+    shown = page(at)
+    assert "+ Add work authorization" in shown and "+ Add sponsorship" in shown
+    for key in ("oo-wa", "oo-sp"):
+        opened = at_step2()
+        opened.button(key=key).click().run()
+        assert not opened.exception
+        assert [t.label for t in opened.tabs] == ["Work authorization"]
+
+
+def test_the_calls_to_action_open_the_work_authorization_tab_even_with_a_cv() -> None:
+    for key in ("oo-wa", "oo-sp"):
+        at = at_step2(cv=True)
+        at.button(key=key).click().run()
+        assert not at.exception
+        assert at.session_state["ed_tab"] == "Work authorization"
+
+
+def test_once_declared_the_required_calls_to_action_are_gone() -> None:
+    at = at_step2(declared={"authorized": EU, "sponsorship": []})
+    assert "+ Add work authorization" not in page(at)
+    assert not [b for b in at.button if b.key in ("oo-wa", "oo-sp")]
 
 
 def test_the_step_pills_cannot_skip_past_step_2() -> None:
@@ -103,7 +135,7 @@ def test_without_a_cv_the_editor_shows_only_work_authorization() -> None:
 
 def test_with_a_cv_the_work_authorization_tab_comes_after_the_cv_sections() -> None:
     at = editor(at_step2(cv=True))
-    assert [t.label for t in at.tabs] == ["Experience", "Education", "Skills", "Work authorization"]
+    assert [t.label for t in at.tabs] == ["Experience", "Education", "Skills", "Languages", "Work authorization"]
 
 
 def test_saving_without_answers_keeps_the_editor_open() -> None:
@@ -119,10 +151,34 @@ def test_none_cannot_be_combined_with_countries() -> None:
     assert "can’t be combined" in at.session_state["ed_error"]
 
 
-def test_a_country_cannot_be_both_authorized_and_need_sponsorship() -> None:
+def test_sponsorship_is_asked_only_where_the_user_is_not_authorized() -> None:
+    at = editor(at_step2(declared={"authorized": [*EU, "GB"], "sponsorship": []}))
+    sponsor = pills(at, "ed-wa-sp")
+    assert sponsor.options == ["Switzerland", "China", "Hong Kong", "Singapore", "None of these"]
+    assert sponsor.label == "In which of the remaining countries would you require employer sponsorship?"
+
+
+def test_a_newly_authorized_country_leaves_the_sponsorship_answer() -> None:
     at = answer(editor(at_step2()), ["EU"], ["IT", "SG"])
-    assert declared(at) is None
-    assert "Italy" in at.session_state["ed_error"]
+    assert declared(at) == {"authorized": EU, "sponsorship": ["SG"]}
+
+
+def test_authorized_everywhere_skips_the_sponsorship_question() -> None:
+    everywhere = [*EU, "GB", "CH", "CN", "HK", "SG"]
+    at = editor(at_step2(declared={"authorized": everywhere, "sponsorship": []}))
+    assert not [b for b in at.get("button_group") if b.key == "ed-wa-sp"]
+    at.button(key="ed-save").click().run()
+    assert not at.exception
+    assert declared(at) == {"authorized": everywhere, "sponsorship": []}
+
+
+def test_the_store_still_refuses_a_country_both_authorized_and_sponsored() -> None:
+    try:
+        store.set_work_auth(["IT"], ["IT"])
+    except ValueError as exc:
+        assert "Italy" in str(exc)
+    else:
+        raise AssertionError("expected a ValueError")
 
 
 def test_eu_selects_every_eu_country_and_the_step_opens() -> None:
@@ -173,7 +229,7 @@ def test_cancel_leaves_the_declaration_unset() -> None:
     pills(at, "ed-wa-auth").set_value(["GB"])
     at.button(key="ed-cancel").click().run()
     assert declared(at) is None
-    assert at.button(key="next").disabled
+    assert "Add your work authorization and sponsorship in Edit profile to continue." in page(at)
 
 
 # --- Each question needs its own explicit answer -----------------------------
@@ -222,7 +278,7 @@ def app_at_step2():
     at.session_state["ob_step"] = "2"
     at.switch_page("views/onboarding.py").run()
     assert not at.exception
-    assert at.button(key="next").disabled
+    assert "Add your work authorization and sponsorship in Edit profile to continue." in page(at)
     return at
 
 
@@ -243,7 +299,7 @@ def test_returning_after_save_and_exit_still_requires_the_declaration() -> None:
     at.switch_page("views/onboarding.py").run()
     assert not at.exception
     assert at.session_state["ob_step"] == "2"
-    assert at.button(key="next").disabled
+    assert "Add your work authorization and sponsorship in Edit profile to continue." in page(at)
     at.button(key="oo-st3").click().run()  # later pills stay hidden until Explore is done
     assert at.session_state["ob_step"] == "2"
 

@@ -315,3 +315,66 @@ def test_cancel_keeps_the_profile() -> None:
 
     assert at.session_state[store.CANDIDATE] == before
     assert "ed_draft" not in at.session_state
+
+
+# --- the Languages tab --------------------------------------------------------
+
+
+def languages_editor():
+    """The editor on a CV stating English C1 and Mandarin HSK 4."""
+    return open_editor(speaker(lang("en", "C1", "English (C1)"), lang("zh", "HSK 4", "Mandarin HSK 4")))
+
+
+def test_each_language_has_a_language_and_a_level_field() -> None:
+    at = languages_editor()
+    rev = at.session_state["ed_rev"]
+    assert at.selectbox(key=f"ed-lang-{rev}-0").value == "en"
+    assert at.selectbox(key=f"ed-lvl-{rev}-0").value == "CEFR:C1"
+    assert at.selectbox(key=f"ed-lang-{rev}-1").value == "zh"
+    # Levels stay on the language's own scale.
+    assert at.selectbox(key=f"ed-lvl-{rev}-1").options == ["HSK 1", "HSK 2", "HSK 3", "HSK 4", "HSK 5", "HSK 6", "Fluent", "Native"]
+    # A language already listed is not offered again.
+    assert "zh" not in at.selectbox(key=f"ed-lang-{rev}-0").options
+
+
+def test_unchanged_languages_stay_backed_by_the_cv() -> None:
+    at = languages_editor()
+    at.button(key="ed-save").click().run()
+    saved = at.session_state[store.CANDIDATE].eligibility_answers["HC_LANGUAGE"]
+    assert [(a.answer_key, a.value) for a in saved] == [("level_en", "CEFR:C1"), ("level_zh", "HSK:4")]
+    assert not any(store.is_edited(at.session_state[store.CANDIDATE], a) for a in saved)
+
+
+def test_a_changed_level_and_an_added_language_are_saved_as_the_users_word() -> None:
+    at = languages_editor()
+    # One run: after it the dialog is not drawn again, as nothing reopens it.
+    at.selectbox(key=f"ed-lvl-{at.session_state['ed_rev']}-0").set_value("CEFR:C2")
+    at.session_state["ed_draft"]["languages"].append(["it", "SELF:native"])  # a row added and filled in
+    at.button(key="ed-save").click().run()
+    assert not at.exception
+    p = at.session_state[store.CANDIDATE]
+    saved = p.eligibility_answers["HC_LANGUAGE"]
+    assert [(a.answer_key, a.value) for a in saved] == [("level_en", "CEFR:C2"), ("level_zh", "HSK:4"), ("level_it", "SELF:native")]
+    assert [store.is_edited(p, a) for a in saved] == [True, False, True]
+
+
+def test_adding_a_language_adds_an_empty_row() -> None:
+    at = languages_editor()
+    at.button(key="ed-add-languages").click().run()
+    assert at.session_state["ed_draft"]["languages"][-1] == [None, None]
+
+
+def test_an_added_language_needs_a_level() -> None:
+    at = languages_editor()
+    at.session_state["ed_draft"]["languages"].append(["de", None])
+    at.button(key="ed-save").click().run()
+    assert at.session_state["ed_error"] == "Choose a level for German."
+    assert len(at.session_state[store.CANDIDATE].eligibility_answers["HC_LANGUAGE"]) == 2
+
+
+def test_removing_a_language_removes_its_answer() -> None:
+    at = languages_editor()
+    at.button(key=f"ed-del-languages-{at.session_state['ed_rev']}-0").click()
+    at.button(key="ed-save").click().run()
+    saved = at.session_state[store.CANDIDATE].eligibility_answers["HC_LANGUAGE"]
+    assert [a.answer_key for a in saved] == ["level_zh"]

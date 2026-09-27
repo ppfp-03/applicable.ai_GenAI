@@ -70,6 +70,10 @@ BTN_7 = [(1336, 194, 135, 34), (1405, 324, 66, 34), (1405, 454, 66, 34), (1405, 
 #: The "Edit profile" chip beside the step 2 title, as (right, y, w, h): its
 #: panel stretches with the window, the fixed-width CV panel to its right does not.
 EDIT_2 = (509, 29, 107, 27)
+#: The call to action on each empty required card: Work authorization, in the
+#: right column, measured from the stage's middle as its column stretches with
+#: the window; Sponsorship, in the left column, from the stage's left edge.
+CTA_2 = {"wa": (-216, 531, 176, 28), "sp": (47, 742, 138, 28)}
 
 IMPORTANCE = ["Must have", "Important", "Nice to have", "Don’t mind"]
 
@@ -89,6 +93,8 @@ S.setdefault("ob_cv", None)
 #: later step opens.
 GATE = KEYS.index("2")
 NEEDS_WORK_AUTH = "Add your work authorization and sponsorship in Edit profile to continue."
+#: Shown when "Confirm profile" is pressed with a required card still empty.
+MISSING_INFO = "Complete the missing information to continue: work authorization and sponsorship."
 
 
 def blocked(k: str) -> bool:
@@ -126,7 +132,7 @@ def finish() -> None:
 
 def go(k: str) -> None:
     if blocked(k):
-        st.toast(NEEDS_WORK_AUTH)
+        S["ob_notice"] = NEEDS_WORK_AUTH
         return
     S["ob_step"] = k = resolve_step(k)
     if k == "5":
@@ -237,6 +243,10 @@ NOT_FOUND = '<span class="w-b ne"><i></i>Not found</span>'
 NOT_READ = '<span class="w-b ne"><i></i>Not read</span>'
 DECLARED = '<span class="w-b ok"><i></i>Declared</span>'
 REQUIRED = '<span class="w-b am"><i></i>Required</span>'
+#: The same badge once "Confirm profile" was pressed without it.
+MISSING = '<span class="w-b rd"><i></i>Required</span>'
+#: Each required card's call to action, by card title: it opens the editor.
+REQUIRED_CTA = {"Work authorization": "+ Add work authorization", "Sponsorship": "+ Add sponsorship"}
 #: Hover text of a value the user edited, which no CV quote backs.
 EDITED = "Edited by you"
 PENCIL = (
@@ -245,10 +255,10 @@ PENCIL = (
 )
 
 
-def profile_card(title: str, badge: str, body: str, src: str = "") -> str:
+def profile_card(title: str, badge: str, body: str, src: str = "", cls: str = "") -> str:
     source = f'<div class="p-src">{DOC_ICON}{src}</div>' if src else ""
     return (
-        f'<div class="w-card p-s"><div class="p-h"><div class="ic">{ICONS[title]}</div>'
+        f'<div class="w-card p-s{cls}"><div class="p-h"><div class="ic">{ICONS[title]}</div>'
         f"<b>{title}</b>{badge}</div>{body}{source}</div>"
     )
 
@@ -344,8 +354,17 @@ def work_auth_cards() -> list[str]:
     or a note that it is required before continuing."""
     decl = store.work_auth()
     if decl is None:
-        body = '<div class="p-v">Required · add it in Edit profile</div>'
-        return [profile_card(t, REQUIRED, body) for t in ("Work authorization", "Sponsorship")]
+        missing = S.get("ob_missing", False)
+        badge, cls = (MISSING, " miss") if missing else (REQUIRED, "")
+        return [
+            profile_card(
+                t, badge,
+                '<div class="p-v">Required · add it in Edit profile</div>'
+                f'<div class="p-act"><span class="w-chip add p-cta">{cta}</span></div>',
+                cls=cls,
+            )
+            for t, cta in REQUIRED_CTA.items()
+        ]
     authorized = country_list(decl["authorized"]) or "None of our countries"
     sponsorship = country_list(decl["sponsorship"]) or "Not needed anywhere"
     return [
@@ -440,11 +459,26 @@ WORK_TAB = "Work authorization"
 NONE = "NONE"
 
 
-def work_auth_choices() -> tuple[list[str], list[str]]:
+def work_auth_choices(authorized: list[str] = ()) -> tuple[list[str], list[str]]:
     """Pill options: authorization offers the EU as one choice, then the other
-    countries; sponsorship offers every country. Both end with "none"."""
+    countries; sponsorship offers only the countries `authorized` (the current
+    authorization answer) leaves out. Both end with "none"."""
     others = [c["code"] for c in store.markets() if not c["eu"]]
-    return ["EU", *others, NONE], [c["code"] for c in store.markets()] + [NONE]
+    covered = authorized_codes(authorized)
+    return ["EU", *others, NONE], [c["code"] for c in store.markets() if c["code"] not in covered] + [NONE]
+
+
+def authorized_codes(chosen: list[str]) -> set[str]:
+    """The countries an authorization answer covers, the EU expanded."""
+    return (set(chosen) - {"EU", NONE}) | (set(store.eu_codes()) if "EU" in chosen else set())
+
+
+def on_authorization() -> None:
+    """Sponsorship is asked only where the user is not authorized: a country
+    just added to the authorization answer leaves the sponsorship answer."""
+    clear_error()
+    covered = authorized_codes(S.get("ed-wa-auth") or [])
+    S["ed-wa-sp"] = [c for c in S.get("ed-wa-sp") or [] if c not in covered]
 
 
 def work_auth_label(value: str) -> str:
@@ -476,6 +510,8 @@ def read_work_auth() -> tuple[list[str], list[str]]:
     for key, question in (("ed-wa-auth", "where you are currently authorized to work"),
                           ("ed-wa-sp", "where you would require employer sponsorship")):
         chosen = list(S.get(key) or [])
+        if key == "ed-wa-sp" and work_auth_choices(answers[0])[1] == [NONE]:
+            chosen = [NONE]  # authorized everywhere: the question is not asked
         if not chosen:
             raise ValueError(f"Tell us {question}, or choose “None of these”.")
         if NONE in chosen and len(chosen) > 1:
@@ -487,14 +523,19 @@ def read_work_auth() -> tuple[list[str], list[str]]:
     return authorized, sponsorship
 
 
-def open_editor() -> None:
-    """Start a draft of the CV sections and the work authorization answers.
+def open_editor(tab: str | None = None) -> None:
+    """Start a draft of the CV sections, the languages and the work
+    authorization answers, and open the editor on `tab` (or its first tab).
     The editor changes the draft only; the profile changes on "Save changes",
     so Cancel or closing loses nothing."""
     profile = store.candidate()
     S["ed_draft"] = (
-        {field: [f.value for f in getattr(profile, field)] for _, field in CV_SECTIONS} if profile else {}
+        {field: [f.value for f in getattr(profile, field)] for _, field in CV_SECTIONS}
+        | {store.LANGUAGES: [[a.answer_key.removeprefix("level_"), a.value] for a in section_facts(profile, LANGUAGES[1])]}
+        if profile else {}
     )
+    S["ed_tab"] = tab
+    S["ed_open"] = S.get("ed_open", 0) + 1
     S["ed_rev"] = S.get("ed_rev", 0) + 1
     S["ed-skill-new"] = ""
     S.pop("ed_error", None)
@@ -516,6 +557,53 @@ def sync_draft() -> None:
             store.join_entry(*(S.get(entry_key(field, i, n), part) for n, part in enumerate(store.split_entry(v))))
             for i, v in enumerate(S["ed_draft"][field])
         ]
+    S["ed_draft"][store.LANGUAGES] = [
+        [S.get(lang_key("lang", i), code), S.get(lang_key("lvl", i), level)]
+        for i, (code, level) in enumerate(S["ed_draft"][store.LANGUAGES])
+    ]
+
+
+def lang_key(part: str, i: int) -> str:
+    """The language ("lang") or level ("lvl") field of language row `i`."""
+    return f"ed-{part}-{S['ed_rev']}-{i}"
+
+
+def add_language() -> None:
+    sync_draft()
+    S["ed_draft"][store.LANGUAGES].append([None, None])
+
+
+def remove_language(i: int) -> None:
+    sync_draft()
+    del S["ed_draft"][store.LANGUAGES][i]
+    S["ed_rev"] += 1
+
+
+def language_changed(i: int) -> None:
+    """A level belongs to its language's scale: another language starts without one."""
+    if S.get(lang_key("lvl", i)) not in store.language_levels().get(S.get(lang_key("lang", i)), []):
+        S[lang_key("lvl", i)] = None
+
+
+def read_languages() -> list[tuple[str, str | None]]:
+    """The languages to save, each with its level. Rows without a language
+    are dropped. A level may stay unstated only where the CV left it so.
+
+    Raises:
+        ValueError: If a language added or changed here has no level.
+    """
+    stated = {(a.answer_key.removeprefix("level_"), a.value) for a in section_facts(store.candidate(), LANGUAGES[1])}
+    kept = [(code, level) for code, level in S["ed_draft"][store.LANGUAGES] if code]
+    for code, level in kept:
+        if level is None and (code, None) not in stated:
+            raise ValueError(f"Choose a level for {LANGUAGE_NAMES.get(code, code.upper())}.")
+    return kept
+
+
+def level_label(value: str) -> str:
+    """A level as the user reads it: "C1", "HSK 4", "JLPT N2", "Fluent"."""
+    label = LanguageLevel.parse(value).label
+    return label[:1].upper() + label[1:]
 
 
 def add_entry(field: str) -> None:
@@ -551,6 +639,9 @@ def save_editor() -> None:
     """Save everything, or nothing: the work authorization answers are
     mandatory, so an incomplete tab keeps the editor open with the reason."""
     try:
+        if S["ed_draft"]:
+            sync_draft()
+            languages = read_languages()
         authorized, sponsorship = read_work_auth()
         store.set_work_auth(authorized, sponsorship)
     except ValueError as exc:
@@ -559,9 +650,8 @@ def save_editor() -> None:
     S.pop("ed_error", None)
     S["ob_uk"] = store.uk_from_work_auth()  # step 6 starts from the declared answer
     if S["ed_draft"]:
-        sync_draft()
         take_skill()  # one typed but not yet added with Enter
-        store.save_edits(S["ed_draft"])
+        store.save_edits({**S["ed_draft"], store.LANGUAGES: languages})
     S.pop("ed_draft")
 
 
@@ -578,16 +668,45 @@ def clear_error() -> None:
 def work_auth_tab() -> None:
     """The mandatory questions. Declared by the user, never read from the CV
     or inferred from citizenship."""
-    auth, sponsor = work_auth_choices()
+    authorized = [c for c in S.get("ed-wa-auth") or [] if c != NONE]
+    auth, sponsor = work_auth_choices(authorized)
     st.markdown(
         '<div class="ed-sub">Required to continue. Countries you leave out count as “no”.</div>',
         unsafe_allow_html=True,
     )
     st.pills("In which countries are you currently authorized to work?", auth, selection_mode="multi",
              key="ed-wa-auth", format_func=work_auth_label, help="Choosing EU selects every EU country we cover.",
-             on_change=clear_error)
-    st.pills("In which countries would you require employer sponsorship?", sponsor, selection_mode="multi",
+             on_change=on_authorization)
+    if sponsor == [NONE]:  # authorized everywhere: nothing left to sponsor
+        return
+    question = ("In which of the remaining countries would you require employer sponsorship?" if authorized
+                else "In which countries would you require employer sponsorship?")
+    st.pills(question, sponsor, selection_mode="multi",
              key="ed-wa-sp", format_func=work_auth_label, on_change=clear_error)
+
+
+def languages_tab(rows: list) -> None:
+    """One card per language: which language, and the level on its own scale."""
+    levels = store.language_levels()
+    if not rows:
+        st.markdown('<div class="ed-none">No languages yet.</div>', unsafe_allow_html=True)
+    for i, (code, level) in enumerate(rows):
+        others = {c for j, (c, _) in enumerate(rows) if j != i}
+        choices = [c for c in levels if c not in others]
+        chosen = S.get(lang_key("lang", i), code)
+        with st.container(key=f"ed-row-languages-{i}"):
+            with st.container(horizontal=True, vertical_alignment="bottom"):
+                st.selectbox("Language", choices, index=None if lang_key("lang", i) in S or code not in choices else choices.index(code),
+                             key=lang_key("lang", i), format_func=lambda c: LANGUAGE_NAMES.get(c, c.upper()),
+                             placeholder="Choose a language", on_change=language_changed, args=(i,))
+                allowed = levels.get(chosen, [])
+                st.selectbox("Level", allowed, index=None if lang_key("lvl", i) in S or level not in allowed else allowed.index(level),
+                             key=lang_key("lvl", i), format_func=level_label, disabled=not chosen,
+                             placeholder="Choose a level" if chosen else "Choose a language first")
+                st.button("", icon=":material/delete:", key=f"ed-del-languages-{S['ed_rev']}-{i}",
+                          type="tertiary", on_click=remove_language, args=(i,), help="Remove")
+    st.button("Add language", icon=":material/add:", key="ed-add-languages", on_click=add_language,
+              disabled=len(rows) >= len(levels))
 
 
 @st.dialog("Edit your profile", width="large")
@@ -605,10 +724,15 @@ def edit_profile() -> None:
     )
     st.markdown(f'<div class="ed-sub">{sub}</div>', unsafe_allow_html=True)
     cv_tabs = EDIT_TABS if draft else []
-    names = [t for t, *_ in cv_tabs] + [WORK_TAB]
-    shown = st.tabs(names, key="ed-tabs", default=None if store.work_auth_complete() else WORK_TAB)
+    names = [t for t, *_ in cv_tabs] + ([LANGUAGES[0]] if draft else []) + [WORK_TAB]
+    tab = S.get("ed_tab") or (None if store.work_auth_complete() else WORK_TAB)
+    # Keyed by opening, so each opening starts on the tab asked for.
+    shown = st.tabs(names, key=f"ed-tabs-{S['ed_open']}", default=tab if tab in names else None)
     with shown[-1]:
         work_auth_tab()
+    if draft:
+        with shown[len(cv_tabs)]:
+            languages_tab(draft[store.LANGUAGES])
     for tab, (title, field, icon, add) in zip(shown, cv_tabs):
         with tab:
             if icon is None:  # skills
@@ -1194,6 +1318,8 @@ with st.container(key="otop"):
         html(f'<span class="av">{esc(store.initials(store.user()["name"]))}</span>')
 
 with st.container(key="obody"):
+    if notice := S.pop("ob_notice", None):  # once, on the press that was refused
+        html(f'<div class="ob-notice" role="alert"><i></i><span>{notice}</span></div>')
     if step == "1":
         # The screen is a placeholder so the file card itself can show the CV being read.
         screen = st.empty()
@@ -1225,7 +1351,13 @@ with st.container(key="obody"):
         html(f'<section class="w-sec">{step2()}</section>')
         right, y, w, h = EDIT_2
         st.markdown(f"<style>.stApp .st-key-oo-edit{{left:auto!important;right:{right}px}}</style>", unsafe_allow_html=True)
-        if overlay("edit", (0, y, w, h), "Edit profile", on_click=open_editor):
+        opened = overlay("edit", (0, y, w, h), "Edit profile", on_click=open_editor)
+        if store.work_auth() is None:
+            mid = CTA_2["wa"][0]
+            st.markdown(f"<style>.stApp .st-key-oo-wa{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
+            for name, label in zip(CTA_2, REQUIRED_CTA.values()):
+                opened |= overlay(name, CTA_2[name], label, on_click=open_editor, args=(WORK_TAB,))
+        if opened:
             edit_profile()
     elif step == "3a":
         if S["ob_prefs"] is None:  # reached without Explore, e.g. "Adjust preferences"
@@ -1305,6 +1437,13 @@ if gated:
 if step == "5" and uk_declared():
     info, cta = "<b>Step 5 of 7</b> · Your UK work authorization is already declared", "View shortlist"
 
+
+def flag_missing() -> None:
+    """Mark the empty required cards, before they are drawn, and say why."""
+    S["ob_missing"] = True
+    S["ob_notice"] = MISSING_INFO
+
+
 with st.container(key="ofoot"):
     html(f'<span class="i">{info}</span>')
     if idx > 0:
@@ -1313,7 +1452,8 @@ with st.container(key="ofoot"):
             go("5" if back == "6" and uk_declared() else back)  # step 6 is skipped both ways
             st.rerun()
     waiting = (step == "5" and S["ob_tick"] < 5) or (step == "3b" and not explored()) or unweighted
-    if st.button(cta, type="primary", key="next", disabled=waiting or gated):
+    # With a required card still empty, pressing it says what is missing.
+    if st.button(cta, type="primary", key="next", disabled=waiting, on_click=flag_missing if gated else None) and not gated:
         if step == "3b":
             S["ob_prefs"] = pref_rows()
         if step == "3a":
