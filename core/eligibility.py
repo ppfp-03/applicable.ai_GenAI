@@ -8,7 +8,9 @@ module only translates, and decides nothing:
   degree, graduation month, field, CEFR languages, student status and months
   of experience become `eligibility_answers`; the user's answers become
   `declarations.work_authorizations`. Citizenship is not copied over: it is
-  not a declaration, and it never implies work authorisation;
+  not a declaration, and it never implies work authorisation. Every
+  country in the work authorization declaration is passed on, each fact
+  true, false or null as declared (see `declarations`);
 - a demo role becomes a JobRecord whose demo `requirements` are listed
   explicitly as canonical requirements (classification + modality +
   constraint), plus the typed JobParameterSet the rules compare against;
@@ -86,9 +88,18 @@ _RECEIPT = {
 #: What each work answer declares, as (authorized_to_work, requires_sponsorship).
 #: The question reads "Can you work in <country> without visa sponsorship?";
 #: "Not sure" and no answer declare nothing. Used for the UK and every other country.
-_UK_DECLARATIONS = {
+_WORK_ANSWERS = {
     "yes": (True, False),
     "no": (False, True),
+}
+
+#: The answers key holding the work authorization declaration (store.work_auth).
+DECLARATION = "work_auth"
+#: The declaration's country lists, per contract fact: the countries where the
+#: fact is true, then those where it is false. A country in neither is unknown.
+DECLARATION_LISTS = {
+    "authorized_to_work": ("authorized", "not_authorized"),
+    "requires_sponsorship": ("sponsorship", "no_sponsorship"),
 }
 
 #: The explicit sponsorship values a demo role may carry.
@@ -176,23 +187,77 @@ def in_progress_policy(graduation: Optional[str], start: Optional[str]) -> str:
 # ───────────────────────── Candidate side ─────────────────────────
 
 
+#: (authorized_to_work, requires_sponsorship), each None where unknown.
+Facts = tuple[Optional[bool], Optional[bool]]
+
+
+def declared(declaration: Optional[Mapping[str, Any]], country: str) -> Facts:
+    """One country's facts in a work authorization declaration (see
+    DECLARATION_LISTS). No declaration, or no list naming it, is unknown."""
+    lists = declaration or {}
+
+    def fact(true: str, false: str) -> Optional[bool]:
+        return True if country in lists.get(true, ()) else False if country in lists.get(false, ()) else None
+
+    authorized, sponsorship = (fact(*DECLARATION_LISTS[f]) for f in DECLARATION_LISTS)
+    return authorized, sponsorship
+
+
+def work_answer(facts: Facts) -> str:
+    """The answer to "Can you work in <country> without visa sponsorship?"
+    that one country's facts give. Only the two complete answers count:
+    "yes" (authorized, no sponsorship needed) and "no" (not authorized,
+    sponsorship needed). Every other pair, one known fact included (e.g.
+    "None of these": false/null), is "unsure": nothing is completed from it.
+    """
+    return next((answer for answer, pair in _WORK_ANSWERS.items() if pair == tuple(facts)), "unsure")
+
+
+def answer_declaration(answer: Optional[str], facts: Facts) -> Facts:
+    """One country's facts after answering "Can you work in <country> without
+    visa sponsorship?", given what the country held before.
+
+    "Yes" and "No" settle both facts. "Not sure" and no answer settle nothing
+    and invent nothing: they keep facts that are themselves unsettled (e.g.
+    "None of these": false/null; D-050), and withdraw a "Yes" or "No", the
+    answer being changed.
+    """
+    if answer in _WORK_ANSWERS:
+        return _WORK_ANSWERS[answer]
+    return facts if work_answer(facts) == "unsure" else (None, None)
+
+
 def declarations(answers: Mapping[str, Any]) -> tuple[tuple[str, Optional[bool], Optional[bool]], ...]:
     """The work-authorisation declarations the user's answers make.
+
+    One per country, from the work authorization declaration held under
+    DECLARATION (store.work_auth), each fact as declared. Answers without a
+    declaration go by the UK answer ("uk_work") and per-country answers
+    ("work") alone.
 
     Returns:
         (country_code, authorized_to_work, requires_sponsorship) per country.
     """
-    # The UK has its own question ("uk_work"); every other country is answered
-    # the same way from the role page (answers["work"][country]). "Not sure"
-    # declares nothing, so the rule keeps asking.
-    by_country = {c: a for c, a in (answers.get("work") or {}).items() if c != "GB"}
-    by_country["GB"] = answers.get("uk_work")
-    out = []
-    for country in sorted(by_country):
-        decl = _UK_DECLARATIONS.get(by_country[country])
-        if decl:
-            out.append((country, *decl))
-    return tuple(out)
+    declaration = answers.get(DECLARATION)
+    if declaration is None:
+        # Compatibility for mappings without a declaration (the demo persona
+        # before any is made, direct test inputs): the UK answer and any
+        # per-country answers are read as answers. Nothing live writes them.
+        rows = {c: _WORK_ANSWERS.get(a, (None, None)) for c, a in (answers.get("work") or {}).items()}
+        rows["GB"] = _WORK_ANSWERS.get(answers.get("uk_work"), (None, None))
+    else:
+        countries = {c for key in (k for pair in DECLARATION_LISTS.values() for k in pair)
+                     for c in declaration.get(key, ())}
+        rows = {c: declared(declaration, c) for c in countries}
+        # A preview asks "what if I answered this?": an answer that differs
+        # from what the declaration gives replaces that country's facts, as
+        # saving it would. The live answers never differ (store.answers).
+        asked = {**(answers.get("work") or {}), **({"GB": answers["uk_work"]} if "uk_work" in answers else {})}
+        for country, answer in asked.items():
+            facts = rows.get(country, (None, None))
+            if (answer or "unsure") != work_answer(facts):
+                rows[country] = answer_declaration(answer, facts)
+    return tuple((c, *rows[c]) for c in sorted(rows) if rows[c] != (None, None))
 
 
 def _candidate_key(profile: Mapping[str, Any], answers: Mapping[str, Any]) -> str:

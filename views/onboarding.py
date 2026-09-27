@@ -82,7 +82,7 @@ EDIT_2 = (509, 27, 122, 32)
 CTA_2 = {"wa": (-216, 531, 176, 28), "sp": (47, 742, 138, 28)}
 #: The inline "Edit profile" link in the same two cards, placed like CTA_2
 #: (Work authorization from the stage's middle, Sponsorship from its left edge).
-LINK_2 = {"wa-link": (-99, 430, 70, 20), "sp-link": (164, 640, 70, 20)}
+LINK_2 = {"wa-link": (-99, 430, 70, 20), "sp-link": (211, 640, 70, 20)}
 
 IMPORTANCE = ["Must have", "Important", "Nice to have", "Don’t mind"]
 
@@ -99,10 +99,10 @@ S.setdefault("ob_file", None)  # (name, size in bytes) of the CV read
 S.setdefault("ob_cv", None)
 S.setdefault("ob_taught", False)  # the Explore practice card was swiped
 
-#: Work authorization and sponsorship must be declared in step 2 before any
-#: later step opens.
+#: The work authorization question must be answered in step 2 before any
+#: later step opens. Sponsorship may stay unknown (D-050).
 GATE = KEYS.index("2")
-NEEDS_WORK_AUTH = "Add your work authorization and sponsorship in Edit profile to continue."
+NEEDS_WORK_AUTH = "Add your work authorization in Edit profile to continue."
 #: The data processing consent, given by uploading a CV, must be in place
 #: before matching starts in step 4.
 MATCHING = KEYS.index("4")
@@ -113,7 +113,7 @@ CONSENT_NOTE = (
     "to check and rank opportunities. Nothing is sent to employers.</div>"
 )
 #: Shown when "Confirm profile" is pressed with a required card still empty.
-MISSING_INFO = "Complete the missing information to continue: work authorization and sponsorship."
+MISSING_INFO = "Complete the missing information to continue: work authorization."
 
 
 def refusal(k: str) -> str | None:
@@ -274,10 +274,12 @@ FOUND = '<span class="w-b ok"><i></i>Found</span>'
 NOT_FOUND = '<span class="w-b ne"><i></i>Not found</span>'
 NOT_READ = '<span class="w-b ne"><i></i>Not read</span>'
 DECLARED = '<span class="w-b ok"><i></i>Declared</span>'
+NOT_DECLARED = '<span class="w-b ne"><i></i>Not declared</span>'
 REQUIRED = '<span class="w-b am"><i></i>Required</span>'
 #: The same badge once "Confirm profile" was pressed without it.
 MISSING = '<span class="w-b rd"><i></i>Required</span>'
-#: Each required card's call to action, by card title: it opens the editor.
+#: Each work authorization card's call to action, by card title: it opens the
+#: editor. Only the first is required; sponsorship may stay unknown (D-050).
 REQUIRED_CTA = {"Work authorization": "+ Add work authorization", "Sponsorship": "+ Add sponsorship"}
 #: The inline "Edit profile" link in each required card, by card title: its overlay key.
 LINK_CLASS = {"Work authorization": "wa-link", "Sponsorship": "sp-link"}
@@ -405,28 +407,67 @@ def country_list(codes: list[str]) -> str:
 
 def work_auth_cards() -> list[str]:
     """The work authorization and sponsorship cards: the user's declaration,
-    or a note that it is required before continuing."""
+    or, before it, a note that work authorization is required to continue.
+    Sponsorship is never required, and unknown sponsorship shows as such."""
     decl = store.work_auth()
-    if decl is None:
+    if not store.work_auth_complete():
+        # A clarification answered before step 2 (e.g. on a role page) is
+        # shown as it is; step 2's question stays required all the same.
         missing = S.get("ob_missing", False)
-        badge, cls = (MISSING, " miss") if missing else (REQUIRED, "")
+        badges = {"Work authorization": (MISSING, " miss") if missing else (REQUIRED, ""),
+                  "Sponsorship": (NOT_DECLARED, "")}
+        state = {"Work authorization": "Required", "Sponsorship": "Not declared yet"}
+        so_far = authorization_value(decl) if decl is not None else "Not declared yet"
+        notes = {"Work authorization": f'<div class="p-m">Declared so far: {esc(so_far)}</div>'
+                 if so_far != "Not declared yet" else "", "Sponsorship": ""}
         return [
-            profile_card(
-                t, badge,
-                f'<div class="p-v">Required · add it in <span class="p-link {LINK_CLASS[t]}">Edit profile</span></div>'
-                f'<div class="p-act"><span class="w-chip add p-cta">{cta}</span></div>',
-                cls=cls,
+            sponsorship_card(decl) if t == "Sponsorship" and decl is not None else profile_card(
+                t, badges[t][0],
+                f'<div class="p-v">{state[t]} · add it in <span class="p-link {LINK_CLASS[t]}">Edit profile</span></div>'
+                f'{notes[t]}<div class="p-act"><span class="w-chip add p-cta">{cta}</span></div>',
+                cls=badges[t][1],
                 # Opened, the call to action would press nothing: it is left out.
-                full='<div class="p-v">Required · add it in Edit profile</div>',
+                full=f'<div class="p-v">{state[t]} · add it in Edit profile</div>{notes[t]}',
             )
             for t, cta in REQUIRED_CTA.items()
         ]
-    authorized = country_list(decl["authorized"]) or "None of our countries"
-    sponsorship = country_list(decl["sponsorship"]) or "Not needed anywhere"
-    return [
-        profile_card("Work authorization", DECLARED, f'<div class="p-v">{esc(authorized)}</div>', "Declared by you"),
-        profile_card("Sponsorship", DECLARED, f'<div class="p-v">{esc(sponsorship)}</div>', "Declared by you"),
-    ]
+    return [authorization_card(decl), sponsorship_card(decl)]
+
+
+def declared_lists(decl: dict, true: str, false: str) -> tuple[list[str], list[str], list[str]]:
+    """The platform countries where one fact is true, false, and not declared."""
+    codes = [c["code"] for c in store.markets()]
+    yes, no = decl.get(true, []), decl.get(false, [])
+    return yes, no, [c for c in codes if c not in yes and c not in no]
+
+
+def authorization_value(decl: dict) -> str:
+    """Where the user can work, as declared. "None of these" says so."""
+    yes, no, unknown = declared_lists(decl, "authorized", "not_authorized")
+    if yes:
+        return country_list(yes)
+    if not unknown:
+        return "None of our countries"
+    return f"Not in {country_list(no)}" if no else "Not declared yet"
+
+
+def authorization_card(decl: dict) -> str:
+    return profile_card("Work authorization", DECLARED, f'<div class="p-v">{esc(authorization_value(decl))}</div>',
+                        "Declared by you")
+
+
+def sponsorship_card(decl: dict) -> str:
+    """Where sponsorship is needed and where not, as declared. A country left
+    out, or "None of these", declares nothing: it shows as not declared yet."""
+    yes, no, unknown = declared_lists(decl, "sponsorship", "no_sponsorship")
+    if not unknown and not yes:
+        return profile_card("Sponsorship", DECLARED, '<div class="p-v">Not needed anywhere</div>', "Declared by you")
+    parts = [f"Needed in {country_list(yes)}"] * bool(yes) + [f"Not needed in {country_list(no)}"] * bool(no)
+    if not parts:
+        return profile_card("Sponsorship", NOT_DECLARED, '<div class="p-v">Not declared yet</div>'
+                            '<div class="p-m">We’ll ask if a role needs it</div>')
+    note = '<div class="p-m">Not declared yet for other countries</div>' if unknown else ""
+    return profile_card("Sponsorship", DECLARED, f'<div class="p-v">{esc(" · ".join(parts))}</div>{note}', "Declared by you")
 
 
 def languages_card(profile) -> str:
@@ -552,23 +593,21 @@ def work_auth_label(value: str) -> str:
 
 def draft_work_auth() -> None:
     """Fill the question from the saved declaration, or leave it blank. An
-    answer covering only part of the EU opens with the EU split."""
-    decl = store.work_auth()
-    if decl is None:
-        S["ed-wa-auth"], S[EU_SPLIT] = [], False
-        return
+    answer covering only part of the EU opens with the EU split; "None of
+    these" when every platform country is declared not authorized."""
+    decl = store.work_auth() or {}
+    authorized = decl.get("authorized", [])
     eu = store.eu_codes()
-    part = set(eu) & set(decl["authorized"])
+    part = set(eu) & set(authorized)
     S[EU_SPLIT] = bool(part) and part != set(eu)
-    auth = list(decl["authorized"]) if S[EU_SPLIT] else (["EU"] if part else []) + [
-        c for c in decl["authorized"] if c not in eu]
-    S["ed-wa-auth"] = auth or [NONE]
+    auth = list(authorized) if S[EU_SPLIT] else (["EU"] if part else []) + [c for c in authorized if c not in eu]
+    everywhere_not = {c["code"] for c in store.markets()} <= set(decl.get("not_authorized", []))
+    S["ed-wa-auth"] = auth or ([NONE] if everywhere_not else [])
 
 
-def read_work_auth() -> tuple[list[str], list[str]]:
-    """The answer as country codes, the EU expanded: where the user is
-    authorized, and every other platform country as needing sponsorship.
-    The question says so, so both are the user's own declaration.
+def read_work_auth() -> list[str] | None:
+    """The countries chosen, the EU expanded, or None for "None of these".
+    What the answer declares is store.answer_work_question's (D-050).
 
     Raises:
         ValueError: If the question is unanswered or mixes "none" with countries.
@@ -578,8 +617,7 @@ def read_work_auth() -> tuple[list[str], list[str]]:
         raise ValueError("Tell us where you can work without employer sponsorship, or choose “None of these”.")
     if NONE in chosen and len(chosen) > 1:
         raise ValueError("“None of these” can’t be combined with countries.")
-    authorized = authorized_codes(chosen)
-    return authorized, [c["code"] for c in store.markets() if c["code"] not in authorized]
+    return None if chosen == [NONE] else authorized_codes(chosen)
 
 
 def open_editor(tab: str | None = None) -> None:
@@ -701,8 +739,7 @@ def save_editor() -> None:
         if S["ed_draft"]:
             sync_draft()
             languages = read_languages()
-        authorized, sponsorship = read_work_auth()
-        store.set_work_auth(authorized, sponsorship)
+        store.answer_work_question(read_work_auth())
     except ValueError as exc:
         S["ed_error"] = str(exc)
         return
@@ -726,11 +763,11 @@ def clear_error() -> None:
 
 def work_auth_tab() -> None:
     """The mandatory question. Declared by the user, never read from the CV
-    or inferred from citizenship: one answer says both where the user may
-    work and where they would need sponsorship."""
+    or inferred from citizenship. A country chosen needs no sponsorship; one
+    left out is not declared, and sponsorship is asked later if it matters."""
     st.markdown(
-        '<div class="ed-sub">Required to continue. Every country you leave out is saved as needing '
-        "employer sponsorship.</div>",
+        '<div class="ed-sub">Required to continue. Countries you leave out stay undeclared: '
+        "we’ll ask about them if a role there needs it.</div>",
         unsafe_allow_html=True,
     )
     st.pills("Where can you work without employer sponsorship?", work_auth_choices(), selection_mode="multi",
@@ -1448,15 +1485,17 @@ with st.container(key="obody"):
         right, y, w, h = EDIT_2
         st.markdown(f"<style>.stApp .st-key-oo-edit{{left:auto!important;right:{right}px}}</style>", unsafe_allow_html=True)
         opened = overlay("edit", (0, y, w, h), "Edit profile", on_click=open_editor)
-        if store.work_auth() is None:
+        if not store.work_auth_complete():
             mid = CTA_2["wa"][0]
             st.markdown(f"<style>.stApp .st-key-oo-wa{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
-            for name, label in zip(CTA_2, REQUIRED_CTA.values()):
+            # A sponsorship card showing facts already declared has no call to action.
+            placeholders = 2 if store.work_auth() is None else 1
+            for name, label in list(zip(CTA_2, REQUIRED_CTA.values()))[:placeholders]:
                 opened |= overlay(name, CTA_2[name], label, on_click=open_editor, args=(WORK_TAB,))
             # The "Edit profile" text inside each card: the same editor, on the same tab.
             mid = LINK_2["wa-link"][0]
             st.markdown(f"<style>.stApp .st-key-oo-wa-link{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
-            for name, title in zip(LINK_2, REQUIRED_CTA):
+            for name, title in list(zip(LINK_2, REQUIRED_CTA))[:placeholders]:
                 opened |= overlay(name, LINK_2[name], f"Edit profile · {title}", on_click=open_editor, args=(WORK_TAB,))
         if opened:
             edit_profile()
