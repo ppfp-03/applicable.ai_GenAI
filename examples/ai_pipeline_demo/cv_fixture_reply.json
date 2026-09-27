@@ -1,0 +1,29 @@
+{
+  "skills": [
+    {"value": "Financial modelling in Excel", "quote": "Financial modelling in Excel"},
+    {"value": "Python (pandas)", "quote": "Python (pandas)"},
+    {"value": "SQL", "quote": "SQL"},
+    {"value": "Bloomberg Terminal basics", "quote": "Bloomberg Terminal basics"}
+  ],
+  "education": [
+    {
+      "value": "BSc Economics and Finance, Northbridge University Business School, expected graduation July 2028",
+      "quote": "BSc Economics and Finance, Northbridge University Business School, London September 2025 - expected graduation July 2028"
+    }
+  ],
+  "experience": [
+    {
+      "value": "Finance Intern, Harbourline Capital (June 2026 - August 2026)",
+      "quote": "Finance Intern, Harbourline Capital, London (June 2026 - August 2026)"
+    },
+    {
+      "value": "Student Treasurer, Northbridge Investment Society",
+      "quote": "Student Treasurer, Northbridge Investment Society (October 2025 - present)"
+    }
+  ],
+  "languages": [
+    {"language": "en", "level": "Native", "quote": "English - Native"},
+    {"language": "it", "level": "C1", "quote": "Italian - C1"},
+    {"language": "de", "level": "B1", "quote": "German - B1"}
+  ]
+}

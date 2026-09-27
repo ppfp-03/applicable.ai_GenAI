@@ -1,0 +1,197 @@
+{
+  "schema_version": "0.2.0-draft",
+  "candidate_id": "cv-synthetic-cv",
+  "cv_document_id": "cv-synthetic-cv",
+  "skills": [
+    {
+      "value": "Financial modelling in Excel",
+      "evidence_ids": [
+        "ev-cv-synthetic-cv-skill-001"
+      ]
+    },
+    {
+      "value": "Python (pandas)",
+      "evidence_ids": [
+        "ev-cv-synthetic-cv-skill-002"
+      ]
+    },
+    {
+      "value": "SQL",
+      "evidence_ids": [
+        "ev-cv-synthetic-cv-skill-003"
+      ]
+    },
+    {
+      "value": "PowerPoint",
+      "evidence_ids": [
+        "ev-cv-synthetic-cv-skill-004"
+      ]
+    },
+    {
+      "value": "Bloomberg Terminal basics",
+      "evidence_ids": [
+        "ev-cv-synthetic-cv-skill-005"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "value": "BSc Economics and Finance · Northbridge University Business School · September 2025 - expected graduation July 2028",
+      "evidence_ids": [
+        "ev-cv-synthetic-cv-education-001"
+      ]
+    }
+  ],
+  "experience": [
+    {
+      "value": "Finance Intern · Harbourline Capital · June 2026 - August 2026",
+      "evidence_ids": [
+        "ev-cv-synthetic-cv-experience-001"
+      ]
+    },
+    {
+      "value": "Student Treasurer · Northbridge Investment Society · October 2025 - present",
+      "evidence_ids": [
+        "ev-cv-synthetic-cv-experience-002"
+      ]
+    }
+  ],
+  "preferences": {
+    "allowed_country_codes": null,
+    "preferred_country_codes": [],
+    "preferred_role_families": [],
+    "preferred_industries": []
+  },
+  "declarations": {
+    "additional_citizenships": [],
+    "work_authorizations": []
+  },
+  "eligibility_answers": {
+    "HC_LANGUAGE": [
+      {
+        "constraint_id": "HC_LANGUAGE",
+        "answer_key": "level_en",
+        "state": "known",
+        "answer_type": "single_choice",
+        "value": "SELF:native",
+        "evidence_ids": [
+          "ev-cv-synthetic-cv-language-001"
+        ],
+        "source_document_id": "cv-synthetic-cv"
+      },
+      {
+        "constraint_id": "HC_LANGUAGE",
+        "answer_key": "level_it",
+        "state": "known",
+        "answer_type": "single_choice",
+        "value": "CEFR:C1",
+        "evidence_ids": [
+          "ev-cv-synthetic-cv-language-002"
+        ],
+        "source_document_id": "cv-synthetic-cv"
+      },
+      {
+        "constraint_id": "HC_LANGUAGE",
+        "answer_key": "level_de",
+        "state": "known",
+        "answer_type": "single_choice",
+        "value": "CEFR:B1",
+        "evidence_ids": [
+          "ev-cv-synthetic-cv-language-003"
+        ],
+        "source_document_id": "cv-synthetic-cv"
+      }
+    ]
+  },
+  "provenance": {
+    "questionnaire_document_ids": [],
+    "clarification_document_ids": [],
+    "documents": {
+      "cv-synthetic-cv": {
+        "document_id": "cv-synthetic-cv",
+        "kind": "cv",
+        "text": "SAMPLE CANDIDATE (synthetic CV for the AI pipeline demo - not a real person)\nLondon, United Kingdom | sample.candidate@example.com\n\nEDUCATION\nBSc Economics and Finance, Northbridge University Business School, London\nSeptember 2025 - expected graduation July 2028 (penultimate-year student in 2026/27)\nRelevant modules: Corporate Finance, Econometrics, Financial Markets, Accounting\n\nEXPERIENCE\nFinance Intern, Harbourline Capital, London (June 2026 - August 2026)\nBuilt a discounted cash flow model for two mid-cap industrial companies and presented the valuation to the deal team.\nPrepared weekly market summaries covering rates, FX and credit spreads.\n\nStudent Treasurer, Northbridge Investment Society (October 2025 - present)\nManage a society budget of GBP 12,000 and run a paper-trading portfolio competition for 60 members.\n\nSKILLS\nFinancial modelling in Excel, Python (pandas), SQL, PowerPoint, Bloomberg Terminal basics\n\nLANGUAGES\nEnglish - Native\nItalian - C1\nGerman - B1\n",
+        "content_hash": "9209ac6d046abf56323a380a68bbe83bfac49b4f84ce851ab85754c6b901d4e7",
+        "source_ref": "file:synthetic_cv.txt"
+      }
+    },
+    "evidence": [
+      {
+        "evidence_id": "ev-cv-synthetic-cv-skill-001",
+        "document_id": "cv-synthetic-cv",
+        "quote": "Financial modelling in Excel",
+        "field_path": "skills"
+      },
+      {
+        "evidence_id": "ev-cv-synthetic-cv-skill-002",
+        "document_id": "cv-synthetic-cv",
+        "quote": "Python (pandas)",
+        "field_path": "skills"
+      },
+      {
+        "evidence_id": "ev-cv-synthetic-cv-skill-003",
+        "document_id": "cv-synthetic-cv",
+        "quote": "SQL",
+        "field_path": "skills"
+      },
+      {
+        "evidence_id": "ev-cv-synthetic-cv-skill-004",
+        "document_id": "cv-synthetic-cv",
+        "quote": "PowerPoint",
+        "field_path": "skills"
+      },
+      {
+        "evidence_id": "ev-cv-synthetic-cv-skill-005",
+        "document_id": "cv-synthetic-cv",
+        "quote": "Bloomberg Terminal basics",
+        "field_path": "skills"
+      },
+      {
+        "evidence_id": "ev-cv-synthetic-cv-education-001",
+        "document_id": "cv-synthetic-cv",
+        "quote": "BSc Economics and Finance, Northbridge University Business School, London\nSeptember 2025 - expected graduation July 2028",
+        "field_path": "education"
+      },
+      {
+        "evidence_id": "ev-cv-synthetic-cv-experience-001",
+        "document_id": "cv-synthetic-cv",
+        "quote": "Finance Intern, Harbourline Capital, London (June 2026 - August 2026)",
+        "field_path": "experience"
+      },
+      {
+        "evidence_id": "ev-cv-synthetic-cv-experience-002",
+        "document_id": "cv-synthetic-cv",
+        "quote": "Student Treasurer, Northbridge Investment Society (October 2025 - present)",
+        "field_path": "experience"
+      },
+      {
+        "evidence_id": "ev-cv-synthetic-cv-language-001",
+        "document_id": "cv-synthetic-cv",
+        "quote": "English - Native",
+        "field_path": "eligibility_answers.HC_LANGUAGE.level_en"
+      },
+      {
+        "evidence_id": "ev-cv-synthetic-cv-language-002",
+        "document_id": "cv-synthetic-cv",
+        "quote": "Italian - C1",
+        "field_path": "eligibility_answers.HC_LANGUAGE.level_it"
+      },
+      {
+        "evidence_id": "ev-cv-synthetic-cv-language-003",
+        "document_id": "cv-synthetic-cv",
+        "quote": "German - B1",
+        "field_path": "eligibility_answers.HC_LANGUAGE.level_de"
+      }
+    ],
+    "extraction": {
+      "mode": "live",
+      "provider": "kimi",
+      "model_id": "moonshotai/kimi-k3",
+      "prompt_version": "sha256:f1f66a4623c900ce",
+      "schema_version": "0.2.0-draft",
+      "input_hash": "9209ac6d046abf56323a380a68bbe83bfac49b4f84ce851ab85754c6b901d4e7",
+      "produced_at": "2026-09-26T15:32:37.892867Z",
+      "latency_ms": 45812
+    }
+  }
+}

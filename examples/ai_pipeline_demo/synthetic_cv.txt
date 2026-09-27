@@ -1,0 +1,23 @@
+SAMPLE CANDIDATE (synthetic CV for the AI pipeline demo - not a real person)
+London, United Kingdom | sample.candidate@example.com
+
+EDUCATION
+BSc Economics and Finance, Northbridge University Business School, London
+September 2025 - expected graduation July 2028 (penultimate-year student in 2026/27)
+Relevant modules: Corporate Finance, Econometrics, Financial Markets, Accounting
+
+EXPERIENCE
+Finance Intern, Harbourline Capital, London (June 2026 - August 2026)
+Built a discounted cash flow model for two mid-cap industrial companies and presented the valuation to the deal team.
+Prepared weekly market summaries covering rates, FX and credit spreads.
+
+Student Treasurer, Northbridge Investment Society (October 2025 - present)
+Manage a society budget of GBP 12,000 and run a paper-trading portfolio competition for 60 members.
+
+SKILLS
+Financial modelling in Excel, Python (pandas), SQL, PowerPoint, Bloomberg Terminal basics
+
+LANGUAGES
+English - Native
+Italian - C1
+German - B1
