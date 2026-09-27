@@ -10,6 +10,13 @@ Extraction and evidence are the demonstration. Ranking is left out by default (s
 
 Each step calls the existing modules (`extract_candidate`, `oi.runtime.jobs.load_jobs`, `assess_eligibility`, and with `--include-ranking`, `rank_with_eligibility`). The demo adds no AI logic of its own.
 
+## Scope
+
+- The default run (CV cache + job cache) is the recommended reproducible path for the technical walkthrough.
+- This demo supplements the Streamlit product demo. It does not replace the MVP demonstration, where a synthetic text-based PDF CV is uploaded and visibly extracted with the runtime model.
+- `--cv-mode live` and `--job-mode live` are optional technical modes. They may consume provider quota or incur cost, so run them only when the team has explicitly approved it.
+- Kimi (`moonshotai/kimi-k3`) is the provider/model recorded in the current demo cache. This is not a claim that the provider/model choice is permanently frozen.
+
 ## Run
 
 From the repository root:
