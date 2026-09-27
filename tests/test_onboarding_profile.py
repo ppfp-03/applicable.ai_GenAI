@@ -87,8 +87,9 @@ def test_a_read_cv_without_languages_says_none_are_stated() -> None:
     for title in ["Work authorization", "Sponsorship", "Languages"]:
         assert f"<b>{title}</b>" in page
     # Work authorization and sponsorship are declared by the user instead
-    # (tests/test_onboarding_work_auth.py).
-    assert page.count('<div class="p-v">Not added yet</div><div class="p-act">') == 2
+    # (tests/test_onboarding_work_auth.py); only work authorization is required.
+    assert page.count('Required · add it in <span class="p-link') == 1
+    assert page.count('Not declared yet · add it in <span class="p-link') == 1
     card = page.split("<b>Languages</b>", 1)[1].split('<div class="w-card', 1)[0]
     assert card.startswith('<span class="w-b ne"><i></i>Not found</span>')
     assert '<div class="p-v">Not stated in your CV</div>' in card

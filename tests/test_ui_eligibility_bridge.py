@@ -161,6 +161,27 @@ def test_citizenship_is_never_a_work_authorisation():
     assert outcome(result, eligibility.WORK_AUTH).status is RuleStatus.UNKNOWN
 
 
+def test_the_work_authorization_declaration_is_translated_losslessly():
+    # Each fact true, false or null exactly as declared, never one from the
+    # other; the store keeps the UK answer in step with the declaration.
+    for uk, declared, row in (
+        ("yes", {"authorized": ["GB"], "no_sponsorship": ["GB"]}, (True, False)),
+        ("no", {"not_authorized": ["GB"], "sponsorship": ["GB"]}, (False, True)),
+        ("unsure", {"not_authorized": ["GB"]}, (False, None)),
+        ("unsure", {"authorized": ["IT"], "no_sponsorship": ["IT"]}, None),
+    ):
+        c = eligibility.candidate(D.profile, {"uk_work": uk, store.WORK_AUTH: declared})
+        got = {w.country_code: (w.authorized_to_work, w.requires_sponsorship)
+               for w in c.declarations.work_authorizations}
+        assert got.pop("GB", None) == row, declared
+        # Every other declared country too, exactly as declared (Q6).
+        assert got == ({"IT": (True, False)} if "IT" in declared.get("authorized", []) else {}), declared
+    mixed = {"not_authorized": ["SG", "CH"], "sponsorship": ["SG"]}
+    c = eligibility.candidate(D.profile, {store.WORK_AUTH: mixed})
+    assert {(w.country_code, w.authorized_to_work, w.requires_sponsorship)
+            for w in c.declarations.work_authorizations} == {("SG", False, True), ("CH", False, None)}
+
+
 def test_hsk_never_reaches_the_candidate_answers():
     c = eligibility.candidate(D.profile, {"languages": {"Mandarin": "HSK 6"}})
     keys = {a.answer_key for a in c.eligibility_answers.get(eligibility.LANGUAGE, [])}
