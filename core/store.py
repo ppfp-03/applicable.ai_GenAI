@@ -36,7 +36,8 @@ from typing import Any, Optional
 import streamlit as st
 
 from core import eligibility, eligibility_view, ranking, rules
-from oi.contracts import CandidateProfile
+from oi.contracts import AnswerState, AnswerType, CandidateProfile
+from oi.intelligence.eligibility.catalogue import LANGUAGE_CONSTRAINT_ID, language_level_key
 
 _DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "demo.json"
 
@@ -384,6 +385,9 @@ def has_candidate_for(content_hash: str) -> bool:
 EDITABLE = (("skills", "skill"), ("education", "education"), ("experience", "experience"))
 #: Prefix of the documents that hold the user's own edits to the profile.
 EDIT_DOC = "profile-edit-"
+#: The edits key for the languages and levels (HC_LANGUAGE answers): a list
+#: of (ISO 639-1 code, level code or None) pairs, e.g. ("en", "CEFR:C1").
+LANGUAGES = "languages"
 
 
 #: Joins the parts of an education or experience value, as the extraction
@@ -414,7 +418,7 @@ def apply_edits(profile: CandidateProfile, edits: dict[str, list[str]]) -> Candi
     """The profile with the user's version of its CV sections (FR-02).
 
     `edits` maps a section name in EDITABLE to the values the user kept, in
-    order. A value identical to one already in the section keeps that value's
+    order, and LANGUAGES to the languages kept with their levels. A value identical to one already in the section keeps that value's
     evidence, so what the CV said stays backed by the CV. Every other value is
     the user's word: all of them go into one questionnaire SourceDocument,
     each backed by a quote of itself, so a correction has provenance of its
@@ -442,6 +446,8 @@ def apply_edits(profile: CandidateProfile, edits: dict[str, list[str]]) -> Candi
             new_evidence.append({"evidence_id": evidence_id, "document_id": doc_id, "quote": value, "field_path": field})
             section.append({"value": value, "evidence_ids": [evidence_id]})
         raw[field] = section
+    if LANGUAGES in edits:
+        raw["eligibility_answers"] = _edit_languages(raw["eligibility_answers"], edits[LANGUAGES], doc_id, new_evidence)
     if new_evidence:
         text = "\n".join(e["quote"] for e in new_evidence)
         prov["documents"][doc_id] = {
@@ -463,6 +469,40 @@ def apply_edits(profile: CandidateProfile, edits: dict[str, list[str]]) -> Candi
     prov["documents"] = {k: v for k, v in prov["documents"].items() if k not in stale}
     prov["questionnaire_document_ids"] = [d for d in prov["questionnaire_document_ids"] if d not in stale]
     return CandidateProfile.model_validate(raw)
+
+
+def language_levels() -> dict[str, list[str]]:
+    """The languages a profile can state, as ISO 639-1 codes, each with the
+    levels its HC_LANGUAGE answer key allows, lowest first."""
+    spec = eligibility.catalogue().get(LANGUAGE_CONSTRAINT_ID)
+    return {k.answer_key.removeprefix("level_"): list(k.allowed_values or []) for k in spec.answer_keys}
+
+
+def _edit_languages(answers: dict, kept: list, doc_id: str, new_evidence: list[dict]) -> dict:
+    """The eligibility answers with the user's languages. A language kept at
+    the level it had keeps its answer and evidence; any other is the user's
+    word, recorded in the edit document `doc_id` like the other edits."""
+    old = list(answers.get(LANGUAGE_CONSTRAINT_ID, []))
+    out = []
+    for code, level in kept:
+        key = language_level_key(code)
+        same = next((o for o in old if o["answer_key"] == key and o["value"] == level), None)
+        if same is not None:
+            out.append(same)
+            continue
+        n = sum(e["field_path"].startswith("eligibility_answers.") for e in new_evidence) + 1
+        evidence_id = f"ev-{doc_id}-language-{n:03d}"
+        new_evidence.append({
+            "evidence_id": evidence_id, "document_id": doc_id, "quote": f"{code}: {level or 'level not stated'}",
+            "field_path": f"eligibility_answers.{LANGUAGE_CONSTRAINT_ID}.{key}",
+        })
+        out.append({
+            "constraint_id": LANGUAGE_CONSTRAINT_ID, "answer_key": key,
+            "state": AnswerState.KNOWN if level else AnswerState.UNKNOWN, "answer_type": AnswerType.SINGLE_CHOICE,
+            "value": level, "evidence_ids": [evidence_id], "source_document_id": doc_id,
+        })
+    rest = {k: v for k, v in answers.items() if k != LANGUAGE_CONSTRAINT_ID}
+    return {**rest, LANGUAGE_CONSTRAINT_ID: out} if out else rest
 
 
 def save_edits(edits: dict[str, list[str]]) -> None:

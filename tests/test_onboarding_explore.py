@@ -82,6 +82,7 @@ def step3b(verdicts=None) -> tuple[AppTest, str]:
     at = AppTest.from_file(ONBOARDING, default_timeout=30)
     at.session_state["ob_step"] = "3b"
     at.session_state[store.WORK_AUTH] = DECLARED
+    at.session_state["ob_taught"] = True  # past the practice card (tests/test_onboarding_guide.py)
     if verdicts is not None:
         at.session_state["ob_swipes"] = verdicts
     at.run()

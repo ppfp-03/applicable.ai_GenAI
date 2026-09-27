@@ -15,7 +15,7 @@ import streamlit as st
 
 from core import clock, store
 from ui import parts, shell, tabs
-from ui.html import CK, SH, check_icon, esc, glyph, hit, html, logo
+from ui.html import CK, check_icon, esc, glyph, hit, html, logo
 from ui.theme import page_css
 
 d = store.data()
@@ -75,7 +75,7 @@ def copy(c) -> dict:
     posting = role.get("posting", {}).get(c.id)
     out = {
         "kind": base.get("kind", c.name), "name": c.name if c.id == "language" else base.get("name", c.name),
-        "act": base.get("act", "See how it was decided"), "btn": base.get("btn", "Report a mistake"),
+        "act": base.get("act", "See details"), "btn": base.get("btn", "Report a mistake"),
         "say": base.get("say", "Tell us if this looks wrong; we check it with the same rule."),
         "alt": base.get("alt", ["Similar roles without this requirement", "Explore more roles"]),
         "quote": posting["quote"] if posting else "Not stated in the posting we read.",
@@ -198,16 +198,14 @@ with st.container(key="main"):
             f'<div class="cnts"><span><i style="background:#30A14E"></i><b>{len(met)}</b> met</span>'
             f'<span><i style="background:#E3A03A"></i><b>{n_chk}</b> to check</span>'
             f'<span><i style="background:#D9443C"></i><b>{n_not}</b> not met</span></div>'
-            '<div class="how"><span class="chip">AI reads the posting</span><span class="ar">→</span>'
-            '<span class="chip">Sorted into 8 fixed criteria</span><span class="ar">→</span>'
-            f'<span class="chip b">Fixed rules decide, not AI</span></div></div>{ring()}</div>'
+            f'</div>{ring()}</div>'
         )
 
         with st.container(key="gl-att"):
             if attention:
                 html(
                     f'<div class="sh"><div><b>Needs your attention</b><span>{len(attention)} '
-                    f'criteri{"on" if len(attention) == 1 else "a"} · tap one to see how it was decided</span></div></div>'
+                    f'criteri{"on" if len(attention) == 1 else "a"} · tap one to see details</span></div></div>'
                 )
                 with st.container(key="att"):
                     for i, c in enumerate(attention[:3]):
@@ -264,10 +262,6 @@ with st.container(key="main"):
             html(
                 f'<div class="lab">From the job posting</div><div class="box qbox">{esc(k["quote"])}'
                 f'<div class="m"><span class="srct">JOB</span>{esc(k["line"])}</div></div>'
-            )
-            html(
-                f'<div class="lab">How it was decided</div><div class="dec">{SH}'
-                f'<div><span class="srct" style="margin-right:6px">RULE</span>{k["dec"]}</div></div>'
             )
             html(f'<div class="lab">What you can do</div><div class="say">{esc(k["say"])}</div>')
             with st.container(key="end-e"):

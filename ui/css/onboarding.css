@@ -493,6 +493,21 @@
 .p-hl .tg{border:0;border-radius:999px;padding:2px 8px;box-shadow:0 0 0 .5px rgba(0,0,0,.1)}
 .p-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .p-edit{gap:6px;flex:none}
+/* A required card left empty after "Confirm profile" was pressed. */
+.p-s.miss{box-shadow:0 0 0 1.5px var(--red),0 4px 14px rgba(28,40,64,.05)}
+.p-s .p-act{margin-top:auto;padding-top:10px}
+/* Why a press did not continue (Confirm profile, or a later step): centred on the viewport, in liquid glass. */
+.ob-notice{position:fixed;left:50%;top:50%;z-index:1000;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:10px;width:max-content;max-width:calc(100vw - 32px);padding:14px 24px 14px 20px;border-radius:999px;
+  font-size:14px;line-height:20px;font-weight:560;letter-spacing:-.005em;color:var(--t1);text-align:center;pointer-events:none;isolation:isolate;
+  background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.80));backdrop-filter:blur(30px) saturate(210%) brightness(1.05);-webkit-backdrop-filter:blur(30px) saturate(210%) brightness(1.05);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.45),inset 0 0 14px rgba(255,255,255,.35),0 14px 36px rgba(28,40,64,.16),0 2px 6px rgba(28,40,64,.08),0 0 0 .5px rgba(0,0,0,.08);
+  transform:translate(-50%,-50%);animation:ob-notice 4.2s cubic-bezier(.2,.8,.2,1) both}
+.ob-notice i{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px var(--redBg);flex:none}
+.ob-notice span{min-width:0}
+@keyframes ob-notice{0%{opacity:0;transform:translate(-50%,-50%) scale(.94)}8%,82%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.98)}}
+@media (max-width:640px){.ob-notice{border-radius:20px;padding:12px 18px;font-size:13px;line-height:18px}}
+@media (prefers-reduced-motion:reduce){.ob-notice{animation:ob-notice-fade 4.2s linear both}}
+@keyframes ob-notice-fade{0%,100%{opacity:0}6%,84%{opacity:1}}
 /* One-line entries must not widen their column: cut them, the tooltip has the rest. */
 .p-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .p-e{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -511,6 +526,8 @@
 [data-testid="stDialog"] [class*="st-key-ed-row-"] [data-testid="stTextInputRootElement"]{border:1px solid var(--line)!important;border-radius:10px!important;background:#fff;min-height:42px}
 [data-testid="stDialog"] [class*="st-key-ed-row-"] [data-testid="stTextInputRootElement"]:focus-within{border-color:var(--blue)!important}
 [data-testid="stDialog"] [class*="st-key-ed-row-"] input{font-size:14px;color:var(--t1)}
+[data-testid="stDialog"] [class*="st-key-ed-row-"] [data-testid="stSelectbox"] [role="group"]{border:1px solid var(--line)!important;border-radius:10px!important;background:#fff;min-height:42px;font-size:14px}
+[data-testid="stDialog"] [class*="st-key-ed-row-"] [data-testid="stSelectbox"] [role="group"]:focus-within{border-color:var(--blue)!important}
 [data-testid="stDialog"] [class*="st-key-ed-del-"] button{color:var(--t3);min-height:36px;width:36px;border-radius:10px}
 [data-testid="stDialog"] [class*="st-key-ed-del-"] button:hover{color:var(--red);background:var(--redBg)}
 [data-testid="stDialog"] [class*="st-key-ed-add-"] button{border:1.5px dashed rgba(0,113,227,.45);background:#fff;color:var(--blue);border-radius:12px;min-height:42px;font-weight:600;padding:0 16px}
@@ -617,3 +634,84 @@
 .st-key-ofoot .x{font-size:13px}
 .st-key-ofoot .i{font-size:13px;color:var(--t2)}
 .st-key-ofoot .i b{color:var(--t1);font-weight:600}
+
+/* ── Explore practice card (views/onboarding.py tutorial_card) ──
+ * It nudges right then left on a loop to show the gesture, until the card is
+ * touched or dragged. */
+.sw-card.tut{animation:tut-nudge 4.2s cubic-bezier(.45,.05,.3,1) .8s infinite}
+.sw-card.tut .stamp{animation:tut-stamp 4.2s cubic-bezier(.45,.05,.3,1) .8s infinite}
+.sw-card.tut:is(:hover,.dragging,.out-r,.out-l,.out-u),.sw-card.tut:is(:hover,.dragging,.out-r,.out-l,.out-u) .stamp{animation:none}
+.tut-dirs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}
+.tut-d{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:14px 8px 12px;border-radius:18px;background:rgba(255,255,255,.7);box-shadow:inset 0 1px 0 #fff,0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05)}
+.tut-d .o{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:16px;font-weight:600;color:#6E6E73;background:rgba(0,0,0,.04);margin-bottom:6px}
+.tut-d.r .o{color:#fff;background:var(--green)}
+.tut-d b{font-size:13.5px;font-weight:620;color:var(--t1)}
+.tut-d small{font-size:11.5px;color:var(--t3)}
+.tut-go{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:24px;font-size:13.5px;font-weight:600;color:var(--blue)}
+.tut-hand{position:relative;width:14px;height:14px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px var(--blueBg)}
+.tut-hand:after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--blue);opacity:0;animation:tut-ping 1.6s ease-out infinite}
+@keyframes tut-nudge{
+ 0%,16%{transform:rotate(1.4deg) translateX(14px)}
+ 30%,36%{transform:translateX(78px) rotate(6deg)}
+ 48%,58%{transform:rotate(1.4deg) translateX(14px)}
+ 70%,74%{transform:translateX(-44px) rotate(-3deg)}
+ 86%,100%{transform:rotate(1.4deg) translateX(14px)}}
+@keyframes tut-stamp{0%,18%{opacity:0}30%,36%{opacity:1}46%,100%{opacity:0}}
+@keyframes tut-ping{0%{opacity:.7;transform:scale(.6)}100%{opacity:0;transform:scale(1.8)}}
+@media (prefers-reduced-motion:reduce){.sw-card.tut,.sw-card.tut .stamp,.tut-hand:after{animation:none}}
+/* Profile cards open in full (ui/js/expand.js): the whole card is the control, the corner glyph says so. */
+.p-s.xp{position:relative;cursor:pointer;transition:transform .35s cubic-bezier(.32,.72,0,1),box-shadow .35s}
+.p-s.xp:not(.xp-copy):hover{transform:translateY(-2px);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 10px 26px rgba(28,40,64,.09)}
+.p-s.xp.rv:not(.xp-copy):hover{box-shadow:0 0 0 1.5px #EBCB98,0 10px 26px rgba(28,40,64,.09)}
+.p-s.xp.miss:not(.xp-copy):hover{box-shadow:0 0 0 1.5px var(--red),0 10px 26px rgba(28,40,64,.09)}
+.p-s.xp:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.p-s.xp .p-src{padding-right:30px}
+.xp-full{display:none}
+.xp-ic{position:absolute;right:12px;bottom:12px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:var(--t2);background:rgba(0,0,0,.045);opacity:.55;transition:opacity .25s,transform .35s cubic-bezier(.32,.72,0,1)}
+.p-s.xp:hover .xp-ic,.p-s.xp:focus-visible .xp-ic{opacity:1;transform:scale(1.12)}
+.p-s.xp.xp-away{visibility:hidden}
+.xp-veil{position:fixed;inset:0;z-index:1200;background:rgba(245,246,248,.45);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%)}
+.xp-fly{position:fixed;z-index:1201;perspective:1400px}
+.xp-rot{position:absolute;inset:0;transform-style:preserve-3d}
+.xp-face{position:absolute;inset:0;border-radius:18px;background:#fff;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05)}
+.xp-back{transform:rotateY(180deg)}
+.xp-open .xp-back{overflow-y:auto;overscroll-behavior:contain}
+.xp-copy{position:absolute;left:0;top:0;background:none!important;box-shadow:none!important;box-sizing:border-box}
+.xp-in{box-sizing:border-box;padding:24px 26px 22px;display:flex;flex-direction:column}
+.xp-in .p-h b{font-size:17px}
+.xp-in .p-h .w-b{margin-left:auto}
+.xp-x{flex:none;width:28px;height:28px;border-radius:50%;border:0;padding:0;display:grid;place-items:center;cursor:pointer;color:var(--t2);background:rgba(0,0,0,.05);transition:background .2s,color .2s}
+.xp-x:hover{background:rgba(0,0,0,.09);color:var(--t1)}
+.xp-x:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.xp-body{margin-top:6px}
+.xp-body .p-chips{margin-top:14px}
+.xp-body .p-v{white-space:normal}
+.xp-it + .xp-it{margin-top:4px;padding-top:4px;border-top:.5px solid rgba(0,0,0,.07)}
+.xp-q{font-size:12px;line-height:1.5;color:var(--t2);margin-top:6px;padding-left:10px;border-left:2px solid rgba(0,0,0,.08)}
+.xp-body .p-chips + .xp-q{margin-top:16px}
+.xp-in .p-src{margin-top:18px}
+
+/* Readability pass: step 2 profile, step 4 analysis panel. */
+/* 2 · "Edit profile" stays a neutral chip, just easier to find. */
+.p-top .p-edit{font-size:13.5px;font-weight:620;padding:8px 15px;gap:7px}
+.p-top .p-edit svg{width:13px;height:13px}
+/* 2 · Section titles lead their cards: title > value > source line. */
+.p-h b{font-size:15.5px;font-weight:650;letter-spacing:-0.015em}
+/* 4 · Right panel: Progress and First results, a step larger. */
+.a4-r .w-lab{font-size:13px;margin-bottom:10px}
+.a4-r .p4-r{padding:14px 18px;gap:13px}
+.a4-r .p4-r .t{font-size:14.5px;font-weight:600}
+.a4-r .p4-r .s{font-size:12.5px;margin-top:3px}
+.a4-r .p4-r .tg{font-size:12px;padding:4px 11px}
+.a4-r .w-card{padding:18px 20px!important}
+.a4-fr{display:flex;align-items:center;gap:13px}
+.a4-fr + .a4-fr{margin-top:14px}
+.a4-fr-m{flex:1;min-width:0}
+.a4-fr .t{font-size:15px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.a4-fr .s{font-size:13px;color:var(--t2);margin-top:2px}
+.a4-fr .n{font-size:24px;font-weight:700;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
+/* 2 · The inline "Edit profile" in each required card: a secondary text link.
+   Its invisible overlay button takes the pointer, so hover is read from it. */
+.p-link{font-weight:600;color:var(--t1);text-decoration:underline;text-decoration-color:rgba(0,0,0,.28);text-underline-offset:2px;cursor:pointer}
+.stApp:has(.st-key-oo-wa-link button:hover) .p-link.wa-link,
+.stApp:has(.st-key-oo-sp-link button:hover) .p-link.sp-link{text-decoration-color:currentColor;color:#000}

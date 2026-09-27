@@ -1,5 +1,6 @@
 """Onboarding step 2 shows the extracted profile, never the demo one."""
 
+import re
 from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
@@ -16,14 +17,26 @@ ONBOARDING = str(Path(__file__).resolve().parents[1] / "views" / "onboarding.py"
 DEMO_VALUES = ["Giulia Rossi", "Fudan", "EU citizen", "China X1", "Mandarin", "Financial modelling", "Page 2 of 2"]
 
 
-def step2(profile=None) -> str:
+#: What a card holds for when it is opened, hidden until then (ui/js/expand.js).
+OPENED = re.compile(r'<div class="xp-full">(.*?)</div><span class="xp-ic"', re.S)
+
+
+def step2(profile=None, opened: bool = False) -> str:
+    """The step's markup as shown, or with `opened` also what each card
+    shows once opened."""
     at = AppTest.from_file(ONBOARDING, default_timeout=30)
     at.session_state["ob_step"] = "2"
     if profile is not None:
         at.session_state[store.CANDIDATE] = profile
     at.run()
     assert not at.exception
-    return "".join(m.value for m in at.markdown)
+    page = "".join(m.value for m in at.markdown)
+    return page if opened else OPENED.sub('<span class="xp-ic"', page)
+
+
+def opened_card(page: str, title: str) -> str:
+    """What the card titled `title` shows once opened."""
+    return OPENED.search(page.split(f"<b>{title}</b>", 1)[1]).group(1)
 
 
 def profile(**fields):
@@ -75,7 +88,7 @@ def test_a_read_cv_without_languages_says_none_are_stated() -> None:
         assert f"<b>{title}</b>" in page
     # Work authorization and sponsorship are declared by the user instead
     # (tests/test_onboarding_work_auth.py).
-    assert page.count("Required · add it in Edit profile") == 2
+    assert page.count('Required · add it in <span class="p-link') == 2
     card = page.split("<b>Languages</b>", 1)[1].split('<div class="w-card', 1)[0]
     assert card.startswith('<span class="w-b ne"><i></i>Not found</span>')
     assert '<div class="p-v">Not stated in your CV</div>' in card
@@ -188,7 +201,7 @@ def test_backslashes_in_cv_text_are_shown_as_written() -> None:
 
 
 def test_cv_text_is_escaped() -> None:
-    page = step2(profile(skills=[fact("<img src=x onerror=alert(1)>", "Python")]))
+    page = step2(profile(skills=[fact("<img src=x onerror=alert(1)>", "Python")]), opened=True)
 
     assert "&lt;img src=x onerror=alert(1)&gt;" in page
     assert "<img src=x" not in page
@@ -238,6 +251,44 @@ def test_the_edit_button_is_always_offered() -> None:
     assert "Edit profile" in buttons(profile())
     assert "Edit profile" in step2(profile())
     assert "Edit profile" in step2()
+
+
+# --- a card opened in full --------------------------------------------------
+
+
+def test_every_card_opens() -> None:
+    page = step2(profile(), opened=True)
+
+    for title in ["Skills", "Education", "Experience", "Work authorization", "Sponsorship", "Languages"]:
+        assert f'aria-label="Open {title}"' in page
+    assert page.count('<div class="xp-full">') == 6
+
+
+def test_an_opened_card_lists_every_role_with_its_quote() -> None:
+    card = opened_card(step2(profile(experience=ROLES), opened=True), "Experience")
+
+    for i in range(1, 6):
+        assert f'<div class="xp-it"><div class="p-v">Role {i}</div>' in card
+    assert card.count('<div class="xp-q">Summer Analyst, Mediobanco, June-August 2025</div>') == 5
+    assert "p-e" not in card  # nothing is cut
+    assert "more</div>" not in card
+
+
+def test_an_opened_card_lists_every_skill_and_each_quote_once() -> None:
+    skills = [fact(f"Skill {i}", "Skills: Python") for i in range(1, 11)]
+
+    card = opened_card(step2(profile(skills=skills), opened=True), "Skills")
+
+    for i in range(1, 11):
+        assert f">Skill {i}</span>" in card
+    assert '<span class="w-chip">+' not in card
+    assert card.count('<div class="xp-q">Skills: Python</div>') == 1
+
+
+def test_an_opened_required_card_offers_no_dead_button() -> None:
+    card = opened_card(step2(profile(), opened=True), "Work authorization")
+
+    assert card == '<div class="p-v">Required · add it in Edit profile</div>'
 
 
 # --- the Edit profile dialog ------------------------------------------------
@@ -315,3 +366,66 @@ def test_cancel_keeps_the_profile() -> None:
 
     assert at.session_state[store.CANDIDATE] == before
     assert "ed_draft" not in at.session_state
+
+
+# --- the Languages tab --------------------------------------------------------
+
+
+def languages_editor():
+    """The editor on a CV stating English C1 and Mandarin HSK 4."""
+    return open_editor(speaker(lang("en", "C1", "English (C1)"), lang("zh", "HSK 4", "Mandarin HSK 4")))
+
+
+def test_each_language_has_a_language_and_a_level_field() -> None:
+    at = languages_editor()
+    rev = at.session_state["ed_rev"]
+    assert at.selectbox(key=f"ed-lang-{rev}-0").value == "en"
+    assert at.selectbox(key=f"ed-lvl-{rev}-0").value == "CEFR:C1"
+    assert at.selectbox(key=f"ed-lang-{rev}-1").value == "zh"
+    # Levels stay on the language's own scale.
+    assert at.selectbox(key=f"ed-lvl-{rev}-1").options == ["HSK 1", "HSK 2", "HSK 3", "HSK 4", "HSK 5", "HSK 6", "Fluent", "Native"]
+    # A language already listed is not offered again.
+    assert "zh" not in at.selectbox(key=f"ed-lang-{rev}-0").options
+
+
+def test_unchanged_languages_stay_backed_by_the_cv() -> None:
+    at = languages_editor()
+    at.button(key="ed-save").click().run()
+    saved = at.session_state[store.CANDIDATE].eligibility_answers["HC_LANGUAGE"]
+    assert [(a.answer_key, a.value) for a in saved] == [("level_en", "CEFR:C1"), ("level_zh", "HSK:4")]
+    assert not any(store.is_edited(at.session_state[store.CANDIDATE], a) for a in saved)
+
+
+def test_a_changed_level_and_an_added_language_are_saved_as_the_users_word() -> None:
+    at = languages_editor()
+    # One run: after it the dialog is not drawn again, as nothing reopens it.
+    at.selectbox(key=f"ed-lvl-{at.session_state['ed_rev']}-0").set_value("CEFR:C2")
+    at.session_state["ed_draft"]["languages"].append(["it", "SELF:native"])  # a row added and filled in
+    at.button(key="ed-save").click().run()
+    assert not at.exception
+    p = at.session_state[store.CANDIDATE]
+    saved = p.eligibility_answers["HC_LANGUAGE"]
+    assert [(a.answer_key, a.value) for a in saved] == [("level_en", "CEFR:C2"), ("level_zh", "HSK:4"), ("level_it", "SELF:native")]
+    assert [store.is_edited(p, a) for a in saved] == [True, False, True]
+
+
+def test_adding_a_language_adds_an_empty_row() -> None:
+    at = languages_editor()
+    at.button(key="ed-add-languages").click().run()
+    assert at.session_state["ed_draft"]["languages"][-1] == [None, None]
+
+
+def test_an_added_language_needs_a_level() -> None:
+    at = languages_editor()
+    at.session_state["ed_draft"]["languages"].append(["de", None])
+    at.button(key="ed-save").click().run()
+    assert at.session_state["ed_error"] == "Choose a level for German."
+    assert len(at.session_state[store.CANDIDATE].eligibility_answers["HC_LANGUAGE"]) == 2
+
+
+def test_removing_a_language_removes_its_answer() -> None:
+    at = languages_editor()
+    at.button(key=f"ed-del-languages-{at.session_state['ed_rev']}-0").click()
+    at.button(key="ed-save").click().run()
+    saved = at.session_state[store.CANDIDATE].eligibility_answers["HC_LANGUAGE"]
+    assert [a.answer_key for a in saved] == ["level_zh"]

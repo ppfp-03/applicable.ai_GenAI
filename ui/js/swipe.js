@@ -10,6 +10,8 @@
  *  - ← ↑ → and the three buttons below the card throw it the same way.
  *  - After the rerun React may reuse the card's node, so the classes and
  *    styles set here are cleared once the next story has been drawn.
+ *  - The practice card (.tut) is thrown the same way; the server records no
+ *    verdict for it. Arrow keys wait while the intro sheet is up.
  */
 (function () {
   if (window.__aaSwipe) return;
@@ -152,6 +154,8 @@
     if (!d || e.altKey || e.ctrlKey || e.metaKey || !card()) return;
     if (e.target.closest && e.target.closest('input,textarea,[contenteditable="true"]')) return;
     e.preventDefault(); e.stopImmediatePropagation();
+    // The intro sheet is up (ui/guide.py): swallowed, so the buttons' own shortcuts don't fire either.
+    if (document.querySelector('.st-key-guide')) return;
     if (!e.repeat) throwOut(d);
   }, true);
 })();

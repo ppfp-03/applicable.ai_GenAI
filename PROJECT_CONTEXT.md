@@ -7,7 +7,7 @@
 | Context version | 0.4.12-draft - scale-aware HC_LANGUAGE and CV language answers (D-046; approval pending) |
 | Contract version | 0.2.0-draft core frozen; JobSnapshot 0.2.1-draft jointly approved; result/config envelopes remain separately unfrozen |
 | Created | 2026-09-17 |
-| Last updated | 2026-09-26 |
+| Last updated | 2026-09-27 |
 | Project deadline | 2026-09-29; exact submission time/timezone still to confirm |
 | Current-state boundary | Planning/product decisions are recorded here; implementation and measured progress require repository/session evidence |
 
@@ -287,6 +287,8 @@ The jointly approved `0.2.0-draft` candidate schema is:
 | `CandidateProvenance` | `questionnaire_document_ids`, `clarification_document_ids`, `documents: dict[str, SourceDocument]`, `evidence: list[EvidenceRef]`, `extraction: ExtractionReceipt` |
 
 Candidate country-code values use valid ISO 3166-1 alpha-2 codes normalized to uppercase and without duplicates. `allowed_country_codes = null` means no explicit geographic restriction has been declared; when present it must be non-empty, so `[]` is invalid. If `allowed_country_codes` is present, every preferred country must fall inside that declared perimeter. Work-authorization declarations are unique by `country_code`. `authorized_to_work` and `requires_sponsorship` are independently nullable and one must never be inferred from the other.
+
+Clarification (UI, 2026-09-27; contract unchanged): the onboarding questionnaire collects both fields with one explicit question, "Where can you work without employer sponsorship?", whose wording states that every platform country left out is saved as needing employer sponsorship. Each platform country is therefore declared by the user as either `authorized_to_work=true, requires_sponsorship=false` or `authorized_to_work=false, requires_sponsorship=true`; this is a user declaration, not a system inference.
 
 `EligibilityAnswer.value` is closed to JSON-safe values corresponding to `bool | str | int | date | list[str] | null`. `state=unknown` requires `value=null`; `state=known` requires a non-null value. `answer_type` and `value` must match strictly, including rejection of bool-as-int and analogous permissive coercions. The outer key in `eligibility_answers` must equal each contained answer's `constraint_id`. The shared contract validates `answer_key` shape/non-emptiness but does **not** validate membership in a `constraint_id -> answer_key` catalogue; that later membership check belongs to the deterministic `RuleCatalogue`.
 

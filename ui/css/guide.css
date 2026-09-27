@@ -1,0 +1,50 @@
+/* Onboarding guidance (ui/guide.py): the intro sheet and the footer's "?".
+ *
+ * The sheet sits over the stage in fixed position, so nothing on the
+ * mockup's stage moves. The veil is the keyed container itself; the card is
+ * a nested container holding the markup and the native "Got it" button.
+ * It lives inside the zoomed stage (base.css, --aa-k), so its size is divided
+ * by the zoom to cover exactly the window.
+ */
+
+.st-key-guide{position:fixed!important;left:0;top:0;z-index:9990;width:calc(100vw / var(--aa-k,1))!important;height:calc(100vh / var(--aa-k,1));display:flex!important;align-items:center;justify-content:center;
+ background:rgba(245,246,248,.38);backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%);animation:gd-veil .32s ease both}
+.st-key-guide-card{width:460px!important;max-width:calc(100vw - 32px);flex:none;gap:0!important;padding:26px 26px 22px!important;border-radius:28px;isolation:isolate;
+ background:linear-gradient(180deg,rgba(255,255,255,.90),rgba(255,255,255,.76));backdrop-filter:blur(30px) saturate(210%) brightness(1.05);-webkit-backdrop-filter:blur(30px) saturate(210%) brightness(1.05);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.45),inset 0 0 14px rgba(255,255,255,.35),0 24px 60px rgba(28,40,64,.18),0 2px 6px rgba(28,40,64,.08),0 0 0 .5px rgba(0,0,0,.08);
+ animation:gd-in .42s cubic-bezier(.2,.9,.25,1.15) both}
+.st-key-guide-card:has(.gd-first){width:560px!important}
+.st-key-guide-card .stButton{margin-top:20px}
+.st-key-guide-card button{height:44px;min-height:44px;font-size:14px}
+.st-key-guide-js{display:none!important}
+
+.gd-k{font-size:11.5px;font-weight:640;letter-spacing:.04em;text-transform:uppercase;color:var(--blue)}
+.gd-h{font-size:24px;font-weight:700;letter-spacing:-.03em;line-height:1.15;color:var(--t1);margin-top:6px}
+.gd-h.sm{font-size:19px;margin-top:4px}
+.gd-p{font-size:14px;line-height:1.5;color:var(--t2);margin-top:6px}
+.gd-sep{height:1px;background:rgba(0,0,0,.07);margin:20px 0 16px}
+
+.gd-row{display:flex;gap:12px;align-items:flex-start;margin-top:14px}
+.gd-row .ic{width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;background:var(--blueBg);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.gd-row .k{font-size:11.5px;font-weight:620;color:var(--t3);letter-spacing:.01em}
+.gd-row .v{font-size:14px;line-height:1.45;color:var(--t1);margin-top:1px}
+
+/* The journey map: three phases on one line, the current one lit. */
+.gd-map{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.gd-map:before{content:"";position:absolute;left:16%;right:16%;top:15px;height:2px;border-radius:1px;background:linear-gradient(90deg,rgba(0,0,0,.08),rgba(0,0,0,.08))}
+.gd-ph{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px}
+.gd-ph .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;color:var(--t2);margin-bottom:6px;
+ background:rgba(255,255,255,.9);box-shadow:inset 0 1px 0 #fff,0 2px 8px rgba(28,40,64,.10),0 0 0 .5px rgba(0,0,0,.08)}
+.gd-ph b{font-size:13.5px;font-weight:650;color:var(--t1)}
+.gd-ph small{font-size:12px;color:var(--t2)}
+.gd-ph.on .n{background:var(--blue);color:#fff;box-shadow:0 0 0 5px var(--blueBg),0 4px 12px rgba(0,113,227,.30)}
+.gd-ph.done .n{background:var(--green);color:#fff}
+
+@keyframes gd-veil{from{opacity:0}to{opacity:1}}
+@keyframes gd-in{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.st-key-guide,.st-key-guide-card{animation:gd-veil .2s linear both}}
+
+/* The footer's "?": a small glass circle before Back. */
+.st-key-guide-open button{width:36px;height:36px!important;min-height:36px!important;padding:0!important;border-radius:50%;font-size:15px!important;font-weight:650;color:var(--t2);
+ background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.85);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 4px 14px rgba(28,40,64,.08),0 0 0 .5px rgba(0,0,0,.08)}
+.st-key-guide-open button:hover{background:#fff;color:var(--blue)}
