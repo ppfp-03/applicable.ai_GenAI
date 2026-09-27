@@ -15,6 +15,7 @@ from tests.test_candidate_extraction import FakeModelClient, make_cv, make_field
 
 ONBOARDING = str(Path(__file__).resolve().parents[1] / "views" / "onboarding.py")
 EU = ["IT", "ES", "FR", "DE", "NL", "LU", "DK", "IE"]
+OTHERS = ["GB", "CH", "CN", "HK", "SG"]
 STORIES = json.loads((Path(__file__).resolve().parents[1] / "data" / "stories.json").read_text("utf-8"))["stories"]
 
 
@@ -49,9 +50,8 @@ def pills(at, key):
     return next(b for b in at.get("button_group") if b.key == key)
 
 
-def answer(at, authorized, sponsorship):
+def answer(at, authorized):
     pills(at, "ed-wa-auth").set_value(authorized)
-    pills(at, "ed-wa-sp").set_value(sponsorship)
     at.button(key="ed-save").click().run()
     assert not at.exception
     return at
@@ -130,7 +130,13 @@ def test_without_a_cv_the_editor_shows_only_work_authorization() -> None:
     assert [t.label for t in at.tabs] == ["Work authorization"]
     assert pills(at, "ed-wa-auth").options == [
         "EU · all EU countries", "United Kingdom", "Switzerland", "China", "Hong Kong", "Singapore", "None of these"]
-    assert len(pills(at, "ed-wa-sp").options) == 14  # every country, then "None of these"
+
+
+def test_one_question_answers_both_authorization_and_sponsorship() -> None:
+    at = editor(at_step2())
+    assert [b.key for b in at.get("button_group")] == ["ed-wa-auth"]
+    assert pills(at, "ed-wa-auth").label == "Where can you work without employer sponsorship?"
+    assert "Every country you leave out is saved as needing employer sponsorship." in page(at)
 
 
 def test_with_a_cv_the_work_authorization_tab_comes_after_the_cv_sections() -> None:
@@ -138,38 +144,29 @@ def test_with_a_cv_the_work_authorization_tab_comes_after_the_cv_sections() -> N
     assert [t.label for t in at.tabs] == ["Experience", "Education", "Skills", "Languages", "Work authorization"]
 
 
-def test_saving_without_answers_keeps_the_editor_open() -> None:
-    at = answer(editor(at_step2()), [], [])
+def test_saving_without_an_answer_keeps_the_editor_open() -> None:
+    at = answer(editor(at_step2()), [])
     assert declared(at) is None
     assert "ed_draft" in at.session_state
-    assert "where you are currently authorized to work" in at.session_state["ed_error"]
+    assert "without employer sponsorship" in at.session_state["ed_error"]
 
 
 def test_none_cannot_be_combined_with_countries() -> None:
-    at = answer(editor(at_step2()), ["NONE", "GB"], ["NONE"])
+    at = answer(editor(at_step2()), ["NONE", "GB"])
     assert declared(at) is None
     assert "can’t be combined" in at.session_state["ed_error"]
 
 
-def test_sponsorship_is_asked_only_where_the_user_is_not_authorized() -> None:
-    at = editor(at_step2(declared={"authorized": [*EU, "GB"], "sponsorship": []}))
-    sponsor = pills(at, "ed-wa-sp")
-    assert sponsor.options == ["Switzerland", "China", "Hong Kong", "Singapore", "None of these"]
-    assert sponsor.label == "In which of the remaining countries would you require employer sponsorship?"
+def test_the_countries_left_out_are_saved_as_needing_sponsorship() -> None:
+    at = answer(editor(at_step2()), ["EU", "GB"])
+    assert declared(at) == {"authorized": [*EU, "GB"], "sponsorship": ["CH", "CN", "HK", "SG"]}
 
 
-def test_a_newly_authorized_country_leaves_the_sponsorship_answer() -> None:
-    at = answer(editor(at_step2()), ["EU"], ["IT", "SG"])
-    assert declared(at) == {"authorized": EU, "sponsorship": ["SG"]}
-
-
-def test_authorized_everywhere_skips_the_sponsorship_question() -> None:
-    everywhere = [*EU, "GB", "CH", "CN", "HK", "SG"]
-    at = editor(at_step2(declared={"authorized": everywhere, "sponsorship": []}))
-    assert not [b for b in at.get("button_group") if b.key == "ed-wa-sp"]
-    at.button(key="ed-save").click().run()
-    assert not at.exception
-    assert declared(at) == {"authorized": everywhere, "sponsorship": []}
+def test_authorized_everywhere_needs_sponsorship_nowhere() -> None:
+    at = answer(editor(at_step2()), ["EU", *OTHERS])
+    assert declared(at) == {"authorized": [*EU, *OTHERS], "sponsorship": []}
+    at.run()
+    assert "Not needed anywhere" in page(at)
 
 
 def test_the_store_still_refuses_a_country_both_authorized_and_sponsored() -> None:
@@ -182,33 +179,59 @@ def test_the_store_still_refuses_a_country_both_authorized_and_sponsored() -> No
 
 
 def test_eu_selects_every_eu_country_and_the_step_opens() -> None:
-    at = answer(editor(at_step2()), ["EU", "CH"], ["CN", "SG"])
+    at = answer(editor(at_step2()), ["EU", "CH"])
 
-    assert declared(at) == {"authorized": [*EU, "CH"], "sponsorship": ["CN", "SG"]}
+    assert declared(at) == {"authorized": [*EU, "CH"], "sponsorship": ["GB", "CN", "HK", "SG"]}
     assert "ed_draft" not in at.session_state
     at.run()
     assert not at.button(key="next").disabled
     shown = page(at)
     assert "EU, Switzerland" in shown
-    assert "China, Singapore" in shown
+    assert "United Kingdom, China, Hong Kong, Singapore" in shown
     assert shown.count("Declared by you") == 2
 
 
-def test_none_everywhere_is_a_complete_answer() -> None:
-    at = answer(editor(at_step2()), ["NONE"], ["NONE"])
-    assert declared(at) == {"authorized": [], "sponsorship": []}
+def test_none_of_these_means_sponsorship_everywhere() -> None:
+    at = answer(editor(at_step2()), ["NONE"])
+    assert declared(at) == {"authorized": [], "sponsorship": [*EU, *OTHERS]}
     at.run()
     shown = page(at)
     assert "None of our countries" in shown
-    assert "Not needed anywhere" in shown
+    assert "EU, United Kingdom, Switzerland, China, Hong Kong, Singapore" in shown
 
 
 def test_the_declared_uk_answer_prefills_step_6() -> None:
-    cases = [(["GB"], ["NONE"], "yes"), (["EU"], ["GB"], "no"), (["EU"], ["NONE"], "unsure")]
-    for authorized, sponsorship, uk in cases:
-        at = answer(editor(at_step2()), authorized, sponsorship)
+    for authorized, uk in ((["GB"], "yes"), (["EU"], "no")):
+        at = answer(editor(at_step2()), authorized)
         assert at.session_state[store.ANSWERS]["uk_work"] == uk
         assert at.session_state["ob_uk"] == uk
+
+
+# --- The EU, as one choice or country by country ---------------------------------
+
+
+def test_the_eu_can_be_answered_country_by_country() -> None:
+    at = editor(at_step2(declared={"authorized": ["IT", "GB"], "sponsorship": [*EU[1:], *OTHERS[1:]]}))
+    assert at.checkbox(key="ed-eu-split").value
+    assert pills(at, "ed-wa-auth").options[:8] == [
+        "Italy", "Spain", "France", "Germany", "Netherlands", "Luxembourg", "Denmark", "Ireland"]
+    assert pills(at, "ed-wa-auth").value == ["IT", "GB"]
+    at.button(key="ed-save").click().run()
+    assert declared(at) == {"authorized": ["IT", "GB"], "sponsorship": [*EU[1:], *OTHERS[1:]]}
+
+
+def test_the_whole_eu_opens_as_one_choice() -> None:
+    at = editor(at_step2(declared={"authorized": EU, "sponsorship": OTHERS}))
+    assert not at.checkbox(key="ed-eu-split").value
+    assert pills(at, "ed-wa-auth").value == ["EU"]
+
+
+def test_joining_the_eu_again_drops_a_partial_eu_answer() -> None:
+    at = editor(at_step2(declared={"authorized": ["IT", "GB"], "sponsorship": [*EU[1:], *OTHERS[1:]]}))
+    at.checkbox(key="ed-eu-split").uncheck()
+    at.button(key="ed-save").click().run()
+    assert not at.exception
+    assert declared(at) == {"authorized": ["GB"], "sponsorship": [*EU, *OTHERS[1:]]}
 
 
 def test_confirming_after_the_declaration_moves_on() -> None:
@@ -219,9 +242,8 @@ def test_confirming_after_the_declaration_moves_on() -> None:
 
 
 def test_the_editor_reopens_on_the_saved_declaration() -> None:
-    at = editor(at_step2(declared={"authorized": [*EU, "HK"], "sponsorship": []}))
+    at = editor(at_step2(declared={"authorized": [*EU, "HK"], "sponsorship": ["GB", "CH", "CN", "SG"]}))
     assert pills(at, "ed-wa-auth").value == ["EU", "HK"]
-    assert pills(at, "ed-wa-sp").value == ["NONE"]
 
 
 def test_cancel_leaves_the_declaration_unset() -> None:
@@ -232,35 +254,18 @@ def test_cancel_leaves_the_declaration_unset() -> None:
     assert "Add your work authorization and sponsorship in Edit profile to continue." in page(at)
 
 
-# --- Each question needs its own explicit answer -----------------------------
-
-
-def test_only_the_authorization_answer_is_not_enough() -> None:
-    at = answer(editor(at_step2()), ["GB"], [])
-    assert declared(at) is None
-    assert "employer sponsorship" in at.session_state["ed_error"]
-
-
-def test_only_the_sponsorship_answer_is_not_enough() -> None:
-    at = answer(editor(at_step2()), [], ["NONE"])
-    assert declared(at) is None
-    assert "currently authorized to work" in at.session_state["ed_error"]
-
-
 def test_the_eu_shortcut_stores_iso_country_codes_only() -> None:
     from oi.contracts import validate_country_code
 
-    at = answer(editor(at_step2()), ["EU"], ["NONE"])
+    at = answer(editor(at_step2()), ["EU"])
     stored = declared(at)
     assert "EU" not in stored["authorized"]
     assert stored["authorized"] == EU
     assert [validate_country_code(c) for c in stored["authorized"]] == EU
 
 
-def test_the_questions_do_not_equate_visa_citizenship_and_authorization() -> None:
+def test_the_question_does_not_equate_visa_citizenship_and_authorization() -> None:
     at = editor(at_step2())
-    assert pills(at, "ed-wa-auth").label == "In which countries are you currently authorized to work?"
-    assert pills(at, "ed-wa-sp").label == "In which countries would you require employer sponsorship?"
     text = page(at)
     assert "visa" not in text.lower() and "citizen" not in text.lower()
 
@@ -307,13 +312,19 @@ def test_returning_after_save_and_exit_still_requires_the_declaration() -> None:
 # --- Step 5-7 use the declared UK answer --------------------------------------
 
 
-def at_step(step, authorized, sponsorship):
-    """The onboarding page at `step`, after a declaration made through the store."""
+def at_step(step, authorized=None, saved=None):
+    """The onboarding page at `step`, after answering the editor with
+    `authorized`, or with a declaration `saved` as it is, UK answer included."""
     at = AppTest.from_file(ONBOARDING, default_timeout=30)
     at.session_state["ob_step"] = "2"
     at.session_state[store.ANSWERS] = {"uk_work": None}
+    if saved is not None:
+        at.session_state[store.WORK_AUTH], uk = saved
+        at.session_state[store.ANSWERS] = {"uk_work": uk}
+        at.session_state["ob_uk"] = uk  # as the editor's save leaves it
     at.run()
-    answer(editor(at), authorized, sponsorship)
+    if saved is None:
+        answer(editor(at), authorized)
     at.session_state["ob_step"] = step
     at.session_state["ob_tick"] = 5  # the shortlist animation has finished
     at.session_state["ob_swipes"] = ["r"] * len(STORIES)  # Explore done: every step pill is shown
@@ -323,15 +334,15 @@ def at_step(step, authorized, sponsorship):
 
 
 def test_a_declared_uk_answer_is_not_reset_to_unknown_in_step_5() -> None:
-    for authorized, sponsorship, uk in ((["GB"], ["NONE"], "yes"), (["NONE"], ["GB"], "no")):
-        at = at_step("5", authorized, sponsorship)
+    for authorized, uk in ((["GB"], "yes"), (["NONE"], "no")):
+        at = at_step("5", authorized)
         assert at.session_state[store.ANSWERS]["uk_work"] == uk
         assert "Your UK work authorization is already declared" in page(at)
         assert at.button(key="next").label == "View shortlist"
 
 
 def test_a_known_uk_answer_is_not_asked_again() -> None:
-    at = at_step("5", ["GB"], ["NONE"])
+    at = at_step("5", ["GB"])
     at.button(key="next").click().run()
     assert at.session_state["ob_step"] == "7"  # step 6 skipped
     assert "Declared by you" in page(at)
@@ -345,7 +356,8 @@ def test_a_known_uk_answer_is_not_asked_again() -> None:
 
 
 def test_an_unsettled_uk_is_still_asked_in_step_6() -> None:
-    at = at_step("5", ["EU"], ["NONE"])  # neither authorized in nor sponsored for the UK
+    # The editor always settles the UK; a declaration saved before it did may not.
+    at = at_step("5", saved=({"authorized": EU, "sponsorship": []}, "unsure"))
     assert at.session_state[store.ANSWERS]["uk_work"] == "unsure"
     at.button(key="next").click().run()
     assert at.session_state["ob_step"] == "6"

@@ -634,3 +634,59 @@
 .st-key-ofoot .x{font-size:13px}
 .st-key-ofoot .i{font-size:13px;color:var(--t2)}
 .st-key-ofoot .i b{color:var(--t1);font-weight:600}
+
+/* ── Explore practice card (views/onboarding.py tutorial_card) ──
+ * It nudges right then left on a loop to show the gesture, until the card is
+ * touched or dragged. */
+.sw-card.tut{animation:tut-nudge 4.2s cubic-bezier(.45,.05,.3,1) .8s infinite}
+.sw-card.tut .stamp{animation:tut-stamp 4.2s cubic-bezier(.45,.05,.3,1) .8s infinite}
+.sw-card.tut:is(:hover,.dragging,.out-r,.out-l,.out-u),.sw-card.tut:is(:hover,.dragging,.out-r,.out-l,.out-u) .stamp{animation:none}
+.tut-dirs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}
+.tut-d{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:14px 8px 12px;border-radius:18px;background:rgba(255,255,255,.7);box-shadow:inset 0 1px 0 #fff,0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05)}
+.tut-d .o{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:16px;font-weight:600;color:#6E6E73;background:rgba(0,0,0,.04);margin-bottom:6px}
+.tut-d.r .o{color:#fff;background:var(--green)}
+.tut-d b{font-size:13.5px;font-weight:620;color:var(--t1)}
+.tut-d small{font-size:11.5px;color:var(--t3)}
+.tut-go{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:24px;font-size:13.5px;font-weight:600;color:var(--blue)}
+.tut-hand{position:relative;width:14px;height:14px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px var(--blueBg)}
+.tut-hand:after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--blue);opacity:0;animation:tut-ping 1.6s ease-out infinite}
+@keyframes tut-nudge{
+ 0%,16%{transform:rotate(1.4deg) translateX(14px)}
+ 30%,36%{transform:translateX(78px) rotate(6deg)}
+ 48%,58%{transform:rotate(1.4deg) translateX(14px)}
+ 70%,74%{transform:translateX(-44px) rotate(-3deg)}
+ 86%,100%{transform:rotate(1.4deg) translateX(14px)}}
+@keyframes tut-stamp{0%,18%{opacity:0}30%,36%{opacity:1}46%,100%{opacity:0}}
+@keyframes tut-ping{0%{opacity:.7;transform:scale(.6)}100%{opacity:0;transform:scale(1.8)}}
+@media (prefers-reduced-motion:reduce){.sw-card.tut,.sw-card.tut .stamp,.tut-hand:after{animation:none}}
+/* Profile cards open in full (ui/js/expand.js): the whole card is the control, the corner glyph says so. */
+.p-s.xp{position:relative;cursor:pointer;transition:transform .35s cubic-bezier(.32,.72,0,1),box-shadow .35s}
+.p-s.xp:not(.xp-copy):hover{transform:translateY(-2px);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 10px 26px rgba(28,40,64,.09)}
+.p-s.xp.rv:not(.xp-copy):hover{box-shadow:0 0 0 1.5px #EBCB98,0 10px 26px rgba(28,40,64,.09)}
+.p-s.xp.miss:not(.xp-copy):hover{box-shadow:0 0 0 1.5px var(--red),0 10px 26px rgba(28,40,64,.09)}
+.p-s.xp:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.p-s.xp .p-src{padding-right:30px}
+.xp-full{display:none}
+.xp-ic{position:absolute;right:12px;bottom:12px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:var(--t2);background:rgba(0,0,0,.045);opacity:.55;transition:opacity .25s,transform .35s cubic-bezier(.32,.72,0,1)}
+.p-s.xp:hover .xp-ic,.p-s.xp:focus-visible .xp-ic{opacity:1;transform:scale(1.12)}
+.p-s.xp.xp-away{visibility:hidden}
+.xp-veil{position:fixed;inset:0;z-index:1200;background:rgba(245,246,248,.45);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%)}
+.xp-fly{position:fixed;z-index:1201;perspective:1400px}
+.xp-rot{position:absolute;inset:0;transform-style:preserve-3d}
+.xp-face{position:absolute;inset:0;border-radius:18px;background:#fff;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05)}
+.xp-back{transform:rotateY(180deg)}
+.xp-open .xp-back{overflow-y:auto;overscroll-behavior:contain}
+.xp-copy{position:absolute;left:0;top:0;background:none!important;box-shadow:none!important;box-sizing:border-box}
+.xp-in{box-sizing:border-box;padding:24px 26px 22px;display:flex;flex-direction:column}
+.xp-in .p-h b{font-size:17px}
+.xp-in .p-h .w-b{margin-left:auto}
+.xp-x{flex:none;width:28px;height:28px;border-radius:50%;border:0;padding:0;display:grid;place-items:center;cursor:pointer;color:var(--t2);background:rgba(0,0,0,.05);transition:background .2s,color .2s}
+.xp-x:hover{background:rgba(0,0,0,.09);color:var(--t1)}
+.xp-x:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.xp-body{margin-top:6px}
+.xp-body .p-chips{margin-top:14px}
+.xp-body .p-v{white-space:normal}
+.xp-it + .xp-it{margin-top:4px;padding-top:4px;border-top:.5px solid rgba(0,0,0,.07)}
+.xp-q{font-size:12px;line-height:1.5;color:var(--t2);margin-top:6px;padding-left:10px;border-left:2px solid rgba(0,0,0,.08)}
+.xp-body .p-chips + .xp-q{margin-top:16px}
+.xp-in .p-src{margin-top:18px}

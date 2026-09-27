@@ -28,26 +28,29 @@ from oi.io.pdf import PdfExtractionError, extract_pdf_text
 from oi.providers.kimi import KimiClient
 from oi.providers.model_client import ExtractionError
 from ui import onboarding_markup as M
-from ui import parts, tabs
+from ui import guide, parts, tabs
 from ui.html import CK12, CK_WHITE, WN12, esc, html, squash
 from ui.palette import orange
 from ui.theme import page_css
 
 d = store.data()
 page_css("onboarding")
+page_css("guide")
 STORIES = json.loads((Path(__file__).resolve().parent.parent / "data" / "stories.json").read_text("utf-8"))
 SWIPE_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "swipe.js").read_text(encoding="utf-8")
+EXPAND_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "expand.js").read_text(encoding="utf-8")
 
-#: (key, step number, footer info, call to action) — the mockup's own list.
+#: (key, step number, call to action) — the mockup's own list. The footer's
+#: line beside the call to action comes from ui/guide.py.
 FLOW = [
-    ("1", 1, "<b>Step 1 of 7</b> · Upload your CV", "Continue"),
-    ("2", 2, "<b>Step 2 of 7</b> · Every field links back to your CV", "Confirm profile"),
-    ("3b", 3, "<b>Step 3 of 7</b> · Swipe or use ← ↑ → on your keyboard", "Continue"),
-    ("3a", 3, "<b>Step 3 of 7</b> · Only what you confirm here shapes your ranking", "Find my roles"),
-    ("4", 4, "<b>Step 4 of 7</b> · Ranking your roles…", "View shortlist"),
-    ("5", 5, "<b>Step 5 of 7</b> · Some of your top matches need one answer", "Answer 1 question"),
-    ("6", 6, "<b>Step 6 of 7</b> · One answer updates one field", "Save answer"),
-    ("7", 7, "<b>Step 7 of 7</b> · Your shortlist is ready", "Start application"),
+    ("1", 1, "Continue"),
+    ("2", 2, "Confirm profile"),
+    ("3b", 3, "Continue"),
+    ("3a", 3, "Find my roles"),
+    ("4", 4, "View shortlist"),
+    ("5", 5, "Answer 1 question"),
+    ("6", 6, "Save answer"),
+    ("7", 7, "Start application"),
 ]
 KEYS = [f[0] for f in FLOW]
 STEP_NAMES = ["Upload CV", "Profile", "Preferences", "Analysis", "Shortlist", "Clarify", "Updated ranking"]
@@ -88,6 +91,7 @@ S.setdefault("ob_uk", "yes")
 S.setdefault("ob_filter", 0)
 S.setdefault("ob_file", None)  # (name, size in bytes) of the CV read
 S.setdefault("ob_cv", None)
+S.setdefault("ob_taught", False)  # the Explore practice card was swiped
 
 #: Work authorization and sponsorship must be declared in step 2 before any
 #: later step opens.
@@ -120,7 +124,8 @@ if qs in KEYS and S.get("_ob_qs") != qs:
 
 step = S["ob_step"]
 idx = KEYS.index(step)
-key, num, info, cta = FLOW[idx]
+key, num, cta = FLOW[idx]
+info = guide.line(step, num, len(STEP_NAMES))
 
 
 def finish() -> None:
@@ -253,13 +258,23 @@ PENCIL = (
     '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M10.5 2.5l3 3L6 13H3v-3z" stroke="currentColor" '
     'stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>'
 )
+#: The corner glyph of a card that opens: two arrows pointing apart.
+EXPAND = (
+    '<span class="xp-ic" aria-hidden="true"><svg width="11" height="11" viewBox="0 0 16 16">'
+    '<path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9" stroke="currentColor" '
+    'stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+)
 
 
-def profile_card(title: str, badge: str, body: str, src: str = "", cls: str = "") -> str:
+def profile_card(title: str, badge: str, body: str, src: str = "", cls: str = "", full: str = "") -> str:
+    """One section card. `full` is everything the card holds, uncut: pressing
+    the card opens it in place (ui/js/expand.js). It defaults to `body`."""
     source = f'<div class="p-src">{DOC_ICON}{src}</div>' if src else ""
     return (
-        f'<div class="w-card p-s{cls}"><div class="p-h"><div class="ic">{ICONS[title]}</div>'
-        f"<b>{title}</b>{badge}</div>{body}{source}</div>"
+        f'<div class="w-card p-s xp{cls}" role="button" tabindex="0" aria-haspopup="dialog" '
+        f'aria-label="Open {title}"><div class="p-h"><div class="ic">{ICONS[title]}</div>'
+        f"<b>{title}</b>{badge}</div>{body}{source}"
+        f'<div class="xp-full">{full or body}</div>{EXPAND}</div>'
     )
 
 
@@ -330,15 +345,25 @@ def cv_card(profile, title: str, field: str) -> str:
         if len(facts) > SKILL_CHIPS:
             chips += f'<span class="w-chip">+{len(facts) - SKILL_CHIPS}</span>'
         body = f'<div class="p-chips">{chips}</div>'
+        # Opened: every chip, then each CV line they were read from, once.
+        full = "".join(item(f, "span", ' class="w-chip"') for f in facts)
+        full = f'<div class="p-chips">{full}</div>'
+        full += "".join(f'<div class="xp-q">{esc(q)}</div>' for q in section_quotes(profile, field))
     else:  # one line per entry, so three roles read as three roles
         body = "".join(item(f, "div", ' class="p-v p-e"') for f in facts[:CARD_LINES])
         if len(facts) > CARD_LINES:
             body += f'<div class="p-m">+{len(facts) - CARD_LINES} more</div>'
+        # Opened: every entry in full, each above the CV line it rests on.
+        full = "".join(
+            f'<div class="xp-it"><div class="p-v">{esc(text(f))}</div>'
+            f'<div class="xp-q">{esc(fact_quote(profile, f))}</div></div>'
+            for f in facts
+        )
     quotes = len(section_quotes(profile, field))
     edited = sum(store.is_edited(profile, f) for f in facts)
     src = [f"From your CV · {quote_count(quotes)}"] if quotes else []
     src += [f"{edited} edited by you"] if edited else []
-    return profile_card(title, FOUND, body, " · ".join(src))
+    return profile_card(title, FOUND, body, " · ".join(src), full=full)
 
 
 def country_list(codes: list[str]) -> str:
@@ -362,6 +387,8 @@ def work_auth_cards() -> list[str]:
                 '<div class="p-v">Required · add it in Edit profile</div>'
                 f'<div class="p-act"><span class="w-chip add p-cta">{cta}</span></div>',
                 cls=cls,
+                # Opened, the call to action would press nothing: it is left out.
+                full='<div class="p-v">Required · add it in Edit profile</div>',
             )
             for t, cta in REQUIRED_CTA.items()
         ]
@@ -454,31 +481,38 @@ EDIT_EXAMPLES = {
 }
 
 
-#: The work authorization tab: its title and the "none" choice of each question.
+#: The work authorization tab: its title, the "none" choice, and the switch
+#: that answers the EU country by country instead of as one choice.
 WORK_TAB = "Work authorization"
 NONE = "NONE"
+EU_SPLIT = "ed-eu-split"
 
 
-def work_auth_choices(authorized: list[str] = ()) -> tuple[list[str], list[str]]:
-    """Pill options: authorization offers the EU as one choice, then the other
-    countries; sponsorship offers only the countries `authorized` (the current
-    authorization answer) leaves out. Both end with "none"."""
-    others = [c["code"] for c in store.markets() if not c["eu"]]
-    covered = authorized_codes(authorized)
-    return ["EU", *others, NONE], [c["code"] for c in store.markets() if c["code"] not in covered] + [NONE]
+def work_auth_choices() -> list[str]:
+    """Pill options: the EU as one choice (or, once split, each EU country),
+    then the other countries, then "none"."""
+    eu = list(store.eu_codes()) if S.get(EU_SPLIT) else ["EU"]
+    return [*eu, *(c["code"] for c in store.markets() if not c["eu"]), NONE]
 
 
-def authorized_codes(chosen: list[str]) -> set[str]:
-    """The countries an authorization answer covers, the EU expanded."""
-    return (set(chosen) - {"EU", NONE}) | (set(store.eu_codes()) if "EU" in chosen else set())
+def authorized_codes(chosen: list[str]) -> list[str]:
+    """The countries an answer covers, the EU expanded, in market order."""
+    covered = set(chosen) | (set(store.eu_codes()) if "EU" in chosen else set())
+    return [c["code"] for c in store.markets() if c["code"] in covered]
 
 
-def on_authorization() -> None:
-    """Sponsorship is asked only where the user is not authorized: a country
-    just added to the authorization answer leaves the sponsorship answer."""
+def on_eu_split() -> None:
+    """Carry the answer across the switch: "EU" becomes its countries, and
+    all of them together become "EU" again; a partial EU answer is dropped."""
     clear_error()
-    covered = authorized_codes(S.get("ed-wa-auth") or [])
-    S["ed-wa-sp"] = [c for c in S.get("ed-wa-sp") or [] if c not in covered]
+    eu = store.eu_codes()
+    chosen = list(S.get("ed-wa-auth") or [])
+    if S[EU_SPLIT]:
+        chosen = authorized_codes(chosen) + ([NONE] if NONE in chosen else [])
+    else:
+        whole = set(eu) <= set(chosen)
+        chosen = (["EU"] if whole else []) + [c for c in chosen if c not in eu]
+    S["ed-wa-auth"] = chosen
 
 
 def work_auth_label(value: str) -> str:
@@ -488,39 +522,35 @@ def work_auth_label(value: str) -> str:
 
 
 def draft_work_auth() -> None:
-    """Fill the two questions from the saved declaration, or leave them blank."""
+    """Fill the question from the saved declaration, or leave it blank. An
+    answer covering only part of the EU opens with the EU split."""
     decl = store.work_auth()
     if decl is None:
-        S["ed-wa-auth"], S["ed-wa-sp"] = [], []
+        S["ed-wa-auth"], S[EU_SPLIT] = [], False
         return
     eu = store.eu_codes()
-    auth = (["EU"] if set(eu) <= set(decl["authorized"]) else []) + [
+    part = set(eu) & set(decl["authorized"])
+    S[EU_SPLIT] = bool(part) and part != set(eu)
+    auth = list(decl["authorized"]) if S[EU_SPLIT] else (["EU"] if part else []) + [
         c for c in decl["authorized"] if c not in eu]
     S["ed-wa-auth"] = auth or [NONE]
-    S["ed-wa-sp"] = list(decl["sponsorship"]) or [NONE]
 
 
 def read_work_auth() -> tuple[list[str], list[str]]:
-    """The two answers as country codes, the EU expanded.
+    """The answer as country codes, the EU expanded: where the user is
+    authorized, and every other platform country as needing sponsorship.
+    The question says so, so both are the user's own declaration.
 
     Raises:
-        ValueError: If a question is unanswered or mixes "none" with countries.
+        ValueError: If the question is unanswered or mixes "none" with countries.
     """
-    answers = []
-    for key, question in (("ed-wa-auth", "where you are currently authorized to work"),
-                          ("ed-wa-sp", "where you would require employer sponsorship")):
-        chosen = list(S.get(key) or [])
-        if key == "ed-wa-sp" and work_auth_choices(answers[0])[1] == [NONE]:
-            chosen = [NONE]  # authorized everywhere: the question is not asked
-        if not chosen:
-            raise ValueError(f"Tell us {question}, or choose “None of these”.")
-        if NONE in chosen and len(chosen) > 1:
-            raise ValueError(f"“None of these” can’t be combined with countries ({question}).")
-        answers.append([] if chosen == [NONE] else chosen)
-    authorized, sponsorship = answers
-    if "EU" in authorized:
-        authorized = [*store.eu_codes(), *(c for c in authorized if c != "EU")]
-    return authorized, sponsorship
+    chosen = list(S.get("ed-wa-auth") or [])
+    if not chosen:
+        raise ValueError("Tell us where you can work without employer sponsorship, or choose “None of these”.")
+    if NONE in chosen and len(chosen) > 1:
+        raise ValueError("“None of these” can’t be combined with countries.")
+    authorized = authorized_codes(chosen)
+    return authorized, [c["code"] for c in store.markets() if c["code"] not in authorized]
 
 
 def open_editor(tab: str | None = None) -> None:
@@ -666,23 +696,18 @@ def clear_error() -> None:
 
 
 def work_auth_tab() -> None:
-    """The mandatory questions. Declared by the user, never read from the CV
-    or inferred from citizenship."""
-    authorized = [c for c in S.get("ed-wa-auth") or [] if c != NONE]
-    auth, sponsor = work_auth_choices(authorized)
+    """The mandatory question. Declared by the user, never read from the CV
+    or inferred from citizenship: one answer says both where the user may
+    work and where they would need sponsorship."""
     st.markdown(
-        '<div class="ed-sub">Required to continue. Countries you leave out count as “no”.</div>',
+        '<div class="ed-sub">Required to continue. Every country you leave out is saved as needing '
+        "employer sponsorship.</div>",
         unsafe_allow_html=True,
     )
-    st.pills("In which countries are you currently authorized to work?", auth, selection_mode="multi",
+    st.pills("Where can you work without employer sponsorship?", work_auth_choices(), selection_mode="multi",
              key="ed-wa-auth", format_func=work_auth_label, help="Choosing EU selects every EU country we cover.",
-             on_change=on_authorization)
-    if sponsor == [NONE]:  # authorized everywhere: nothing left to sponsor
-        return
-    question = ("In which of the remaining countries would you require employer sponsorship?" if authorized
-                else "In which countries would you require employer sponsorship?")
-    st.pills(question, sponsor, selection_mode="multi",
-             key="ed-wa-sp", format_func=work_auth_label, on_change=clear_error)
+             on_change=clear_error)
+    st.checkbox("Answer EU countries one by one", key=EU_SPLIT, on_change=on_eu_split)
 
 
 def languages_tab(rows: list) -> None:
@@ -905,6 +930,37 @@ def story_card(s: dict) -> str:
     )
 
 
+def practice() -> bool:
+    """Whether the Explore stack still opens on its practice card."""
+    return not S["ob_taught"] and not S["ob_swipes"]
+
+
+def tutorial_card() -> str:
+    """The practice card on top of the stack: it shows the three swipes and
+    what they are for. Swiping it records no verdict (see `swipe`)."""
+    dirs = "".join(
+        f'<div class="tut-d {d}"><span class="o">{arrow}</span><b>{label}</b><small>{hint}</small></div>'
+        for d, arrow, label, hint in [
+            ("l", "←", "Not for me", "Swipe left"),
+            ("u", "↑", "Not sure", "Swipe up"),
+            ("r", "→", "I’d enjoy this", "Swipe right"),
+        ]
+    )
+    return (
+        '<div class="sw-card tut"><span class="stamp">I’D ENJOY THIS</span>'
+        '<div class="cd-tags"><span class="w-b ne">How it works</span></div>'
+        '<div class="cd-time">Practice card · not counted</div>'
+        '<div class="cd-h">React to a day at work</div>'
+        '<div class="cd-p">Each card is a short story about real work. There are no right answers: '
+        'swipe the way you’d honestly react.</div>'
+        f'<div class="tut-dirs">{dirs}</div>'
+        '<div class="tut-go"><span class="tut-hand"></span>Try it: swipe this card to start</div>'
+        '<div class="cd-why"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M8 2.2 9.3 6.7 13.8 8 9.3 9.3 8 '
+        '13.8 6.7 9.3 2.2 8 6.7 6.7z" fill="#0071E3"/></svg>'
+        '<span>Your likes only suggest preferences. <b>You confirm them next.</b></span></div></div>'
+    )
+
+
 def done_card(verdicts: list[str]) -> str:
     """What replaces the stack once every story has a verdict."""
     n = {v: verdicts.count(v) for v in explore.VERDICTS}
@@ -988,15 +1044,17 @@ def step3b() -> str:
     total, seen = len(stories), len(verdicts)
     done = seen >= total
     body = M.S_3B
+    first = practice()
     story_n = f"All {total} stories" if done else f"Story {seen + 1} of {total}"
-    body = swap(body, re.escape("<b>Story 8 of 12</b> · about 1 minute left"), f"<b>{story_n}</b> · {time_left(total - seen)}")
-    bars = "".join(f'<i class="{"d" if i < seen else "c" if i == seen else ""}"></i>' for i in range(total))
+    count = f"<b>Practice card</b> · then {total} stories" if first else f"<b>{story_n}</b> · {time_left(total - seen)}"
+    body = swap(body, re.escape("<b>Story 8 of 12</b> · about 1 minute left"), count)
+    bars = "".join(f'<i class="{"d" if i < seen else "c" if i == seen and not first else ""}"></i>' for i in range(total))
     body = swap(body, r'<div class="sw-pb">.*?</div>', f'<div class="sw-pb">{bars}</div>')
-    behind = total - seen - 1  # cards still under the top one
+    behind = total - seen - (0 if first else 1)  # cards still under the top one
     backs = ('<div class="sw-cb b2"></div>' if behind >= 2 else "") + ('<div class="sw-cb b1"></div>' if behind >= 1 else "")
     body = swap(
         body, r'<div class="sw-stack">.*?</div></div>\s*<div class="acts">',
-        f'<div class="sw-stack">{backs}{done_card(verdicts) if done else story_card(stories[seen])}</div>\n<div class="acts{" off" if done else ""}">',
+        f'<div class="sw-stack">{backs}{done_card(verdicts) if done else tutorial_card() if first else story_card(stories[seen])}</div>\n<div class="acts{" off" if done else ""}">',
     )
     body = swap(body, re.escape("Live · from 7 swipes"), f"Live · from {seen} swipe{'s' if seen != 1 else ''}")
     body = swap(body, r'<svg width="370" height="246".*?</svg>', radar(explore.interests(stories, verdicts)))
@@ -1309,7 +1367,7 @@ with st.container(key="otop"):
     for n, box in enumerate(TOP, start=1):
         if n > 3 and not (explored() or store.preferences()):
             continue  # Explore is not optional: no jumping past it
-        target = next(k for k, s, _, _ in FLOW if s == n)
+        target = next(k for k, s, _ in FLOW if s == n)
         overlay(f"st{n}", box, f"Go to step {n}: {STEP_NAMES[n - 1]}", on_click=go, args=(target,))
     with st.container(key="oexit"):
         if st.button("Save and exit", key="exit"):
@@ -1349,6 +1407,9 @@ with st.container(key="obody"):
                 status.error(f"We couldn’t read your CV. {store.extraction_error()}")
     elif step == "2":
         html(f'<section class="w-sec">{step2()}</section>')
+        # Pressing a card opens it in full: it flips over as it grows.
+        with st.container(key="aa-js-expand"):
+            st.html(f"<script>{EXPAND_JS}</script>", unsafe_allow_javascript=True)
         right, y, w, h = EDIT_2
         st.markdown(f"<style>.stApp .st-key-oo-edit{{left:auto!important;right:{right}px}}</style>", unsafe_allow_html=True)
         opened = overlay("edit", (0, y, w, h), "Edit profile", on_click=open_editor)
@@ -1378,7 +1439,9 @@ with st.container(key="obody"):
 
 
         def swipe(verdict: str) -> None:
-            if len(S["ob_swipes"]) < len(STORIES["stories"]):
+            if practice():  # the practice card teaches the gesture; it records nothing
+                S["ob_taught"] = True
+            elif len(S["ob_swipes"]) < len(STORIES["stories"]):
                 S["ob_swipes"] = [*S["ob_swipes"], verdict]
 
         if len(S["ob_swipes"]) < len(STORIES["stories"]):
@@ -1394,7 +1457,8 @@ with st.container(key="obody"):
     elif step == "5":
         done_now = S["ob_tick"] >= 5
 
-        @st.fragment(run_every=None if done_now else 1.7)
+        # Held while the intro sheet is up, so the shortlist is built in view.
+        @st.fragment(run_every=None if done_now or guide.is_open(step) else 1.7)
         def shortlist() -> None:
             tick = S["ob_tick"]
             done = tick >= 5
@@ -1446,6 +1510,7 @@ def flag_missing() -> None:
 
 with st.container(key="ofoot"):
     html(f'<span class="i">{info}</span>')
+    guide.help_button(step)
     if idx > 0:
         if st.button("Back", key="back"):
             back = KEYS[idx - 1]
@@ -1469,3 +1534,5 @@ with st.container(key="ofoot"):
             tabs.go("applications", id=v.id)
         go(KEYS[idx + 1])
         st.rerun()
+
+guide.sheet(step, num, len(STEP_NAMES))

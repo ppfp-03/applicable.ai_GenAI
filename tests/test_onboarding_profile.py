@@ -1,5 +1,6 @@
 """Onboarding step 2 shows the extracted profile, never the demo one."""
 
+import re
 from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
@@ -16,14 +17,26 @@ ONBOARDING = str(Path(__file__).resolve().parents[1] / "views" / "onboarding.py"
 DEMO_VALUES = ["Giulia Rossi", "Fudan", "EU citizen", "China X1", "Mandarin", "Financial modelling", "Page 2 of 2"]
 
 
-def step2(profile=None) -> str:
+#: What a card holds for when it is opened, hidden until then (ui/js/expand.js).
+OPENED = re.compile(r'<div class="xp-full">(.*?)</div><span class="xp-ic"', re.S)
+
+
+def step2(profile=None, opened: bool = False) -> str:
+    """The step's markup as shown, or with `opened` also what each card
+    shows once opened."""
     at = AppTest.from_file(ONBOARDING, default_timeout=30)
     at.session_state["ob_step"] = "2"
     if profile is not None:
         at.session_state[store.CANDIDATE] = profile
     at.run()
     assert not at.exception
-    return "".join(m.value for m in at.markdown)
+    page = "".join(m.value for m in at.markdown)
+    return page if opened else OPENED.sub('<span class="xp-ic"', page)
+
+
+def opened_card(page: str, title: str) -> str:
+    """What the card titled `title` shows once opened."""
+    return OPENED.search(page.split(f"<b>{title}</b>", 1)[1]).group(1)
 
 
 def profile(**fields):
@@ -188,7 +201,7 @@ def test_backslashes_in_cv_text_are_shown_as_written() -> None:
 
 
 def test_cv_text_is_escaped() -> None:
-    page = step2(profile(skills=[fact("<img src=x onerror=alert(1)>", "Python")]))
+    page = step2(profile(skills=[fact("<img src=x onerror=alert(1)>", "Python")]), opened=True)
 
     assert "&lt;img src=x onerror=alert(1)&gt;" in page
     assert "<img src=x" not in page
@@ -238,6 +251,44 @@ def test_the_edit_button_is_always_offered() -> None:
     assert "Edit profile" in buttons(profile())
     assert "Edit profile" in step2(profile())
     assert "Edit profile" in step2()
+
+
+# --- a card opened in full --------------------------------------------------
+
+
+def test_every_card_opens() -> None:
+    page = step2(profile(), opened=True)
+
+    for title in ["Skills", "Education", "Experience", "Work authorization", "Sponsorship", "Languages"]:
+        assert f'aria-label="Open {title}"' in page
+    assert page.count('<div class="xp-full">') == 6
+
+
+def test_an_opened_card_lists_every_role_with_its_quote() -> None:
+    card = opened_card(step2(profile(experience=ROLES), opened=True), "Experience")
+
+    for i in range(1, 6):
+        assert f'<div class="xp-it"><div class="p-v">Role {i}</div>' in card
+    assert card.count('<div class="xp-q">Summer Analyst, Mediobanco, June-August 2025</div>') == 5
+    assert "p-e" not in card  # nothing is cut
+    assert "more</div>" not in card
+
+
+def test_an_opened_card_lists_every_skill_and_each_quote_once() -> None:
+    skills = [fact(f"Skill {i}", "Skills: Python") for i in range(1, 11)]
+
+    card = opened_card(step2(profile(skills=skills), opened=True), "Skills")
+
+    for i in range(1, 11):
+        assert f">Skill {i}</span>" in card
+    assert '<span class="w-chip">+' not in card
+    assert card.count('<div class="xp-q">Skills: Python</div>') == 1
+
+
+def test_an_opened_required_card_offers_no_dead_button() -> None:
+    card = opened_card(step2(profile(), opened=True), "Work authorization")
+
+    assert card == '<div class="p-v">Required · add it in Edit profile</div>'
 
 
 # --- the Edit profile dialog ------------------------------------------------
