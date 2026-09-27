@@ -17,21 +17,29 @@
   if (window.__aaExpand) return;
   window.__aaExpand = 1;
 
-  const DUR = 820;         // ms, opening
+  const DUR = 1000;        // ms, opening
   const DUR_BACK = 620;    // ms, closing
   const WIDTH = 560;       // stage px, the open panel
   const MARGIN = 48;       // stage px kept free around it
   const CURVE = 'cubic-bezier(.32,.72,0,1)';  // the iOS sheet curve, used where linear() is missing
-  const CLOSE = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" ' +
-    'stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  // The close glyph is drawn node by node: st.html() drops a script that spells out inline SVG.
+  const NS = 'http://www.w3.org/2000/svg';
+  function cross() {
+    const g = document.createElementNS(NS, 'svg'), d = document.createElementNS(NS, 'path');
+    [['width', 12], ['height', 12], ['viewBox', '0 0 16 16']].forEach(([k, v]) => g.setAttribute(k, v));
+    [['d', 'M4 4l8 8M12 4l-8 8'], ['stroke', 'currentColor'], ['stroke-width', 2], ['stroke-linecap', 'round'], ['fill', 'none']]
+      .forEach(([k, v]) => d.setAttribute(k, v));
+    g.appendChild(d);
+    return g;
+  }
 
-  // A slightly underdamped spring, sampled into a linear() easing: the card
-  // turns a few degrees past the back, then settles on it.
+  // A slightly underdamped spring, sampled into a linear() easing: the panel
+  // grows a touch past its size, then settles on it.
   const SPRING = (() => {
-    const w = 2 * Math.PI / 0.62, z = 0.72, n = 48, pts = [];
+    const w = 2 * Math.PI / 1.1, z = 0.74, n = 60, pts = [];
     const wd = w * Math.sqrt(1 - z * z);
     for (let i = 0; i <= n; i++) {
-      const t = i / n * 1.1;
+      const t = i / n * 1.4;
       const v = 1 - Math.exp(-z * w * t) * (Math.cos(wd * t) + z * w / wd * Math.sin(wd * t));
       pts.push(+v.toFixed(4));
     }
@@ -84,7 +92,7 @@
     inner.className = 'xp-in';
     const head = card.querySelector('.p-h').cloneNode(true);
     const shut = document.createElement('button');
-    shut.type = 'button'; shut.className = 'xp-x'; shut.innerHTML = CLOSE;
+    shut.type = 'button'; shut.className = 'xp-x'; shut.appendChild(cross());
     shut.setAttribute('aria-label', 'Close');
     head.appendChild(shut);
     const body = document.createElement('div');
@@ -143,18 +151,21 @@
     }
     o.veil.animate([{ opacity: 0 }, { opacity: 1 }], { duration: DUR * .6, easing: 'ease-out', fill: 'forwards' });
     o.fly.animate([px(o.b0), px(o.b1)], { duration: DUR, easing: SPRING, fill: 'forwards' });
-    // A lift towards the viewer at mid-turn, so it reads as a card, not a panel.
+    // The turn keeps its own pace, so it is seen: it gathers speed up to edge-on,
+    // lifted towards the viewer, swings a few degrees past the back and settles.
     o.rot.animate([
-      { transform: 'translateZ(0) rotateY(0deg)' },
-      { transform: 'translateZ(80px) rotateY(90deg)', offset: .45 },
+      { transform: 'translateZ(0) rotateY(0deg)', easing: 'cubic-bezier(.5,0,.7,.4)' },
+      { transform: 'translateZ(90px) rotateY(90deg)', offset: .4, easing: 'cubic-bezier(.2,.6,.35,1)' },
+      { transform: 'translateZ(0) rotateY(187deg)', offset: .78, easing: 'ease-in-out' },
       { transform: 'translateZ(0) rotateY(180deg)' },
-    ], { duration: DUR, easing: SPRING, fill: 'forwards' });
-    o.front.firstChild.animate([{ opacity: 1 }, { opacity: 0, offset: .4 }, { opacity: 0 }], { duration: DUR, fill: 'forwards' });
+    ], { duration: DUR, fill: 'forwards' });
+    o.front.firstChild.animate([{ opacity: 1 }, { opacity: 0, offset: .3 }, { opacity: 0 }], { duration: DUR, fill: 'forwards' });
     o.inner.animate([
-      { opacity: 0, transform: 'translateY(8px)' },
-      { opacity: 0, transform: 'translateY(8px)', offset: .35 },
+      { opacity: 0, transform: 'translateY(10px)' },
+      { opacity: 0, transform: 'translateY(10px)', offset: .42, easing: 'cubic-bezier(.2,.8,.2,1)' },
+      { opacity: 1, transform: 'none', offset: .8 },
       { opacity: 1, transform: 'none' },
-    ], { duration: DUR, easing: 'ease-out', fill: 'forwards' });
+    ], { duration: DUR, fill: 'forwards' });
     lift(o, DUR, 'ease-out', false);
     setTimeout(done, DUR);
   }

@@ -69,7 +69,8 @@ def test_the_platform_countries_come_from_config() -> None:
 def test_without_a_declaration_step_2_cannot_be_confirmed() -> None:
     at = at_step2()
     shown = page(at)
-    assert shown.count("Required · add it in Edit profile") == 2
+    # Counted on the cards as shown; each also holds the line for when it is opened.
+    assert shown.count('Required · add it in Edit profile</div><div class="p-act">') == 2
     assert "Add your work authorization and sponsorship in Edit profile to continue." in shown
     at.button(key="next").click().run()
     assert not at.exception

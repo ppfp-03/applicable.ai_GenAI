@@ -271,7 +271,7 @@ def profile_card(title: str, badge: str, body: str, src: str = "", cls: str = ""
     the card opens it in place (ui/js/expand.js). It defaults to `body`."""
     source = f'<div class="p-src">{DOC_ICON}{src}</div>' if src else ""
     return (
-        f'<div class="w-card p-s xp{cls}" role="button" tabindex="0" aria-haspopup="dialog" '
+        f'<div class="w-card xp p-s{cls}" role="button" tabindex="0" aria-haspopup="dialog" '
         f'aria-label="Open {title}"><div class="p-h"><div class="ic">{ICONS[title]}</div>'
         f"<b>{title}</b>{badge}</div>{body}{source}"
         f'<div class="xp-full">{full or body}</div>{EXPAND}</div>'
