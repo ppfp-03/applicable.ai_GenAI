@@ -10,7 +10,7 @@ Nothing opens before the first-run flow allows it: a visitor starts on the
 access screens (views/welcome.py), goes through onboarding and the guided
 tour, and only then reaches the app. `?demo=skip` jumps straight in.
 
-The five capsule tabs share one host (ui/tabs.py) that runs them all, so
+The capsule tabs share one host (ui/tabs.py) that runs them all, so
 switching tab happens in the browser. Each still has its own URL: one page
 per tab, each bringing its own tab to the front.
 """
@@ -58,6 +58,7 @@ def _tab(name: str):
 tabs.PAGES.update(
     home=st.Page(_tab("home"), title="Home", url_path="home", default=True),
     matches=st.Page(_tab("matches"), title="Matches", url_path="matches"),
+    calendar=st.Page(_tab("calendar"), title="Calendar", url_path="calendar"),
     applications=st.Page(_tab("applications"), title="Applications", url_path="applications"),
     explore=st.Page(_tab("explore"), title="Explore", url_path="explore"),
     profile=st.Page(_tab("profile"), title="Profile", url_path="profile"),

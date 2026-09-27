@@ -3,7 +3,8 @@
 - Next two weeks → a calendar: the month (or one week) with its events, and
   the agenda of the day picked. The events are the timeline's, plus the
   close date of every role the user saved or started, so the calendar reaches
-  past the two weeks the timeline shows.
+  past the two weeks the timeline shows. The Calendar tab (views/calendar.py)
+  draws the same view as a page.
 - Do this next → every card of the week, one per row.
 - Your top matches → every top match, sortable.
 - Applications → a board with one column per stage and every application.
@@ -40,9 +41,11 @@ BOARD = ("saved", "progress", "applied", "interview")
 OPEN = ("saved", "progress")
 CLOSE_COLOR = "#E3A03A"
 
-MONTH = "hx_month"  # first day of the month shown
-DAY = "hx_day"      # the day picked
-MODE = "hx_mode"    # "Month" | "Week"
+#: The calendar's state and widget keys start with a namespace: "hx" in the
+#: Home dialog, "cal" on the Calendar tab. Both can be on the page at once.
+MONTH = "{}_month"  # first day of the month shown
+DAY = "{}_day"      # the day picked
+MODE = "{}_mode"    # "Month" | "Week"
 SORT = "hx_sort"
 
 SORTS = ("Score", "Closing soon", "City")
@@ -146,16 +149,16 @@ def stage_label(a: dict) -> str:
 # ───────────────────────── Calendar ─────────────────────────
 
 
-def _pick(day: date) -> None:
-    st.session_state[DAY] = day
-    st.session_state[MONTH] = day.replace(day=1)
+def _pick(ns: str, day: date) -> None:
+    st.session_state[DAY.format(ns)] = day
+    st.session_state[MONTH.format(ns)] = day.replace(day=1)
 
 
-def _nav(n: int) -> None:
-    if st.session_state.get(MODE) == "Week":
-        _pick(st.session_state[DAY] + timedelta(days=7 * n))
+def _nav(ns: str, n: int) -> None:
+    if st.session_state.get(MODE.format(ns)) == "Week":
+        _pick(ns, st.session_state[DAY.format(ns)] + timedelta(days=7 * n))
     else:
-        st.session_state[MONTH] = shift_month(st.session_state[MONTH], n)
+        st.session_state[MONTH.format(ns)] = shift_month(st.session_state[MONTH.format(ns)], n)
 
 
 WEEKDAYS = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
@@ -171,7 +174,7 @@ def _bar(e: CalEvent, full: bool = False) -> str:
 
 def _num(day: date, today: date, picked: date, first_label: bool) -> str:
     cls = "t" if day == today else "s" if day == picked else ""
-    text = day.strftime("%-d %b") if first_label and day.day == 1 else str(day.day)
+    text = f"{day.day} {day:%b}" if first_label and day.day == 1 else str(day.day)
     return f'<span class="hx-n {cls}">{text}</span>'
 
 
@@ -199,27 +202,27 @@ def _week_col(day: date, events: list[CalEvent], today: date, picked: date) -> s
             f"{_num(day, today, picked, False)}</div>{bars}</div>")
 
 
-def _agenda(events: list[CalEvent], picked: date, today: date, go_card: Callable[[int], None]) -> None:
+def _agenda(ns: str, events: list[CalEvent], picked: date, today: date, go_card: Callable[[int], None]) -> None:
     """The picked day, then what comes after it: the inspector beside the grid."""
     rel = "Today" if picked == today else "Tomorrow" if picked == today + timedelta(days=1) else ""
     tag = f'<span class="hx-rel">{rel}</span>' if rel else ""
     html(f'<div class="hx-ak">{picked.strftime("%A")}{tag}</div>'
-         f'<div class="hx-ah">{picked.strftime("%-d %B")}</div>')
+         f'<div class="hx-ah">{f"{picked.day} {picked:%B}"}</div>')
     evs = on_day(events, picked)
     if not evs:
         html('<div class="hx-empty">No events on this day.</div>')
     for k, e in enumerate(evs):
-        with st.container(key=f"hx-ev-{k}"):
+        with st.container(key=f"{ns}-ev-{k}"):
             detail = f'<div class="hx-ed">{esc(e.detail)}</div>' if e.detail else ""
             html(f'<div class="hx-er{" p" if e.past else ""}" style="--c:{e.color}">'
                  f'<div class="hx-et">{esc(e.label)}</div>{detail}</div>')
             # The actions sit on their own row under the event, never on it.
             if e.card is not None or e.role:
-                with st.container(key=f"hx-eva-{k}"):
-                    if e.card is not None and st.button("Show on Home", key=f"hx-evc-{k}", type="tertiary"):
+                with st.container(key=f"{ns}-eva-{k}"):
+                    if e.card is not None and st.button("Show on Home", key=f"{ns}-evc-{k}", type="tertiary"):
                         go_card(e.card)
                         st.rerun()
-                    if e.role and st.button("Open role", key=f"hx-evr-{k}", type="tertiary"):
+                    if e.role and st.button("Open role", key=f"{ns}-evr-{k}", type="tertiary"):
                         tabs.go("role", id=e.role)
     later = [e for e in events if e.day > picked][:5]
     if later:
@@ -238,27 +241,39 @@ def _agenda(events: list[CalEvent], picked: date, today: date, go_card: Callable
 def calendar(go_card: Callable[[int], None]) -> None:
     """Next two weeks, opened out: the month or the week, and the day's agenda."""
     dialog_css("home_expand")
-    today = clock.today()
-    st.session_state.setdefault(DAY, today)
-    st.session_state.setdefault(MONTH, today.replace(day=1))
-    events = calendar_events(store.data().timeline, store.applications(), today)
-    picked, first = st.session_state[DAY], st.session_state[MONTH]
-    week = st.session_state.get(MODE) == "Week"
+    calendar_view("hx", go_card)
 
-    with st.container(key="hx-calbar"):
+
+def calendar_view(ns: str, go_card: Callable[[int], None]) -> None:
+    """The month or the week, and the day's agenda: the Home dialog's body
+    and the Calendar tab's.
+
+    Args:
+        ns: Namespace for state and widget keys ("hx" or "cal").
+        go_card: Brings a Home carousel card forward.
+    """
+    today = clock.today()
+    st.session_state.setdefault(DAY.format(ns), today)
+    st.session_state.setdefault(MONTH.format(ns), today.replace(day=1))
+    events = calendar_events(store.data().timeline, store.applications(), today)
+    picked, first = st.session_state[DAY.format(ns)], st.session_state[MONTH.format(ns)]
+    week = st.session_state.get(MODE.format(ns)) == "Week"
+
+    with st.container(key=f"{ns}-calbar"):
         if week:
             days = week_of(picked)
-            title = f'<b>{days[0].strftime("%-d %b")} – {days[-1].strftime("%-d %b")}</b> {days[-1].year}'
+            title = f'<b>{f"{days[0].day} {days[0]:%b}"} – {f"{days[-1].day} {days[-1]:%b}"}</b> {days[-1].year}'
         else:
             title = f"<b>{first.strftime('%B')}</b> {first.year}"
         html(f'<div class="hx-title">{title}</div>')
-        with st.container(key="hx-nav"):
-            st.button("", icon=":material/chevron_left:", key="hx-prev", on_click=_nav, args=(-1,),
+        with st.container(key=f"{ns}-nav"):
+            st.button("", icon=":material/chevron_left:", key=f"{ns}-prev", on_click=_nav, args=(ns, -1),
                       help="Previous week" if week else "Previous month")
-            st.button("Today", key="hx-today", on_click=_pick, args=(today,))
-            st.button("", icon=":material/chevron_right:", key="hx-next", on_click=_nav, args=(1,),
+            st.button("Today", key=f"{ns}-today", on_click=_pick, args=(ns, today))
+            st.button("", icon=":material/chevron_right:", key=f"{ns}-next", on_click=_nav, args=(ns, 1),
                       help="Next week" if week else "Next month")
-        st.segmented_control("View", ["Month", "Week"], key=MODE, default="Month", label_visibility="collapsed")
+        st.segmented_control("View", ["Month", "Week"], key=MODE.format(ns), default="Month",
+                             label_visibility="collapsed")
 
     grid, side = st.columns([5, 2], gap="medium")
     with grid:
@@ -270,15 +285,15 @@ def calendar(go_card: Callable[[int], None]) -> None:
             html(f'<div class="hx-wd">{"".join(f"<span>{n}</span>" for n in WEEKDAYS)}</div>')
             cells = "".join(_month_cell(d, events, first.month, today, picked) for d in labels)
         mode = "w" if week else "m"
-        with st.container(key=f"hx-grid-{mode}"):
+        with st.container(key=f"{ns}-grid-{mode}"):
             html(f'<div class="hx-g {mode}">{cells}</div>')
             # Click targets over the drawn grid, cell for cell: a click picks the day.
-            with st.container(key=f"hx-cells-{mode}"):
+            with st.container(key=f"{ns}-cells-{mode}"):
                 for i, d in enumerate(labels):
-                    st.button(d.strftime("%-d %B"), key=f"hx-c-{mode}-{i}", on_click=_pick, args=(d,))
+                    st.button(f"{d.day} {d:%B}", key=f"{ns}-c-{mode}-{i}", on_click=_pick, args=(ns, d))
     with side:
-        with st.container(key="hx-side"):
-            _agenda(events, picked, today, go_card)
+        with st.container(key=f"{ns}-side"):
+            _agenda(ns, events, picked, today, go_card)
 
 
 # ───────────────────────── Do this next ─────────────────────────

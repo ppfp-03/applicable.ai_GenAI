@@ -117,7 +117,7 @@ def role_page(job_id: str) -> None:
                 f'<div class="card hero sy-hero"><div class="kk">{SYN}{esc(synthetic.STATUS_LABELS[status])}</div>'
                 f'<div class="r1">{logo(store.initials(job.company), BG, 46, 16, 12)}<div><div class="tt">{esc(job.title)}</div>'
                 f'<div class="mm">{esc(job.company)} · {esc(synthetic.place(job))} · {esc(deadline)}</div></div></div>'
-                f'<div class="cnts"><span><i style="background:#30A14E"></i><b>{n["met"]}</b> met</span>'
+                f'<div class="sy-counts"><span><i style="background:#30A14E"></i><b>{n["met"]}</b> met</span>'
                 f'<span><i style="background:#E3A03A"></i><b>{n["unknown"]}</b> to check</span>'
                 f'<span><i style="background:#D9443C"></i><b>{n["conflict"]}</b> not met</span></div></div>'
             )

@@ -21,6 +21,7 @@ from ui.theme import page_css
 
 d = store.data()
 page_css("profile")
+store.show_consent()
 
 status = st.session_state[store.SECTIONS]
 values = st.session_state[store.VALUES]
@@ -155,10 +156,13 @@ with st.container(key="pf-main"):
             if s.get("link"):
                 if st.button(s["link"], type="tertiary", key="uk-link"):
                     tabs.go("question")
+        chk = s["chk"]
+        if sid == store.CONSENT_SECTION:  # the rule checks the consent as it is now
+            chk = [(consent, t, "Pass" if consent else r) for _, t, r in chk]
         checks = "".join(
             f'<div class="ck"><span class="ci{"" if ok else " a"}">{CK if ok else WN}</span>{esc(t)}'
             f'<span class="s{"" if ok else " a"}">{esc(r)}</span></div>'
-            for ok, t, r in s["chk"]
+            for ok, t, r in chk
         )
         rules = len(s["chk"])
         sig = "".join(f'<span class="chip {c}">{esc(t)}</span>' for c, t in s["sig"])
