@@ -16,6 +16,7 @@ def open_step(step: str, **state) -> AppTest:
     at = AppTest.from_file(ONBOARDING, default_timeout=30)
     at.session_state["ob_step"] = step
     at.session_state[store.WORK_AUTH] = DECLARED
+    at.session_state[store.CONSENT] = True  # given by uploading the CV in step 1
     for k, v in state.items():
         at.session_state[k] = v
     at.run()
