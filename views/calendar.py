@@ -211,10 +211,12 @@ picked, first, view = st.session_state[DAY], st.session_state[MONTH], st.session
 pane, main = st.columns([1, 3.7], gap="medium")
 with pane:
     with st.container(key="cal-pane"):
-        mini_month(first, picked)
-        with st.container(key="cal-day"):
+        with st.container(key="cal-card-month"):
+            mini_month(first, picked)
+        with st.container(key="cal-card-day"):
             agenda(picked)
-        calendars()
+        with st.container(key="cal-card-cats"):
+            calendars()
 
 with main:
     with st.container(key="cal-main"):
