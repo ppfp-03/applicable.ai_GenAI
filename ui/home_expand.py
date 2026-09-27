@@ -160,7 +160,7 @@ def _nav(n: int) -> None:
 
 def _pill(e: CalEvent) -> str:
     return (f'<span class="hx-pl{" p" if e.past else ""}"><i style="background:{e.color}"></i>'
-            f'{esc(e.label)}</span>')
+            f'<span>{esc(e.label)}</span></span>')
 
 
 def _cell(day: date, events: list[CalEvent], month: int, today: date, picked: date, full: bool) -> str:
