@@ -64,7 +64,7 @@ def test_a_new_account_does_not_show_the_demo_cv() -> None:
     at.run()
 
     page = "".join(m.value for m in at.markdown)
-    assert "Synthetic_CV_Giulia_Rossi.pdf" not in page
+    assert "Synthetic_CV_Pierpaolo_Filippelli.pdf" not in page
     assert "184 KB · 2 pages" not in page
     assert "Reading text · 64%" not in page
 
@@ -87,7 +87,7 @@ def test_the_file_card_shows_the_cv_read_not_the_demo_file(model) -> None:
 
     page = "".join(m.value for m in at.markdown)
     assert "cv.pdf" in page and "Read · 100%" in page and "1 KB" in page
-    for demo in ["Synthetic_CV_Giulia_Rossi.pdf", "184 KB · 2 pages", "Reading text · 64%"]:
+    for demo in ["Synthetic_CV_Pierpaolo_Filippelli.pdf", "184 KB · 2 pages", "Reading text · 64%"]:
         assert demo not in page
 
 

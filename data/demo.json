@@ -9,8 +9,8 @@
     "disclaimer": "A controlled demo scenario: predefined synthetic postings are added when you run it. It is not live monitoring, the postings are not real newly published jobs, and no detection latency is measured."
   },
   "profile": {
-    "name": "Giulia Rossi",
-    "first_name": "Giulia",
+    "name": "Pierpaolo Filippelli",
+    "first_name": "Pierpaolo",
     "initials": "GR",
     "citizenship": "IT",
     "current_country": "CN",
@@ -25,7 +25,7 @@
     "experience_months": 10,
     "preferred_cities": ["London", "Singapore", "Shanghai"],
     "onboarded": "2026-09-23",
-    "cv": {"name": "Synthetic_CV_Giulia_Rossi.pdf", "pages": 2, "size": "184 KB", "processed": "24 Sep, 00:41"}
+    "cv": {"name": "Synthetic_CV_Pierpaolo_Filippelli.pdf", "pages": 2, "size": "184 KB", "processed": "24 Sep, 00:41"}
   },
   "weights": {"profile": 0.40, "preference": 0.25, "urgency": 0.20, "freshness": 0.15},
   "verify_penalty": 15,
@@ -635,6 +635,6 @@
     "field": {"kind": "Education", "name": "Field of study", "act": "Draft question to recruiter", "btn": "Open draft",
       "say": "Ask the recruiter. We drafted a short, polite message you can edit.",
       "alt": ["Your draft is ready", "3 lines · to recruiting@deutschbank"],
-      "draft": "Dear recruiting team,\nI am completing an MSc in Finance at Fudan University, with coursework in econometrics and Python. Would this count as a related quantitative field for the Product Analyst Intern role?\nKind regards, Giulia Rossi"}
+      "draft": "Dear recruiting team,\nI am completing an MSc in Finance at Fudan University, with coursework in econometrics and Python. Would this count as a related quantitative field for the Product Analyst Intern role?\nKind regards, Pierpaolo Filippelli"}
   }
 }

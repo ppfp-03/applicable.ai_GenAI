@@ -52,9 +52,9 @@ def test_every_role_has_the_synthetic_start_and_explicit_sponsorship():
         assert r.raw["sponsorship"] in eligibility.SPONSORSHIP
 
 
-def test_giulia_keeps_the_msc_in_progress_and_a_separate_completed_bachelor():
+def test_Pierpaolo_keeps_the_msc_in_progress_and_a_separate_completed_bachelor():
     p = D.profile
-    assert p["name"] == "Giulia Rossi"
+    assert p["name"] == "Pierpaolo Filippelli"
     assert (p["degree"]["level"], p["degree"]["status"], p["degree"]["graduation"]) == (
         "master", "in_progress", "2027-07")
     [bsc] = p["previous_degrees"]

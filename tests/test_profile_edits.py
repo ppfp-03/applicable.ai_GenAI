@@ -92,7 +92,7 @@ def test_earlier_edits_that_are_kept_keep_their_document() -> None:
 
 
 def test_several_experiences_stay_distinct_entries() -> None:
-    p = profile(experience=[fact(ANALYST, "Summer Analyst, Mediobanco, June-August 2025"), fact("Tutor", "Giulia Rossi")])
+    p = profile(experience=[fact(ANALYST, "Summer Analyst, Mediobanco, June-August 2025"), fact("Tutor", "Pierpaolo Filippelli")])
 
     after = store.apply_edits(p, {"experience": [ANALYST, "Tutor", "Intern at Acme"]})
 

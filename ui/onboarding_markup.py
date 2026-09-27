@@ -34,7 +34,7 @@ S_2 = """<div class="p-l">
 </div></div>
 <div class="p-r"><div class="w-lab">Your CV<span>Page 2 of 2</span></div>
 <div class="p-page">
-<div class="p-nm">Giulia Rossi</div><div class="p-ln" style="width:46%"></div>
+<div class="p-nm">Pierpaolo Filippelli</div><div class="p-ln" style="width:46%"></div>
 <div style="height:14px"></div>
 <div class="p-hl b"><span class="tg">Languages</span><div class="p-ln" style="width:70%"></div><div class="p-ln" style="width:52%"></div></div>
 <div class="p-ln" style="width:94%"></div><div class="p-ln" style="width:88%"></div><div class="p-ln" style="width:76%"></div>

@@ -16,7 +16,7 @@ from oi.providers.kimi import (  # noqa: E402
     KimiClient,
 )
 
-CV_TEXT = "Giulia Rossi\nSkills: Python\n"
+CV_TEXT = "Pierpaolo Filippelli\nSkills: Python\n"
 
 VALID_REPLY = json.dumps(
     {
@@ -28,7 +28,7 @@ VALID_REPLY = json.dumps(
 )
 
 #: Stands in for model output that must never reach an error message.
-SECRET_REASONING = "Giulia Rossi reasoning text that must not leak"
+SECRET_REASONING = "Pierpaolo Filippelli reasoning text that must not leak"
 
 
 def reply(
@@ -136,7 +136,7 @@ def test_diagnostics_do_not_leak_model_output_or_cv() -> None:
 
     message = str(excinfo.value)
     assert SECRET_REASONING not in message
-    assert "Giulia" not in message
+    assert "Pierpaolo" not in message
     assert "Python" not in message
 
 

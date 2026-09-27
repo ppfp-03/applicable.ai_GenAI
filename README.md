@@ -8,7 +8,7 @@ and prioritise career opportunities.
 
 The Streamlit app reproduces the approved mockups (`00_Onboarding` to
 `05_Ranking`) in the product's orange palette, running end to end on the
-synthetic demo data in `data/demo.json` (persona: Giulia Rossi, fictional
+synthetic demo data in `data/demo.json` (persona: Pierpaolo Filippelli, fictional
 companies only). No real LLM is called yet.
 
 - **Home**: this week's carousel, a two-week timeline, top matches and the

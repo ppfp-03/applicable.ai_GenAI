@@ -77,7 +77,7 @@ elif stage == "signup":
             st.rerun()
         html('<div class="wc-or"><span>or</span></div>')
         if st.button("Continue with Google", key="w-google", width="stretch"):
-            store.sign_up(name or "Giulia Rossi", email if "@" in email else "giulia.rossi@example.com")
+            store.sign_up(name or "Pierpaolo Filippelli", email if "@" in email else "Pierpaolo.Filippelli@example.com")
             tabs.go("onboarding")
         with st.container(key="wswitch"):
             html('<span>Already have an account?</span>')

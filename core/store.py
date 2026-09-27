@@ -242,7 +242,7 @@ def user() -> dict:
 
 
 def initials(name: str) -> str:
-    """"Giulia Rossi" → "GR"."""
+    """"Pierpaolo Filippelli" → "GR"."""
     return "".join(w[0] for w in name.split()[:2]).upper() or "?"
 
 

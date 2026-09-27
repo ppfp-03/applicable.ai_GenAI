@@ -83,6 +83,6 @@ L'autorizzazione al lavoro non è mai giudicata dal modello: è una tabella di r
 | > 3 e < 12 mesi | Permesso di breve durata L UE/AELS, per la durata del contratto | ✓ Met · "L permit (EU/EFTA) for the contract length" |
 | ≥ 12 mesi o tempo indeterminato | Permesso B UE/AELS, valido 5 anni | ✓ Met · "B permit (EU/EFTA), valid 5 years" |
 
-- Esempio demo: *Nestella · Graduate Programme, Zurich, 18 mesi* → Giulia (cittadina italiana) → **B permit (EU/EFTA), 5 anni** → requisito soddisfatto, nessuna domanda.
+- Esempio demo: *Nestella · Graduate Programme, Zurich, 18 mesi* → Pierpaolo (cittadina italiana) → **B permit (EU/EFTA), 5 anni** → requisito soddisfatto, nessuna domanda.
 - Se la durata del contratto non è scritta nell'offerta, il requisito diventa *To confirm* e il sistema non sceglie una fascia.
 - Le regole vanno versionate (data di validità) e mostrate in *How we know*; non sono consulenza legale.

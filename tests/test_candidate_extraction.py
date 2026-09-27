@@ -25,7 +25,7 @@ from oi.providers.model_client import (
 )
 
 CV_TEXT = (
-    "Giulia Rossi\n"
+    "Pierpaolo Filippelli\n"
     "MSc Finance, Bocconi University, 2026\n"
     "Summer Analyst, Mediobanco, June-August 2025\n"
     "Skills: Python, financial modelling in Excel,\n"
@@ -563,7 +563,7 @@ def test_kimi_returns_extracted_fields() -> None:
 
 @pytest.mark.parametrize(
     "content",
-    [None, "not json", json.dumps({"skills": []}), json.dumps({"name": "Giulia"})],
+    [None, "not json", json.dumps({"skills": []}), json.dumps({"name": "Pierpaolo"})],
 )
 def test_kimi_unusable_reply_raises_extraction_error(content: str | None) -> None:
     client = _kimi_with_reply(content)

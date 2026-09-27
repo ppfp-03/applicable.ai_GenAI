@@ -14,7 +14,7 @@ from tests.test_candidate_extraction import FakeModelClient, fact, make_cv, make
 ONBOARDING = str(Path(__file__).resolve().parents[1] / "views" / "onboarding.py")
 
 #: Values the mockup shows for its demo candidate. None may appear as extracted.
-DEMO_VALUES = ["Giulia Rossi", "Fudan", "EU citizen", "China X1", "Mandarin", "Financial modelling", "Page 2 of 2"]
+DEMO_VALUES = ["Pierpaolo Filippelli", "Fudan", "EU citizen", "China X1", "Mandarin", "Financial modelling", "Page 2 of 2"]
 
 
 #: What a card holds for when it is opened, hidden until then (ui/js/expand.js).
