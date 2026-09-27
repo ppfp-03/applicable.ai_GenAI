@@ -72,7 +72,11 @@ html.aa-car-moving .st-key-card-uc{opacity:0;pointer-events:none;transition:opac
 .st-key-side-m1 button,.st-key-side-p1 button{width:496px;height:254px}
 
 /* Timeline */
-.st-key-gl-tl{margin-top:18px;padding:14px 22px!important;position:relative}
+.st-key-gl-tl{margin-top:18px;padding:14px 22px!important;position:relative;transform-origin:50% 0;transition:transform .7s cubic-bezier(.16,1,.3,1),opacity .45s ease}
+/* While the calendar is open the card has turned over into it
+ * (home_expand.css flips the sheet in); on close it turns back. */
+body:has(.st-key-hx-calbar) .st-key-gl-tl{transform:perspective(1400px) rotateX(82deg) scale(.94);opacity:0;transition:transform .6s cubic-bezier(.5,0,.2,1),opacity .35s ease .12s}
+@media (prefers-reduced-motion:reduce){.st-key-gl-tl,body:has(.st-key-hx-calbar) .st-key-gl-tl{transition:none}}
 .tl-h{display:flex;justify-content:space-between;font-size:13px;font-weight:640;padding-right:40px}
 .st-key-ib-x-tl{position:absolute!important;top:10px;right:16px;z-index:6;width:auto!important}
 .st-key-ib-x-tl button{width:28px;height:28px;min-height:28px}.tl-h span{font-weight:450;color:var(--t3);font-size:12px}

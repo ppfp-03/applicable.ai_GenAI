@@ -166,7 +166,7 @@ def _bar(e: CalEvent, full: bool = False) -> str:
     event's colour. The week view adds the detail under the label."""
     detail = f'<small>{esc(e.detail)}</small>' if full and e.detail else ""
     return (f'<div class="hx-ev{" p" if e.past else ""}" style="--c:{e.color}">'
-            f'<span>{esc(e.label)}</span>{detail}</div>')
+            f'<span><i></i>{esc(e.label)}</span>{detail}</div>')
 
 
 def _num(day: date, today: date, picked: date, first_label: bool) -> str:
@@ -179,10 +179,11 @@ def _month_cell(day: date, events: list[CalEvent], month: int, today: date, pick
     cls = ["hx-c"]
     cls += ["o"] if day.month != month else []
     cls += ["we"] if day.weekday() >= 5 else []
+    cls += ["t"] if day == today else []
     cls += ["s"] if day == picked else []
     evs = on_day(events, day)
     bars = "".join(_bar(e) for e in evs[:2])
-    more = f'<div class="hx-more">{len(evs) - 2} more</div>' if len(evs) > 2 else ""
+    more = f'<div class="hx-more">+{len(evs) - 2} more</div>' if len(evs) > 2 else ""
     return (f'<div class="{" ".join(cls)}"><div class="hx-h">{_num(day, today, picked, True)}</div>'
             f"{bars}{more}</div>")
 
@@ -190,6 +191,7 @@ def _month_cell(day: date, events: list[CalEvent], month: int, today: date, pick
 def _week_col(day: date, events: list[CalEvent], today: date, picked: date) -> str:
     cls = ["hx-c"]
     cls += ["we"] if day.weekday() >= 5 else []
+    cls += ["t"] if day == today else []
     cls += ["s"] if day == picked else []
     evs = on_day(events, day)
     bars = "".join(_bar(e, full=True) for e in evs) or '<div class="hx-free">No events</div>'
@@ -221,12 +223,14 @@ def _agenda(events: list[CalEvent], picked: date, today: date, go_card: Callable
                         tabs.go("role", id=e.role)
     later = [e for e in events if e.day > picked][:5]
     if later:
-        rows, last = [], None
-        for e in later:
-            if e.day != last:
-                rows.append(f'<div class="hx-ld">{e.day.strftime("%a %-d %b")}</div>')
-                last = e.day
-            rows.append(f'<div class="hx-li" style="--c:{e.color}"><i></i>{esc(e.label)}</div>')
+        # One row per day: a small date tile, then that day's events.
+        rows = []
+        for day in dict.fromkeys(e.day for e in later):
+            items = "".join(f'<div class="hx-li" style="--c:{e.color}"><i></i>{esc(e.label)}</div>'
+                            for e in later if e.day == day)
+            rows.append(f'<div class="hx-lg"><div class="hx-lt"><span>{day.strftime("%a")}</span>'
+                        f'<b>{day.day}</b><span>{day.strftime("%b")}</span></div>'
+                        f'<div class="hx-ls">{items}</div></div>')
         html(f'<div class="hx-nh">Coming up</div>{"".join(rows)}')
 
 
