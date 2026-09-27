@@ -38,7 +38,26 @@
 .st-key-grid .mc .m{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .st-key-grid .mc .t{margin-top:10px}
 .st-key-grid .mc .why{margin-top:8px;padding-top:8px;flex-shrink:0}
-.st-key-x-pager{justify-content:center;align-items:center;padding-top:8px}
-.st-key-x-pager > div{width:auto!important;flex:0 0 auto!important}
-.st-key-x-pager button{width:36px;min-width:36px;padding:0;font-variant-numeric:tabular-nums}
-.st-key-x-pager .gap{display:inline-flex;align-items:center;justify-content:center;width:24px;height:36px;font-size:13px;color:var(--t3)}
+.st-key-x-pager{position:relative;isolation:isolate;justify-content:center;align-items:center;flex-wrap:nowrap!important;gap:2px!important;width:max-content!important;margin:14px auto 0;padding:4px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.46),rgba(255,255,255,.24));backdrop-filter:blur(22px) saturate(200%) brightness(1.04);-webkit-backdrop-filter:blur(22px) saturate(200%) brightness(1.04);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.45),inset 0 0 14px rgba(255,255,255,.35),0 10px 30px rgba(28,40,64,.10),0 1px 3px rgba(28,40,64,.06),0 0 0 .5px rgba(0,0,0,.06)}
+.st-key-x-pager > div{width:auto!important;flex:0 0 auto!important;position:relative;z-index:1}
+.st-key-x-pager [data-testid="stElementContainer"]:has(.xp-mark){display:none!important}
+.st-key-x-pager button{width:34px;min-width:34px;height:34px;min-height:34px;padding:0;font-variant-numeric:tabular-nums;font-weight:560;color:#3A3A3C;background:transparent;box-shadow:none;transition:color .25s,background .2s,opacity .2s}
+.st-key-x-pager button:hover{background:rgba(255,255,255,.55);color:var(--t1)}
+.st-key-x-pager button:disabled,.st-key-x-pager button:disabled:hover{background:transparent;opacity:.3}
+.st-key-x-pager .gap{display:inline-flex;align-items:center;justify-content:center;width:20px;height:34px;font-size:13px;color:var(--t3)}
+/* The lens under the current number (ui/js/pager.js); the number shows through it. */
+.xp-lens{display:block;position:absolute;left:0;top:0;width:0;height:34px;z-index:0;pointer-events:none;will-change:transform,width}
+.xp-lens i{position:absolute;inset:0;border-radius:999px;display:block;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.8));box-shadow:inset 0 1px 0 #fff,inset 0 -1px 1px rgba(0,0,0,.04),0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(28,40,64,.08),0 0 0 .5px rgba(0,0,0,.05),0 0 0 1.5px var(--blue)}
+.xp-lens.flow i{animation:xp-flow .52s cubic-bezier(.3,1.35,.5,1)}
+@keyframes xp-flow{0%{transform:scale(1,1)}35%{transform:scale(1.22,.84)}70%{transform:scale(.96,1.05)}100%{transform:scale(1,1)}}
+.st-key-x-pager.has-lens button[data-testid="stBaseButton-primary"],.st-key-x-pager.has-lens button[data-testid="stBaseButton-primary"]:hover{background:transparent!important;box-shadow:none!important;color:var(--blue)!important;font-weight:700;filter:none}
+/* A new page's cards glide in from the side the user is heading to. */
+.st-key-grid > div{animation:xg-in .46s cubic-bezier(.2,.8,.2,1) both}
+html[data-xp-dir="prev"] .st-key-grid > div{animation-name:xg-in-prev}
+.st-key-grid > div:nth-child(5n+2){animation-delay:30ms}
+.st-key-grid > div:nth-child(5n+3){animation-delay:60ms}
+.st-key-grid > div:nth-child(5n+4){animation-delay:90ms}
+.st-key-grid > div:nth-child(5n+5){animation-delay:120ms}
+@keyframes xg-in{from{opacity:0;transform:translateX(18px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes xg-in-prev{from{opacity:0;transform:translateX(-18px) scale(.98)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.st-key-grid > div,.xp-lens.flow i{animation:none}.xp-lens{transition:none!important}}

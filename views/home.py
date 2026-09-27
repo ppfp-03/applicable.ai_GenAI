@@ -25,7 +25,7 @@ from pathlib import Path
 import streamlit as st
 
 from core import clock, store
-from ui import home_expand, home_guide, parts, shell, tabs
+from ui import choice, home_expand, home_guide, parts, shell, tabs
 from ui.html import CK, NEXT, PREV, WN, esc, hit, html, logo, md_icon
 from ui.theme import page_css
 
@@ -226,8 +226,8 @@ with st.container(key="car"):
         if item["kind"] == "question":
             html(f'<div class="ucx" data-i="{cur}">' + lead(item) + '</div><div style="margin-top:24px;font-size:12px;color:var(--t2);font-weight:560">Your answer</div>')
             with st.container(key="hk"):
-                choice = st.pills("Your answer", item["options"], key="hk-choice", label_visibility="collapsed")
-            result = item["results"].get(choice, item["results"]["*"]) if choice else esc(item["waiting"])
+                answer = choice.pills("Your answer", item["options"], key="hk-choice", label_visibility="collapsed")
+            result = item["results"].get(answer, item["results"]["*"]) if answer else esc(item["waiting"])
             html(f'<div class="ucx"><div class="mm" style="margin-top:14px">{result}</div></div>')
         else:
             html(f'<div class="ucx" data-i="{cur}">' + lead(item) + body(item) + "</div>")
@@ -248,8 +248,8 @@ with st.container(key="car"):
                     tabs.go("applications", id=item["role"])
                 st.button("Not now", key="uc-later", on_click=go, args=(cur + 1,))
             elif kind == "question":
-                if st.button("Save answer", type="primary", key="uc-save", disabled=not choice):
-                    store.set_answer("hk_relocate", choice)
+                if st.button("Save answer", type="primary", key="uc-save", disabled=not answer):
+                    store.set_answer("hk_relocate", answer)
                     st.toast("Answer saved to your profile")
                 st.button("Later", key="uc-q-later", on_click=go, args=(cur + 1,))
             elif kind == "new" and not store.simulated_event_ran():
