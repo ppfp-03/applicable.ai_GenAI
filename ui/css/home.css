@@ -9,7 +9,7 @@
 [class*="st-key-dot-on-"] button,[class*="st-key-dot-on-"] button:hover,.dot-lens i{width:20px;background:linear-gradient(180deg,#48484C 0%,var(--t1) 70%);box-shadow:inset 0 .5px 0 rgba(255,255,255,.45),0 1px 2px rgba(28,40,64,.18)}
 /* While the carousel moves, ui/js/home.js swells the dots and slides a lens
  * over them; the page's own dash waits underneath as a plain dot. */
-.dot-lens{display:none;position:absolute;left:0;top:50%;height:6px;margin-top:-3px;width:0;pointer-events:none;z-index:1}
+.dot-lens{display:none;position:absolute;left:0;top:0;height:6px;width:0;pointer-events:none;z-index:1}
 .dot-lens i{position:absolute;left:0;top:0;height:6px;border-radius:3px;display:block;transform-origin:50% 50%;will-change:transform,width}
 html.aa-dots-live .dot-lens{display:block}
 html.aa-dots-live [class*="st-key-dot-"] button{background:rgba(0,0,0,.18);box-shadow:none;transition:none}
@@ -25,6 +25,11 @@ html.aa-dots-live [class*="st-key-dot-"] button{background:rgba(0,0,0,.18);box-s
 [class*="st-key-ib-x-"] button{padding:0;color:var(--t2)}
 [class*="st-key-ib-x-"] button:hover{color:var(--blue)}
 [class*="st-key-ib-x-"] button [data-testid="stIconMaterial"]{font-size:17px}
+/* Their hint shows for a second, then fades, even while the pointer stays.
+ * Streamlit mounts the tooltip on <body>, outside the widget; the fade starts
+ * each time it mounts. */
+body:has([class*="st-key-ib-x-"] button:hover) > div:has(> div > [data-testid="stTooltipContent"]){animation:ib-tip-out .25s ease 1s forwards}
+@keyframes ib-tip-out{to{opacity:0;visibility:hidden}}
 
 /* Carousel */
 .st-key-car{position:relative;height:318px;margin-top:16px;touch-action:pan-y;cursor:grab}

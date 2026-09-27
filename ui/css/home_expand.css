@@ -186,6 +186,13 @@
 /* Top matches: the Home card, in a wrapping grid. */
 [data-testid="stDialog"] .st-key-hx-mbar{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;flex-wrap:nowrap!important}
 [data-testid="stDialog"] .st-key-hx-mbar [data-testid="stElementContainer"]{width:auto!important}
+/* The sheet stays inside the window: its body scrolls, never the page
+ * behind it, and the count and sort stay pinned above the grid. */
+[data-testid="stDialog"]:has(.st-key-hx-mbar){overflow:hidden}
+[data-testid="stDialog"] > div:has(.st-key-hx-mbar),[data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-mbar){max-height:calc(100dvh - 96px)}
+[data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-mbar){min-height:0;overflow:hidden}
+[data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-mbar) > div:has(.st-key-hx-mbar){flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-top:0}
+[data-testid="stDialog"] [data-testid="stLayoutWrapper"]:has(> .st-key-hx-mbar){position:sticky;top:16px;z-index:3;background:#F5F6F8;box-shadow:0 -16px 0 16px #F5F6F8;padding:12px 0 10px;margin-bottom:-10px}
 [data-testid="stDialog"] .st-key-hx-mg{position:relative}
 [data-testid="stDialog"] .hx-mt,[data-testid="stDialog"] .st-key-hx-mcells{display:grid!important;grid-template-columns:repeat(auto-fill,196px);grid-auto-rows:232px;gap:12px!important;justify-content:start}
 [data-testid="stDialog"] .st-key-hx-mcells{position:absolute!important;inset:0;z-index:2}
