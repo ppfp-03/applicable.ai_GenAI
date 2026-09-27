@@ -77,7 +77,7 @@ def host(front: str) -> None:
     # the style keeps the other tabs hidden.
     hidden = ",".join(f"html:not([data-tab]) .st-key-tab-{t}" for t in TABS if t != shown)
     st.markdown(
-        f'<div class="aa-tabs" data-active="{esc(shown)}" data-nonce="{st.session_state.get(_NONCE, 0)}"></div>'
+        f'<div class="aa-tabs" data-tabs="{",".join(TABS)}" data-active="{esc(shown)}" data-nonce="{st.session_state.get(_NONCE, 0)}"></div>'
         f"<style>{hidden}{{display:none}}</style>",
         unsafe_allow_html=True,
     )

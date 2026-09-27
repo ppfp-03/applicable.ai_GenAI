@@ -119,7 +119,7 @@
   let lastMut = 0;
 
   function go(k) {
-    if (hostMark() && TABS.includes(k)) { show(k); return; }
+    if (hostMark() && tabList().includes(k)) { show(k); return; }
     if (k === active && !pending) { lensTo(k); return; }
     active = k;
     lensTo(k);
@@ -154,8 +154,10 @@
 
   // ───────────────────────── Tab host: instant switching ─────────────────────────
 
-  const TABS = ['home', 'matches', 'calendar', 'applications', 'explore', 'profile'];
   const hostMark = () => document.querySelector('.aa-tabs');
+  // The tabs come from the server (ui/tabs.py) on every run, so a browser tab
+  // opened before a tab was added still knows it.
+  const tabList = () => { const m = hostMark(); return m && m.dataset.tabs ? m.dataset.tabs.split(',') : []; };
   let shown = null, seenNonce = null;
   const scrolls = {};
 
@@ -181,7 +183,7 @@
   }
 
   const bare = u => { const x = new URL(u, location.href); return x.origin + x.pathname.replace(/\/$/, ''); };
-  const tabAt = url => TABS.find(k => { const t = tabUrl(k); return t && bare(t) === bare(url); }) || null;
+  const tabAt = url => tabList().find(k => { const t = tabUrl(k); return t && bare(t) === bare(url); }) || null;
 
   let own = false;   // true while this script itself writes the URL
 
@@ -313,7 +315,7 @@
     const a = e.target.closest && e.target.closest('a[href]');
     if (!a || nav.contains(a) || a.closest('.st-key-cap') || !hostMark()) return;
     const raw = a.getAttribute('href') || '', h = hrefs();
-    const k = TABS.find(t => t in h && h[t] === raw);
+    const k = tabList().find(t => t in h && h[t] === raw);
     if (!k) return;
     e.preventDefault(); e.stopImmediatePropagation();
     show(k);
