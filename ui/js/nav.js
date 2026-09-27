@@ -6,7 +6,7 @@
  * the page, hidden, and are what the script clicks to navigate.
  *
  *  - A glass lens slides between the tabs; it can be pressed and dragged.
- *  - The five tabs all live on one page (ui/tabs.py): switching between them
+ *  - The capsule tabs all live on one page (ui/tabs.py): switching between them
  *    only changes which one is shown, and the URL. Nothing is rebuilt, and
  *    each tab keeps its scroll position. As on iOS, switching tab adds no
  *    history entry: Back leaves the tabs for the previous real page.
@@ -154,7 +154,7 @@
 
   // ───────────────────────── Tab host: instant switching ─────────────────────────
 
-  const TABS = ['home', 'matches', 'applications', 'explore', 'profile'];
+  const TABS = ['home', 'matches', 'calendar', 'applications', 'explore', 'profile'];
   const hostMark = () => document.querySelector('.aa-tabs');
   let shown = null, seenNonce = null;
   const scrolls = {};
