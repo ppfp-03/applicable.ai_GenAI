@@ -690,3 +690,28 @@
 .xp-q{font-size:12px;line-height:1.5;color:var(--t2);margin-top:6px;padding-left:10px;border-left:2px solid rgba(0,0,0,.08)}
 .xp-body .p-chips + .xp-q{margin-top:16px}
 .xp-in .p-src{margin-top:18px}
+
+/* Readability pass: step 2 profile, step 4 analysis panel. */
+/* 2 · "Edit profile" stays a neutral chip, just easier to find. */
+.p-top .p-edit{font-size:13.5px;font-weight:620;padding:8px 15px;gap:7px}
+.p-top .p-edit svg{width:13px;height:13px}
+/* 2 · Section titles lead their cards: title > value > source line. */
+.p-h b{font-size:15.5px;font-weight:650;letter-spacing:-0.015em}
+/* 4 · Right panel: Progress and First results, a step larger. */
+.a4-r .w-lab{font-size:13px;margin-bottom:10px}
+.a4-r .p4-r{padding:14px 18px;gap:13px}
+.a4-r .p4-r .t{font-size:14.5px;font-weight:600}
+.a4-r .p4-r .s{font-size:12.5px;margin-top:3px}
+.a4-r .p4-r .tg{font-size:12px;padding:4px 11px}
+.a4-r .w-card{padding:18px 20px!important}
+.a4-fr{display:flex;align-items:center;gap:13px}
+.a4-fr + .a4-fr{margin-top:14px}
+.a4-fr-m{flex:1;min-width:0}
+.a4-fr .t{font-size:15px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.a4-fr .s{font-size:13px;color:var(--t2);margin-top:2px}
+.a4-fr .n{font-size:24px;font-weight:700;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
+/* 2 · The inline "Edit profile" in each required card: a secondary text link.
+   Its invisible overlay button takes the pointer, so hover is read from it. */
+.p-link{font-weight:600;color:var(--t1);text-decoration:underline;text-decoration-color:rgba(0,0,0,.28);text-underline-offset:2px;cursor:pointer}
+.stApp:has(.st-key-oo-wa-link button:hover) .p-link.wa-link,
+.stApp:has(.st-key-oo-sp-link button:hover) .p-link.sp-link{text-decoration-color:currentColor;color:#000}
