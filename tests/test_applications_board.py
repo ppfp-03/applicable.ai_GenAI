@@ -91,3 +91,20 @@ def test_the_board_script_survives_streamlits_sanitiser():
     import re
     js = (Path(__file__).resolve().parents[1] / "ui" / "js" / "applications.js").read_text(encoding="utf-8")
     assert not re.search(r"<[/\w]", js)
+
+
+def test_the_panel_has_one_real_action_open_role():
+    # The panel used to show the application's first action (e.g. "Open prep"),
+    # which only raised a toast. Only "Open role" is left, as the primary button.
+    at = app()
+    keys = {b.key for b in at.button}
+    assert "act" not in keys
+    open_role = at.button(key="ap-open")
+    assert open_role.label == "Open role" and open_role.proto.type == "primary"
+
+
+def test_no_button_promises_an_interview_prep_that_does_not_exist():
+    raw = (Path(__file__).resolve().parents[1] / "data" / "demo.json").read_text(encoding="utf-8")
+    assert "Open prep" not in raw
+    at = app()
+    assert "Open prep" not in {b.label for b in at.button}

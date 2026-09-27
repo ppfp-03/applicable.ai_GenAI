@@ -148,7 +148,7 @@
     {"role": "bolton-strategy", "stage": "saved", "note": "Saved 20 Sep · closes 15 Oct", "actions": ["Prepare application", "Remove"]},
     {"role": "lazarde-ba", "stage": "applied", "note": "Sent 21 Sep · typical reply in 10 days", "actions": ["View application", "Add note"]},
     {"role": "replai-pa", "stage": "progress", "progress": [2, 3], "note": "2 of 3 ready · closes Sun 27 Sep", "actions": ["Continue", "Preview"]},
-    {"role": "jpmorrow-strategy", "stage": "interview", "note": "Applied 12 Sep · interview today 15:00", "actions": ["Open prep", "Add notes"]},
+    {"role": "jpmorrow-strategy", "stage": "interview", "note": "Applied 12 Sep · interview today 15:00", "actions": ["View application", "Add notes"]},
     {"role": "nestella-strategy", "stage": "saved", "note": "Saved 22 Sep · closes Sat 3 Oct", "actions": ["Prepare application", "Remove"]},
     {"role": "morgan-product", "stage": "saved", "note": "Saved today · closes 20 Oct", "actions": ["Prepare application", "Remove"]},
     {"role": "roshe-product", "stage": "progress", "progress": [1, 3], "note": "1 of 3 ready · closes 20 Oct", "actions": ["Continue", "Preview"]}
@@ -163,7 +163,7 @@
      "sub": "Strategy Analyst Intern · Singapore · video call", "label": "Starts today at 15:00", "label_color": "var(--blue)",
      "countdown": "2026-09-24T15:00", "units": "hms",
      "checks": [["ok", "3 prep notes ready"], ["ok", "Role and team researched"], ["gap", "Prepare 1 case question"]],
-     "buttons": [["Open prep", true], ["Copy join link", false]], "note": "From <b>recruiter email · 11:24</b>"},
+     "buttons": [["View application", true], ["Copy join link", false]], "note": "From <b>recruiter email · 11:24</b>"},
     {"kind": "next", "role": "replai-pa", "dot": "#0071E3", "kicker": "Next best action", "kicker_color": "var(--blue)", "title": "Finish your Replai application",
      "sub": "Product Analyst Intern · London · Hybrid", "label": "Closes Sun 27 Sep, 23:59 BST", "label_color": "var(--amber)",
      "countdown": "2026-09-27T23:59", "units": "dhm",
