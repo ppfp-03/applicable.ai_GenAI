@@ -25,11 +25,6 @@ html.aa-dots-live [class*="st-key-dot-"] button{background:rgba(0,0,0,.18);box-s
 [class*="st-key-ib-x-"] button{padding:0;color:var(--t2)}
 [class*="st-key-ib-x-"] button:hover{color:var(--blue)}
 [class*="st-key-ib-x-"] button [data-testid="stIconMaterial"]{font-size:17px}
-/* Their hint shows for a second, then fades, even while the pointer stays.
- * Streamlit mounts the tooltip on <body>, outside the widget; the fade starts
- * each time it mounts. */
-body:has([class*="st-key-ib-x-"] button:hover) > div:has(> div > [data-testid="stTooltipContent"]){animation:ib-tip-out .25s ease 1s forwards}
-@keyframes ib-tip-out{to{opacity:0;visibility:hidden}}
 
 /* Carousel */
 .st-key-car{position:relative;height:318px;margin-top:16px;touch-action:pan-y;cursor:grab}
