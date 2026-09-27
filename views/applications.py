@@ -4,9 +4,14 @@ No mockup covers this screen, so it is built from the vocabulary the mockups
 share: a summary strip, glass lanes of tiles, and the side panel for the
 selected item. Stages and counts come from the session, so an application
 started anywhere in the product appears here at once.
+
+A card can be dragged to another lane to change its stage (ui/js/applications.js);
+the Stage menu in the side panel does the same from the keyboard.
 """
 
 from __future__ import annotations
+
+from pathlib import Path
 
 import streamlit as st
 
@@ -17,6 +22,7 @@ from ui.theme import page_css
 
 d = store.data()
 page_css("applications")
+DRAG_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "applications.js").read_text(encoding="utf-8")
 
 STAGES = [
     ("saved", "Saved", "#C7C7CC"),
@@ -34,9 +40,15 @@ CHECKLIST = {
 
 apps = store.applications()
 SEL = "apps_sel"
+ARRIVED = "apps_sel_arrival"  # the (id, go() count) that last selected an application
 qid = tabs.param("id")
-if qid and any(a["role"] == qid for a in apps):
+# An id passed on arrival selects that application once. It stays in the
+# params on every later rerun, so applying it each time would pin the
+# selection and undo every click on another card.
+arrival = (qid, tabs.nonce())
+if qid and any(a["role"] == qid for a in apps) and st.session_state.get(ARRIVED) != arrival:
     st.session_state[SEL] = qid
+    st.session_state[ARRIVED] = arrival
 st.session_state.setdefault(SEL, next((a["role"] for a in apps if a["stage"] == "interview"), apps[0]["role"]))
 sc = store.stage_counts()
 total = sum(sc.values())
@@ -76,6 +88,17 @@ def card(a: dict) -> str:
     )
 
 
+def move(role_id: str, stage: str) -> None:
+    """Move an application to another stage (a card dropped on a lane), and select it."""
+    store.save_application(role_id, stage)
+    st.session_state[SEL] = role_id
+    # The side panel's Stage menu keeps its own value for this card; left
+    # stale, it would read as a change on the next run and move the card back.
+    # Forgetting it rebuilds the menu from the card's new stage.
+    st.session_state.pop(f"stage-{role_id}", None)
+    st.toast(f"{d.role(role_id).company} moved to {STAGE_NAME[stage]}")
+
+
 with st.container(key="ap-main"):
     with st.container(key="lanes"):
         for k, name, color in STAGES:
@@ -84,6 +107,16 @@ with st.container(key="ap-main"):
                 for a in [a for a in apps if a["stage"] == k]:
                     hit(f"app-{a['role']}", card(a), f"Select {a['r'].company}",
                         on_click=st.session_state.__setitem__, args=(SEL, a["role"]))
+
+    # Drag and drop (ui/js/applications.js): dropping card R on lane S presses
+    # the hidden button "mv-R--S", so every move still goes through Streamlit
+    # and the store, exactly like the Stage menu in the side panel.
+    with st.container(key="ap-moves"):
+        for a in apps:
+            for k, name, _ in STAGES:
+                if k != a["stage"]:
+                    st.button(f"Move {a['r'].company} to {name}", key=f"mv-{a['role']}--{k}",
+                              on_click=move, args=(a["role"], k))
 
     a = next((a for a in apps if a["role"] == st.session_state[SEL]), apps[0])
     r = a["r"]
@@ -129,3 +162,6 @@ with st.container(key="ap-main"):
             first, _ = a["actions"]
             if st.button(first, type="primary", key="act"):
                 st.toast(f"{first} · {r.company}")
+
+with st.container(key="aa-js-apps"):
+    st.html(f"<script>{DRAG_JS}</script>", unsafe_allow_javascript=True)

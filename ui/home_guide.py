@@ -76,8 +76,10 @@ PARTS = [
         "gl-apps",
         "Applications",
         "Where every application you started stands.",
-        "One card per stage: saved, in progress, applied and interview, with the count of each above.",
-        "Tap a card at the back to bring it forward and use its buttons, or “See all” for the full list.",
+        "The stages (saved, in progress, applied, interview) are a filter, each with its count; "
+        "the one you pick lists its applications.",
+        "Tap a stage to list its applications, tap an application to expand it and use its buttons, "
+        "or “See all” for the full board.",
     ),
 ]
 

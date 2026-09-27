@@ -37,3 +37,14 @@
 .st-key-ap-foot{display:flex!important;flex-direction:row!important;gap:8px!important;flex-wrap:nowrap!important}
 .st-key-ap-foot > *{flex:1!important;width:auto!important}
 .st-key-ap-foot button{width:100%}
+
+/* Drag and drop (ui/js/applications.js). The move buttons are pressed by the
+ * script only; the Stage menu is the visible, keyboard way to move a card. */
+.st-key-ap-moves{display:none!important}
+.st-key-lanes [class*="st-key-hit-app-"]{cursor:grab}
+.st-key-lanes [class*="st-key-hit-app-"].ap-lift{position:relative;z-index:50;cursor:grabbing;pointer-events:none}
+.st-key-lanes [class*="st-key-hit-app-"].ap-lift .ac{background:rgba(255,255,255,.97);box-shadow:0 14px 34px rgba(28,40,64,.18),0 0 0 .5px rgba(0,0,0,.06)}
+html.aa-ap-drag,html.aa-ap-drag *{cursor:grabbing!important;user-select:none}
+[class*="st-key-gl-lane-"]{transition:box-shadow .15s,background-color .15s}
+[class*="st-key-gl-lane-"].ap-over{box-shadow:0 0 0 2px var(--blue),0 8px 28px rgba(0,113,227,.12)!important}
+[class*="st-key-gl-lane-"].ap-from{position:relative;z-index:60}

@@ -47,6 +47,16 @@ def param(name: str, default: str | None = None) -> str | None:
     return passed.get(name) or st.query_params.get(name) or default
 
 
+def nonce() -> int:
+    """How many times go() has opened a tab this session.
+
+    A tab can compare it with the value it last saw to tell a fresh arrival
+    (whose params should apply) from an ordinary rerun (whose params are
+    stale and must not override what the user did since).
+    """
+    return st.session_state.get(_NONCE, 0)
+
+
 def go(name: str, **params: str) -> None:
     """Open a screen.
 

@@ -1,5 +1,5 @@
-/* Home motion: the carousel, the top matches strip and the wallet move in the
- * browser, then commit through their native buttons.
+/* Home motion: the carousel and the top matches strip move in the browser,
+ * then commit through their native buttons.
  *
  * Every state change still goes through a real Streamlit widget: the script
  * animates first, then clicks the widget that makes the change. Clicks it
@@ -118,42 +118,6 @@
     el.scrollTo({ left: Math.max(0, Math.min(max, left)), behavior: 'smooth' });
   }
 
-  // ───────────────────────── Wallet ─────────────────────────
-
-  const SCALE = p => [.9, .94, .97][p] ?? 1;
-
-  function restack() {
-    document.querySelectorAll('.wback .wc').forEach(c => {
-      const p = +c.dataset.p, st = c.style;
-      st.transition = 'none';
-      st.top = p * 28 + 'px'; st.transform = `scale(${SCALE(p)})`; st.zIndex = p + 1; st.height = '';
-      void c.offsetWidth;
-      st.transition = '';
-    });
-    H.classList.remove('aa-wal-lift');
-  }
-
-  /* The picked card rises into the front slot, the ones behind it close up. */
-  function pick(pos, btn) {
-    const wc = document.querySelector(`.wback .wc[data-p="${pos}"]`);
-    const front = document.querySelector('.st-key-wfront');
-    if (!wc || !front || H.classList.contains('aa-wal-lift')) { press(btn); return; }
-    const k = wc.dataset.k;
-    document.querySelectorAll('.wback .wc').forEach(c => {
-      const p = +c.dataset.p;
-      if (p > pos) { c.style.top = (p - 1) * 28 + 'px'; c.style.transform = `scale(${SCALE(p - 1)})`; }
-    });
-    wc.style.zIndex = 6;
-    wc.style.top = front.offsetTop + 'px';
-    wc.style.height = front.offsetHeight + 'px';
-    wc.style.transform = 'scale(1)';
-    H.classList.add('aa-wal-lift');
-    setTimeout(() => {
-      press(btn);
-      waitFor(() => document.querySelector(`.st-key-wfront .wf[data-k="${k}"]`), restack, 6000);
-    }, 380);
-  }
-
   // ───────────────────────── Input ─────────────────────────
 
   window.addEventListener('click', e => {
@@ -176,7 +140,6 @@
       scrollToCard(el, (Math.round(el.scrollLeft / STEP) + (key === 'ib-mnext' ? 1 : -1)) * STEP);
       return;
     }
-    if ((m = /^wpick-(\d+)$/.exec(key))) { stop(); pick(+m[1], btn); }
   }, true);
 
   window.addEventListener('pointerdown', e => {

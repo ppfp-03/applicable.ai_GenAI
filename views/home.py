@@ -23,18 +23,16 @@ import streamlit as st
 
 from core import clock, store
 from ui import home_guide, parts, shell, tabs
-from ui.html import CK, NEXT, PREV, WN, esc, html, logo, md_icon
+from ui.html import CK, NEXT, PREV, WN, esc, hit, html, logo, md_icon
 from ui.theme import page_css
 
 d = store.data()
 page_css("home")
 
 CARD = "home_card"
-WALLET = "home_wallet"
-MOVED = "home_wallet_moved"
-MOVES = "home_wallet_moves"
+APPS_FILTER = "home_apps_filter"  # the stage whose applications the card lists
+APPS_OPEN = "home_apps_open"      # the application expanded in that list, if any
 st.session_state.setdefault(CARD, 2)
-st.session_state.setdefault(WALLET, [0, 1, 2, 3])
 MOTION_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "home.js").read_text(encoding="utf-8")
 
 SIM = d.simulated_event["label"]
@@ -341,18 +339,51 @@ def mcard(v) -> str:
     )
 
 
-def bring_forward(w: int, order: list) -> None:
-    st.session_state[WALLET] = [x for x in order if x != w] + [w]
-    st.session_state[MOVED] = True
-    st.session_state[MOVES] = st.session_state.get(MOVES, 0) + 1
+#: The pipeline, in order: stage key, name, dot colour.
+PIPELINE = (
+    ("saved", "Saved", "#C7C7CC"),
+    ("progress", "In progress", "#0071E3"),
+    ("applied", "Applied", "#48484A"),
+    ("interview", "Interview", "#30A14E"),
+)
 
 
-STAGE = {
-    "saved": ("#8E8E93", "Saved", "background:#F2F2F5;color:#6E6E73"),
-    "applied": ("#48484A", "Applied", "background:#F2F2F5;color:#3A3A3C"),
-    "progress": ("#0071E3", "In progress", "background:var(--blueBg);color:var(--blue)"),
-    "interview": ("#AEAEB2", "Interview", "background:var(--greenBg);color:var(--green)"),
-}
+def pick_stage(stage: str) -> None:
+    """Show one stage's applications; nothing stays expanded across stages."""
+    st.session_state[APPS_FILTER] = stage
+    st.session_state[APPS_OPEN] = None
+
+
+def toggle_app(role_id: str) -> None:
+    """Expand an application in the list, or collapse it if it is open."""
+    st.session_state[APPS_OPEN] = None if st.session_state.get(APPS_OPEN) == role_id else role_id
+
+
+def app_row(a: dict, is_open: bool) -> str:
+    """One application in the card's list: logo, company and role, its note."""
+    r = a["r"]
+    return (
+        f'<div class="ar{" open" if is_open else ""}">{logo(r.mono, r.bg, 30, 12, 9)}'
+        f'<div class="tx"><div class="t">{esc(r.company)} · {esc(r.title)}</div>'
+        f'<div class="sub">{esc(a["note"])}</div></div><span class="chev">›</span></div>'
+    )
+
+
+def app_details(a: dict) -> str:
+    """What an expanded application shows: where, when it closes, its score, its progress."""
+    r = a["r"]
+    close, hot = clock.closes_line(r)
+    prog = ""
+    if a["stage"] == "progress" and a.get("progress"):
+        done, of = a["progress"]
+        prog = (f'<div class="pr"><span>{done} of {of} ready</span>'
+                f'<div class="pb"><i style="width:{done / of * 100:.0f}%"></i></div></div>')
+    return (
+        f'<div class="ad"><div class="meta"><span>{esc(r.city)} · {esc(r.mode)}</span>'
+        f'<span class="{"u" if hot else ""}">{esc(close)}</span>'
+        f'<span>Priority {store.view(r).shown}</span></div>{prog}</div>'
+    )
+
 
 with st.container(key="bt"):
     with st.container(key="gl-top"):
@@ -380,64 +411,48 @@ with st.container(key="bt"):
         with st.container(key="sh-apps"):
             html(f'<div class="sh"><div><b>Applications</b><span>{sum(sc.values())} total</span></div></div>')
             st.page_link(tabs.page("applications"), label="See all")
-        html(
-            '<div class="wsum2">'
-            f'<span><i style="background:#C7C7CC"></i>Saved <b>{sc["saved"]}</b></span>'
-            f'<span><i style="background:#0071E3"></i>In progress <b>{sc["progress"]}</b></span>'
-            f'<span><i style="background:#48484A"></i>Applied <b>{sc["applied"]}</b></span>'
-            f'<span><i style="background:#30A14E"></i>Interview <b>{sc["interview"]}</b></span></div>'
-        )
-        # One card per stage, in the wallet's order; the last one is in front.
-        firsts = []
-        for stage in ("saved", "applied", "progress", "interview"):
-            a = next((a for a in store.applications() if a["stage"] == stage), None)
-            if a:
-                firsts.append(a)
-        order = [i for i in st.session_state[WALLET] if i < len(firsts)]
-        # The card that just left the front slides back into the stack.
-        arrive = f" in{st.session_state.get(MOVES, 0) % 2}" if st.session_state.pop(MOVED, False) else ""
-        with st.container(key="wal"):
-            backs = []
-            for pos, w in enumerate(order[:-1]):
-                a = firsts[w]
-                color, label, _ = STAGE[a["stage"]]
-                if a["stage"] == "progress" and a.get("progress"):
-                    label = f"In progress · {a['progress'][0]}/{a['progress'][1]}"
-                scale = [0.9, 0.94, 0.97][pos] if pos < 3 else 1
-                backs.append(
-                    f'<div class="wc{arrive if pos == len(order) - 2 else ""}" data-p="{pos}" data-k="{w}" '
-                    f'style="top:{pos * 28}px;transform:scale({scale});background:{color};z-index:{pos + 1}">'
-                    f'<div class="hd"><span class="lg">{a["r"].mono}</span>'
-                    f'<div class="t">{esc(a["r"].company)} · {esc(a["r"].title)}</div>'
-                    f'<span class="st">{esc(label)}</span></div></div>'
-                )
-            html(f'<div class="wback">{"".join(backs)}</div>')
-            css = []
-            for pos, w in enumerate(order[:-1]):
-                css.append(f".st-key-wpick-{pos}{{top:{pos * 28}px}}")
-                st.button(
-                    f"Bring forward {firsts[w]['r'].company}", key=f"wpick-{pos}", on_click=bring_forward, args=(w, order)
-                )
-            st.markdown(f"<style>{''.join(css)}</style>", unsafe_allow_html=True)
 
-            front = firsts[order[-1]]
-            color, label, tag_css = STAGE[front["stage"]]
-            if front["stage"] == "progress" and front.get("progress"):
-                label = f"In progress · {front['progress'][0]}/{front['progress'][1]}"
-            with st.container(key="wfront"):
-                html(
-                    f'<div class="wf" data-k="{order[-1]}"><div class="hd">{logo(front["r"].mono, color, 36, 14)}'
-                    f'<div style="min-width:0"><div class="t">{esc(front["r"].company)} · {esc(front["r"].title)}</div>'
-                    f'<div class="sub">{esc(front["note"])}</div></div>'
-                    f'<span class="tag" style="{tag_css}">{esc(label)}</span></div></div>'
-                )
-                with st.container(key="wff"):
-                    first, second = front["actions"]
-                    if st.button(first, type="primary", key="wf-a"):
-                        tabs.go("applications", id=front["role"])
-                    if st.button(second, key="wf-b"):
-                        tabs.go("applications", id=front["role"])
-                    html('<span class="wfn">Tap a card to bring it forward</span>')
+        # The stages are a filter: the chosen one is lit, and its applications
+        # are listed below. It starts on what you are working on.
+        if st.session_state.get(APPS_FILTER) not in sc:
+            st.session_state[APPS_FILTER] = "progress" if sc["progress"] else next(
+                (k for k, _, _ in PIPELINE if sc[k]), "saved")
+        cur = st.session_state[APPS_FILTER]
+        with st.container(key="af"):
+            for k, name, _ in PIPELINE:
+                st.button(f"{name} **{sc[k]}**", key=f"af-{k}", on_click=pick_stage, args=(k,))
+        # Scoped as tightly as home.css (which the theme prefixes with the tab),
+        # so these per-run rules win over its chip defaults.
+        chip = ".stApp .st-key-gl-apps .st-key-af-{} button"
+        css = [f"{chip.format(k)}::before{{background:{c}}}" for k, _, c in PIPELINE]
+        # The lit chip: white, ringed in its stage colour (Saved's dot is too
+        # pale for a ring, so it takes a darker grey), the others dimmed.
+        ring = {"saved": "#8E8E93"}.get(cur) or dict((k, c) for k, _, c in PIPELINE)[cur]
+        css.append(f".stApp .st-key-gl-apps [class*='st-key-af-'] button{{opacity:.72}}"
+                   f"{chip.format(cur)},{chip.format(cur)}:hover{{opacity:1!important;background:#fff!important;"
+                   f"color:var(--t1)!important;font-weight:680!important;"
+                   f"box-shadow:0 0 0 1.5px {ring},0 2px 8px rgba(28,40,64,.10)!important}}")
+        st.markdown(f"<style>{''.join(css)}</style>", unsafe_allow_html=True)
+
+        with st.container(key="al"):
+            rows = [a for a in store.applications() if a["stage"] == cur]
+            if not rows:
+                name = dict((k, n) for k, n, _ in PIPELINE)[cur]
+                html(f'<div class="aempty">No applications in {esc(name)} yet.</div>')
+            for a in rows:
+                role_id, is_open = a["role"], st.session_state.get(APPS_OPEN) == a["role"]
+                with st.container(key=f"ai-{role_id}"):
+                    hit(f"ah-{role_id}", app_row(a, is_open),
+                        f"{'Collapse' if is_open else 'Expand'} {a['r'].company}",
+                        on_click=toggle_app, args=(role_id,))
+                    if is_open:
+                        html(app_details(a))
+                        with st.container(key=f"apa-{role_id}"):
+                            first = a["actions"][0]
+                            if st.button(first, type="primary", key=f"apa1-{role_id}"):
+                                tabs.go("applications", id=role_id)
+                            if st.button("Open role", key=f"apa2-{role_id}"):
+                                tabs.go("role", id=role_id)
 
 
 # ───────────────────────── Live clock ─────────────────────────
