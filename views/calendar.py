@@ -83,7 +83,7 @@ def month_grid(first: date, picked: date) -> tuple[str, str, list[date]]:
         cls += ["o"] if d.month != first.month else []
         cls += ["we"] if d.weekday() >= 5 else []
         cls += ["s"] if d == picked else []
-        num = d.strftime("%-d %b") if d.day == 1 else str(d.day)
+        num = f"{d.day} {d:%b}" if d.day == 1 else str(d.day)
         num = f'<span class="cv-n{" t" if d == today else ""}">{num}</span>'
         evs = hx.on_day(events, d)
         room = MONTH_CHIPS if len(evs) <= MONTH_CHIPS else MONTH_CHIPS - 1
@@ -158,14 +158,14 @@ def mini_month(first: date, picked: date) -> None:
         html(f'<div class="cm">{"".join(cells)}</div>')
         with st.container(key="cal-mcells"):
             for i, d in enumerate(days):
-                st.button(d.strftime("%-d %B"), key=f"cal-mc-{i}", on_click=pick, args=(d,))
+                st.button(f"{d.day} {d:%B}", key=f"cal-mc-{i}", on_click=pick, args=(d,))
 
 
 def agenda(picked: date) -> None:
     """The day picked: what is on it, and where each event leads."""
     rel = "Today" if picked == today else "Tomorrow" if picked == today + timedelta(days=1) else ""
     tag = f'<span class="ca-rel">{rel}</span>' if rel else ""
-    html(f'<div class="cp-h">{picked.strftime("%A")}{tag}</div><div class="ca-d">{picked.strftime("%-d %B")}</div>')
+    html(f'<div class="cp-h">{picked.strftime("%A")}{tag}</div><div class="ca-d">{f"{picked.day} {picked:%B}"}</div>')
     evs = hx.on_day(events, picked)
     if not evs:
         html('<div class="ca-none">Nothing on this day.</div>')
@@ -236,11 +236,11 @@ with main:
                 html(markup)
                 with st.container(key="cal-cells-m"):
                     for i, d in enumerate(days):
-                        st.button(d.strftime("%-d %B"), key=f"cal-c-m-{i}", on_click=pick, args=(d,))
+                        st.button(f"{d.day} {d:%B}", key=f"cal-c-m-{i}", on_click=pick, args=(d,))
         else:
             days = cp.view_days(view, picked)
             with st.container(key="cal-grid-w"):
                 html(week_grid(days, picked))
                 with st.container(key=f"cal-cells-w{len(days)}"):
                     for i, d in enumerate(days):
-                        st.button(d.strftime("%-d %B"), key=f"cal-c-w-{i}", on_click=pick, args=(d,))
+                        st.button(f"{d.day} {d:%B}", key=f"cal-c-w-{i}", on_click=pick, args=(d,))

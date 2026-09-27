@@ -174,7 +174,7 @@ def _bar(e: CalEvent, full: bool = False) -> str:
 
 def _num(day: date, today: date, picked: date, first_label: bool) -> str:
     cls = "t" if day == today else "s" if day == picked else ""
-    text = day.strftime("%-d %b") if first_label and day.day == 1 else str(day.day)
+    text = f"{day.day} {day:%b}" if first_label and day.day == 1 else str(day.day)
     return f'<span class="hx-n {cls}">{text}</span>'
 
 
@@ -207,7 +207,7 @@ def _agenda(ns: str, events: list[CalEvent], picked: date, today: date, go_card:
     rel = "Today" if picked == today else "Tomorrow" if picked == today + timedelta(days=1) else ""
     tag = f'<span class="hx-rel">{rel}</span>' if rel else ""
     html(f'<div class="hx-ak">{picked.strftime("%A")}{tag}</div>'
-         f'<div class="hx-ah">{picked.strftime("%-d %B")}</div>')
+         f'<div class="hx-ah">{f"{picked.day} {picked:%B}"}</div>')
     evs = on_day(events, picked)
     if not evs:
         html('<div class="hx-empty">No events on this day.</div>')
@@ -262,7 +262,7 @@ def calendar_view(ns: str, go_card: Callable[[int], None]) -> None:
     with st.container(key=f"{ns}-calbar"):
         if week:
             days = week_of(picked)
-            title = f'<b>{days[0].strftime("%-d %b")} – {days[-1].strftime("%-d %b")}</b> {days[-1].year}'
+            title = f'<b>{f"{days[0].day} {days[0]:%b}"} – {f"{days[-1].day} {days[-1]:%b}"}</b> {days[-1].year}'
         else:
             title = f"<b>{first.strftime('%B')}</b> {first.year}"
         html(f'<div class="hx-title">{title}</div>')
@@ -290,7 +290,7 @@ def calendar_view(ns: str, go_card: Callable[[int], None]) -> None:
             # Click targets over the drawn grid, cell for cell: a click picks the day.
             with st.container(key=f"{ns}-cells-{mode}"):
                 for i, d in enumerate(labels):
-                    st.button(d.strftime("%-d %B"), key=f"{ns}-c-{mode}-{i}", on_click=_pick, args=(ns, d))
+                    st.button(f"{d.day} {d:%B}", key=f"{ns}-c-{mode}-{i}", on_click=_pick, args=(ns, d))
     with side:
         with st.container(key=f"{ns}-side"):
             _agenda(ns, events, picked, today, go_card)
