@@ -1,0 +1,203 @@
+/* Home's full views (ui/home_expand.py). Dialogs open outside the tab
+ * containers, so every rule starts from the dialog itself. */
+
+/* Streamlit pulls every markdown block up by 1rem; the app cancels that on the
+ * page (base.css) but dialogs sit outside it. Without this, drawn text
+ * collapses to no height and the next button lands on top of it. */
+[data-testid="stDialog"] [data-testid="stMarkdownContainer"]{margin-bottom:0!important}
+
+[data-testid="stDialog"] .hx-sub{font-size:13px;color:var(--t2);margin:-4px 0 6px}
+[data-testid="stDialog"] .hx-sub b{color:var(--t1);font-weight:620}
+[data-testid="stDialog"] .hx-none{font-size:12.5px;color:var(--t3);padding:6px 2px}
+
+/* Segmented controls, as on macOS: a grey track, the chosen option a raised white chip. */
+[data-testid="stDialog"] :has(> button[data-variant="segmented_control"]){background:rgba(118,118,128,.12);border-radius:9px;padding:2px;gap:0!important}
+[data-testid="stDialog"] button[data-variant="segmented_control"]{font-family:inherit;height:28px;min-height:28px;padding:0 14px;font-size:12.5px;font-weight:560;border:0!important;border-radius:7px!important;background:transparent;color:var(--t1);box-shadow:none}
+[data-testid="stDialog"] button[data-variant="segmented_control"] p{font-size:12.5px;font-weight:560;color:var(--t1)}
+[data-testid="stDialog"] button[data-variant="segmented_control"]:hover{background:rgba(0,0,0,.04);color:var(--t1)}
+[data-testid="stDialog"] button[data-variant="segmented_control"][aria-checked="true"],[data-testid="stDialog"] button[data-variant="segmented_control"][aria-checked="true"]:hover{background:#fff;color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+[data-testid="stDialog"] button[data-variant="segmented_control"][aria-checked="true"] p{color:var(--t1);font-weight:620}
+
+/* ───────── Calendar ─────────
+ * Liquid Glass, as on macOS 26: the sheet is a pane of glass over the
+ * blurred Home, lit from the top edge; controls are glass capsules; the
+ * grid is one frosted slab with hairlines. */
+
+/* The sheet flips open out of the Home timeline: it rises from where the
+ * card sits, turning about its horizontal axis, and settles with a small
+ * overshoot. home.css turns the card away at the same time. */
+@keyframes hx-flip-in{
+  0%{opacity:0;transform:perspective(2200px) translate3d(0,24vh,0) rotateX(-78deg) scale(.56)}
+  38%{opacity:1}
+  72%{transform:perspective(2200px) translate3d(0,-4px,0) rotateX(4deg) scale(1.005)}
+  100%{opacity:1;transform:none}
+}
+@keyframes hx-veil{from{opacity:0}to{opacity:1}}
+@keyframes hx-rise{from{opacity:0;transform:translate3d(0,10px,0) scale(.985)}to{opacity:1;transform:none}}
+
+/* The veil (tint and blur) sits on a layer beside the sheet, never on its
+ * parent: a parent that blurs or fades would stop the sheet's own glass
+ * from seeing the page. */
+[data-testid="stDialog"]:has(.st-key-hx-calbar){background:transparent!important}
+[data-testid="stDialog"]:has(.st-key-hx-calbar)::before{content:"";position:fixed;inset:0;z-index:-1;background:rgba(226,231,240,.32);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);animation:hx-veil .5s ease-out both}
+[data-testid="stDialog"] > div:has(.st-key-hx-calbar){
+  border-radius:32px;border:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.78) 0%,rgba(255,255,255,.58) 100%);
+  backdrop-filter:blur(40px) saturate(190%) brightness(1.03);-webkit-backdrop-filter:blur(40px) saturate(190%) brightness(1.03);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.98),inset 0 -1px 0 rgba(255,255,255,.5),inset 0 0 0 .5px rgba(255,255,255,.7),inset 0 0 36px rgba(255,255,255,.35),0 40px 90px rgba(28,40,64,.22),0 12px 28px rgba(28,40,64,.10),0 0 0 .5px rgba(0,0,0,.07);
+  transform-origin:50% 60%;will-change:transform,opacity;
+  animation:hx-flip-in .9s cubic-bezier(.16,1,.3,1) both}
+[data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-calbar){border-radius:32px;background:transparent}
+/* The close button, a small glass disc. */
+[data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-calbar) > button{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:inset 0 1px 0 #fff,0 1px 3px rgba(28,40,64,.10),0 0 0 .5px rgba(0,0,0,.07);transition:background .2s,transform .2s}
+[data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-calbar) > button:hover{background:#fff;transform:scale(1.06)}
+
+/* Title, ‹ Today › and the view switch on one line. The month title takes
+ * the dialog title's place, as in Calendar.app; the bar leaves room for the
+ * dialog's close button. */
+[data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-calbar) h2 [data-testid="stMarkdownContainer"]{visibility:hidden}
+[data-testid="stDialog"] .st-key-hx-calbar{display:flex!important;flex-direction:row!important;align-items:center;gap:12px!important;flex-wrap:nowrap!important;margin:-62px 60px 18px 0;position:relative;z-index:1;width:auto!important}
+[data-testid="stDialog"] .st-key-hx-calbar > [data-testid="stElementContainer"],[data-testid="stDialog"] .st-key-hx-calbar > div{width:auto!important}
+[data-testid="stDialog"] .st-key-hx-calbar > [data-testid="stElementContainer"]:has(.hx-title){flex:1;min-width:0}
+[data-testid="stDialog"] .hx-title{font-size:30px;font-weight:400;letter-spacing:-0.03em;color:var(--t3);white-space:nowrap;line-height:1.1}
+[data-testid="stDialog"] .hx-title b{font-weight:700;color:var(--t1)}
+
+/* Glass capsules: the ‹ Today › group and the Month/Week switch. */
+[data-testid="stDialog"] .st-key-hx-nav,[data-testid="stDialog"] .st-key-hx-calbar :has(> button[data-variant="segmented_control"]){
+  display:flex!important;flex-direction:row!important;align-items:center;gap:2px!important;flex-wrap:nowrap!important;width:auto!important;
+  padding:3px;border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.28));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.4),0 6px 18px rgba(28,40,64,.08),0 1px 2px rgba(28,40,64,.05),0 0 0 .5px rgba(0,0,0,.07)}
+[data-testid="stDialog"] .st-key-hx-nav [data-testid="stElementContainer"]{width:auto!important}
+[data-testid="stDialog"] .st-key-hx-nav button,[data-testid="stDialog"] .st-key-hx-calbar button[data-variant="segmented_control"]{height:30px;min-height:30px;padding:0 14px;border:0!important;border-radius:999px!important;background:transparent;box-shadow:none;color:var(--t1);font-size:13px;font-weight:560;transition:background .25s,box-shadow .25s,transform .2s}
+[data-testid="stDialog"] .st-key-hx-nav button p,[data-testid="stDialog"] .st-key-hx-calbar button[data-variant="segmented_control"] p{font-size:13px;font-weight:560;color:var(--t1)}
+[data-testid="stDialog"] .st-key-hx-nav button:hover,[data-testid="stDialog"] .st-key-hx-calbar button[data-variant="segmented_control"]:hover{background:rgba(255,255,255,.7)}
+[data-testid="stDialog"] .st-key-hx-nav button:active{transform:scale(.94)}
+[data-testid="stDialog"] .st-key-hx-prev button,[data-testid="stDialog"] .st-key-hx-next button{width:30px;padding:0}
+/* The chosen view is a lens of clearer glass lifted off the track. */
+[data-testid="stDialog"] .st-key-hx-calbar button[data-variant="segmented_control"][aria-checked="true"],[data-testid="stDialog"] .st-key-hx-calbar button[data-variant="segmented_control"][aria-checked="true"]:hover{background:linear-gradient(180deg,#fff,rgba(255,255,255,.86));box-shadow:inset 0 1px 0 #fff,0 2px 8px rgba(28,40,64,.12),0 0 0 .5px rgba(0,0,0,.06)}
+[data-testid="stDialog"] .st-key-hx-calbar button[data-variant="segmented_control"][aria-checked="true"] p{font-weight:640}
+
+/* The grid: one frosted slab, hairlines inside, no outer box. */
+[data-testid="stDialog"] .hx-wd{display:grid;grid-template-columns:repeat(7,1fr);font-size:11px;color:var(--t3);font-weight:620;letter-spacing:.06em;text-transform:uppercase;padding:0 0 8px}
+[data-testid="stDialog"] .hx-wd span{text-align:right;padding-right:12px}
+[data-testid="stDialog"] [class*="st-key-hx-grid-"]{position:relative;gap:0!important;animation:hx-rise .5s cubic-bezier(.16,1,.3,1) both}
+[data-testid="stDialog"] .hx-g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:90px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.62);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 1px 2px rgba(28,40,64,.04),0 10px 30px rgba(28,40,64,.06),0 0 0 .5px rgba(0,0,0,.07)}
+[data-testid="stDialog"] .hx-g.w{grid-auto-rows:530px}
+[data-testid="stDialog"] .hx-c{box-sizing:border-box;border-right:1px solid rgba(60,60,67,.075);border-bottom:1px solid rgba(60,60,67,.075);padding:6px 6px 5px;display:flex;flex-direction:column;gap:3px;overflow:hidden;min-width:0;transition:background .2s}
+[data-testid="stDialog"] .hx-c:nth-child(7n){border-right:0}
+[data-testid="stDialog"] .hx-g.m .hx-c:nth-last-child(-n+7),[data-testid="stDialog"] .hx-g.w .hx-c{border-bottom:0}
+[data-testid="stDialog"] .hx-c.we{background:rgba(118,118,128,.035)}
+[data-testid="stDialog"] .hx-c.o{background:rgba(118,118,128,.06)}
+[data-testid="stDialog"] .hx-c.t{background:rgba(0,113,227,.045)}
+[data-testid="stDialog"] .hx-c.s{background:rgba(255,255,255,.85);box-shadow:inset 0 0 0 1.5px rgba(0,113,227,.35)}
+[data-testid="stDialog"] .hx-h{display:flex;justify-content:flex-end;align-items:center;gap:4px;height:24px;flex:none;margin-bottom:1px}
+[data-testid="stDialog"] .hx-n{min-width:24px;height:24px;padding:0 7px;box-sizing:border-box;border-radius:12px;display:grid;place-items:center;font-size:13px;font-weight:560;color:var(--t1);font-variant-numeric:tabular-nums;transition:background .2s,color .2s}
+[data-testid="stDialog"] .hx-c.o .hx-n{color:var(--t3);font-weight:450}
+[data-testid="stDialog"] .hx-n.s{background:var(--t1);color:#fff}
+[data-testid="stDialog"] .hx-n.t{background:var(--blue);color:#fff;font-weight:650;box-shadow:0 2px 8px rgba(0,113,227,.35)}
+/* Events: tinted capsules with a colour dot, as Calendar draws all-day events. */
+[data-testid="stDialog"] .hx-ev{flex:none;border-radius:7px;padding:2px 7px 2px 6px;font-size:11px;font-weight:600;line-height:16px;background:color-mix(in srgb,var(--c) 15%,rgba(255,255,255,.6));color:color-mix(in srgb,var(--c) 58%,#1D1D1F);box-shadow:inset 0 0 0 .5px color-mix(in srgb,var(--c) 30%,transparent);min-width:0}
+[data-testid="stDialog"] .hx-ev span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-testid="stDialog"] .hx-ev i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px;background:var(--c)}
+[data-testid="stDialog"] .hx-ev.p{opacity:.45}
+[data-testid="stDialog"] .hx-more{font-size:10.5px;color:var(--t3);font-weight:620;padding-left:7px}
+/* The week: taller columns, the weekday over a large day number. */
+[data-testid="stDialog"] .hx-g.w .hx-c{gap:6px;padding:10px 7px}
+[data-testid="stDialog"] .hx-g.w .hx-h{flex-direction:column;justify-content:flex-start;align-items:center;height:auto;gap:4px;margin-bottom:10px}
+[data-testid="stDialog"] .hx-wdn{font-size:11px;color:var(--t3);font-weight:620;letter-spacing:.06em;text-transform:uppercase}
+[data-testid="stDialog"] .hx-g.w .hx-n{font-size:20px;height:36px;min-width:36px;border-radius:18px;font-weight:620;letter-spacing:-0.02em}
+[data-testid="stDialog"] .hx-g.w .hx-ev{padding:7px 9px;font-size:12px;line-height:16px;border-radius:10px}
+[data-testid="stDialog"] .hx-g.w .hx-ev span{white-space:normal}
+[data-testid="stDialog"] .hx-ev small{display:block;font-size:11px;font-weight:450;margin:3px 0 0 11px;opacity:.8}
+[data-testid="stDialog"] .hx-free{font-size:11px;color:var(--t3);text-align:center;margin-top:2px;opacity:.7}
+
+/* Click targets over the drawn grid, same geometry, invisible until hovered. */
+[data-testid="stDialog"] [class*="st-key-hx-cells-"]{position:absolute!important;inset:0;display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:90px;gap:0!important;z-index:2;border-radius:20px;overflow:hidden}
+[data-testid="stDialog"] .st-key-hx-cells-w{grid-auto-rows:530px}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] [data-testid="stElementContainer"]{width:auto!important;height:100%;min-width:0}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] .stButton,[data-testid="stDialog"] [class*="st-key-hx-cells-"] button{width:100%;height:100%}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] button{padding:0;min-height:0;border-radius:0;border:0;box-shadow:none;background:transparent;color:transparent;transition:background .18s}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] button p{color:transparent}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] button:hover{background:rgba(255,255,255,.35)}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] button:focus-visible{box-shadow:inset 0 0 0 2px var(--blue)}
+
+/* The inspector beside the grid: a second pane of glass. */
+[data-testid="stDialog"] .st-key-hx-side{background:linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.4));border-radius:22px;padding:18px!important;gap:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 30px rgba(28,40,64,.06),0 0 0 .5px rgba(0,0,0,.06);animation:hx-rise .55s .12s cubic-bezier(.16,1,.3,1) both}
+[data-testid="stDialog"] .hx-ak{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;font-weight:650;color:var(--blue);text-transform:uppercase;letter-spacing:.06em}
+[data-testid="stDialog"] .hx-rel{font-size:11px;font-weight:620;letter-spacing:0;text-transform:none;background:var(--blue);color:#fff;border-radius:999px;padding:3px 9px;box-shadow:0 2px 8px rgba(0,113,227,.3)}
+[data-testid="stDialog"] .hx-ah{font-size:26px;font-weight:700;letter-spacing:-0.03em;margin-top:2px;line-height:1.15}
+[data-testid="stDialog"] .hx-empty{font-size:13px;color:var(--t3);padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.45);box-shadow:inset 0 0 0 .5px rgba(0,0,0,.05)}
+[data-testid="stDialog"] [class*="st-key-hx-ev-"]{background:rgba(255,255,255,.82);border-radius:16px;padding:12px 14px!important;box-shadow:inset 0 1px 0 #fff,0 4px 14px rgba(28,40,64,.06),0 0 0 .5px rgba(0,0,0,.06);gap:8px!important}
+[data-testid="stDialog"] .hx-er{border-left:3px solid var(--c);border-radius:2px;padding-left:10px}
+[data-testid="stDialog"] .hx-er.p{opacity:.6}
+[data-testid="stDialog"] .hx-et{font-size:14px;font-weight:640;line-height:1.3;letter-spacing:-0.01em}
+[data-testid="stDialog"] .hx-ed{font-size:12px;color:var(--t2);margin-top:3px;line-height:1.4}
+[data-testid="stDialog"] [class*="st-key-hx-eva-"]{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;gap:6px!important;padding-left:13px}
+[data-testid="stDialog"] [class*="st-key-hx-eva-"] [data-testid="stElementContainer"]{width:auto!important}
+[data-testid="stDialog"] [class*="st-key-hx-eva-"] button{font-size:12px;font-weight:620;color:var(--blue);height:26px;min-height:26px;padding:0 11px;border-radius:999px;background:rgba(0,113,227,.09);transition:background .2s}
+[data-testid="stDialog"] [class*="st-key-hx-eva-"] button p{font-size:12px;font-weight:620;color:var(--blue)}
+[data-testid="stDialog"] [class*="st-key-hx-eva-"] button:hover{background:rgba(0,113,227,.16)}
+[data-testid="stDialog"] .hx-nh{font-size:11px;color:var(--t3);font-weight:650;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 2px}
+[data-testid="stDialog"] .hx-lg{display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-top:.5px solid rgba(60,60,67,.12)}
+[data-testid="stDialog"] .hx-lg:first-of-type{border-top:0}
+[data-testid="stDialog"] .hx-lt{flex:none;width:40px;display:flex;flex-direction:column;align-items:center;padding:4px 0;border-radius:11px;background:rgba(255,255,255,.7);box-shadow:inset 0 1px 0 #fff,0 0 0 .5px rgba(0,0,0,.06);line-height:1.1}
+[data-testid="stDialog"] .hx-lt span{font-size:9.5px;font-weight:650;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
+[data-testid="stDialog"] .hx-lt b{font-size:16px;font-weight:700;letter-spacing:-0.02em;color:var(--t1)}
+[data-testid="stDialog"] .hx-ls{min-width:0;display:flex;flex-direction:column;gap:4px;padding-top:4px}
+[data-testid="stDialog"] .hx-li{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:520;line-height:1.3}
+[data-testid="stDialog"] .hx-li i{width:8px;height:8px;border-radius:50%;flex:none;display:block;background:var(--c);box-shadow:0 0 0 2.5px color-mix(in srgb,var(--c) 18%,transparent)}
+
+@media (prefers-reduced-motion:reduce){
+  [data-testid="stDialog"]:has(.st-key-hx-calbar)::before,
+  [data-testid="stDialog"] > div:has(.st-key-hx-calbar),[data-testid="stDialog"] [class*="st-key-hx-grid-"],
+  [data-testid="stDialog"] .st-key-hx-side{animation:none}
+}
+
+/* This week */
+[data-testid="stDialog"] [class*="st-key-hx-wk-"]{display:flex!important;flex-direction:row!important;align-items:center;gap:14px!important;flex-wrap:nowrap!important;background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 0 0 .5px rgba(0,0,0,.07)}
+[data-testid="stDialog"] [class*="st-key-hx-wk-"] [data-testid="stElementContainer"]{width:auto!important}
+[data-testid="stDialog"] [class*="st-key-hx-wk-"] [data-testid="stElementContainer"]:first-child{flex:1;min-width:0}
+[data-testid="stDialog"] [class*="st-key-hx-wk-"] button{height:32px;min-height:32px;font-size:12.5px;white-space:nowrap}
+[data-testid="stDialog"] .hx-wr{display:flex;gap:14px;align-items:flex-start}
+[data-testid="stDialog"] .hx-wb{min-width:0}
+[data-testid="stDialog"] .hx-wk{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:620}
+[data-testid="stDialog"] .hx-wk i{width:7px;height:7px;border-radius:50%;display:block}
+[data-testid="stDialog"] .hx-wt{font-size:16px;font-weight:660;letter-spacing:-0.015em;margin-top:3px}
+[data-testid="stDialog"] .hx-ws{font-size:12.5px;color:var(--t2);margin-top:2px}
+[data-testid="stDialog"] .hx-wn{font-size:12px;color:var(--t2);margin-top:6px}
+[data-testid="stDialog"] .hx-wn b{color:var(--t1);font-weight:600}
+
+/* Top matches: the Home card, in a wrapping grid. */
+[data-testid="stDialog"] .st-key-hx-mbar{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;flex-wrap:nowrap!important}
+[data-testid="stDialog"] .st-key-hx-mbar [data-testid="stElementContainer"]{width:auto!important}
+[data-testid="stDialog"] .st-key-hx-mg{position:relative}
+[data-testid="stDialog"] .hx-mt,[data-testid="stDialog"] .st-key-hx-mcells{display:grid!important;grid-template-columns:repeat(auto-fill,196px);grid-auto-rows:232px;gap:12px!important;justify-content:start}
+[data-testid="stDialog"] .st-key-hx-mcells{position:absolute!important;inset:0;z-index:2}
+[data-testid="stDialog"] .st-key-hx-mcells [data-testid="stElementContainer"]{width:196px!important}
+[data-testid="stDialog"] .st-key-hx-mcells button{width:196px;height:232px;padding:0;border-radius:18px;border:0;box-shadow:none;background:transparent;color:transparent}
+[data-testid="stDialog"] .st-key-hx-mcells button p{color:transparent}
+[data-testid="stDialog"] .st-key-hx-mcells button:hover{background:rgba(0,113,227,.05)}
+[data-testid="stDialog"] .mc{width:196px;height:232px;border-radius:18px;padding:14px;background:#fff;box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05);display:flex;flex-direction:column;box-sizing:border-box;transition:box-shadow .15s}
+[data-testid="stDialog"] .mc .h{display:flex;justify-content:space-between;align-items:flex-start}
+[data-testid="stDialog"] .mc .sc{font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums}
+[data-testid="stDialog"] .mc .sc small{display:block;font-size:10.5px;color:var(--t3);font-weight:560;letter-spacing:0;text-align:right;margin-top:3px}
+[data-testid="stDialog"] .mc .t{font-size:13.5px;font-weight:620;margin-top:12px;letter-spacing:-0.01em}
+[data-testid="stDialog"] .mc .m{font-size:11.5px;color:var(--t2);margin-top:2px}
+[data-testid="stDialog"] .mc .b{height:4px;border-radius:2px;background:rgba(0,0,0,.06);margin-top:auto;overflow:hidden}
+[data-testid="stDialog"] .mc .b i{display:block;height:100%;background:var(--blue);border-radius:2px}
+[data-testid="stDialog"] .mc .f{display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:8px}
+[data-testid="stDialog"] .mc .f .u{color:var(--amber);font-weight:600}
+[data-testid="stDialog"] .mc .why{font-size:11.5px;color:#3A3A3C;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.06)}
+
+/* Applications board */
+[data-testid="stDialog"] .hx-bh{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:640;margin-bottom:4px}
+[data-testid="stDialog"] .hx-bh i{width:8px;height:8px;border-radius:50%;display:block}
+[data-testid="stDialog"] .hx-bh b{margin-left:auto;font-size:12px;color:var(--t3);font-weight:600}
+[data-testid="stDialog"] [class*="st-key-hx-ap-"]{background:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.04);gap:8px!important}
+[data-testid="stDialog"] [class*="st-key-hx-ap-"] button{width:100%;height:30px;min-height:30px;font-size:12px}
+[data-testid="stDialog"] .hx-ac .hd{display:flex;align-items:center;gap:10px}
+[data-testid="stDialog"] .hx-ac .t{font-size:13px;font-weight:640;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-testid="stDialog"] .hx-ac .m{font-size:11.5px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-testid="stDialog"] .hx-ac .tag{display:inline-block;margin-top:10px;font-size:11px;font-weight:620;border-radius:999px;padding:3px 9px}
+[data-testid="stDialog"] .hx-ac .n{font-size:12px;color:var(--t2);margin-top:8px}

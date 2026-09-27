@@ -52,7 +52,7 @@ PARTS = [
         "The card in front is the next best action: an application about to close, today’s interview, "
         "a question only you can answer or new roles worth a look. The most urgent comes first.",
         "Use the arrows or the dots at the top right to see the other cards. Act on the card in front "
-        "with its buttons; “Not now” or “Later” moves it back without losing it.",
+        "with its buttons; “Not now” or “Later” moves it back without losing it. The ⤢ button lists every card.",
     ),
     Part(
         "gl-tl",
@@ -60,7 +60,7 @@ PARTS = [
         "Deadlines, interviews and events on one timeline.",
         "Everything dated in your search, from application deadlines to interviews, on one line. "
         "The “Now” marker shows where you are, so you can see what is coming before it is urgent.",
-        "Click an event to bring its card to the front of the carousel.",
+        "Click an event to bring its card to the front of the carousel. The ⤢ button opens the full calendar.",
     ),
     Part(
         "gl-top",
@@ -70,7 +70,7 @@ PARTS = [
         "for every role. Each card shows the match score, the main reason it fits or the gap to check, "
         "and when it closes.",
         "Scroll the strip for more roles. Open a card to see every check and where it comes from: "
-        "your CV, the posting, your answers or a rule.",
+        "your CV, the posting, your answers or a rule. The ⤢ button shows every match, sortable.",
     ),
     Part(
         "gl-apps",
@@ -78,8 +78,8 @@ PARTS = [
         "Where every application you started stands.",
         "The stages (saved, in progress, applied, interview) are a filter, each with its count; "
         "the one you pick lists its applications.",
-        "Tap a stage to list its applications, tap an application to expand it and use its buttons, "
-        "or “See all” for the full board.",
+        "Tap a stage to list its applications, tap an application to expand it and use its buttons. "
+        "The ⤢ button opens a board with every application by stage, or “See all” for the full list.",
     ),
 ]
 

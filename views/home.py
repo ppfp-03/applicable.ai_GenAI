@@ -1,7 +1,7 @@
 """Home — the week at a glance (01_Dashboard.html).
 
 A carousel of the five things worth doing this week, the next two weeks on a
-timeline, the top matches and the applications wallet. The centre card of
+timeline, the top matches and the applications card. The centre card of
 the carousel is a native container, so every action in it is a real widget;
 the side cards are drawn behind it and brought forward with native buttons.
 
@@ -9,6 +9,9 @@ The new-matches card is the controlled "Simulated ingestion event" (FR-10):
 until the user runs it, the card offers to; afterwards it lists the synthetic
 postings it added, and every card showing one says so. The Hong Kong question
 belongs to the post-event scenario, so it is shown only once the event has run.
+
+Each widget opens into a full view (the ⤢ button, `ui/home_expand.py`):
+the timeline into a calendar, the others into their complete lists.
 
 Motion lives in `ui/js/home.js`: the carousel and the top matches can be
 dragged, and every move animates before the native button commits it.
@@ -22,7 +25,7 @@ from pathlib import Path
 import streamlit as st
 
 from core import clock, store
-from ui import home_guide, parts, shell, tabs
+from ui import home_expand, home_guide, parts, shell, tabs
 from ui.html import CK, NEXT, PREV, WN, esc, hit, html, logo, md_icon
 from ui.theme import page_css
 
@@ -99,6 +102,8 @@ with shell.header(
     st.button(md_icon(PREV, "Previous"), key="ib-prev", on_click=go, args=(cur - 1,))
     st.button(md_icon(NEXT, "Next"), key="ib-next", on_click=go, args=(cur + 1,))
     st.button("?", key="ib-help", help="What is this page for?", on_click=home_guide.reopen)
+    if st.button("", icon=":material/open_in_full:", key="ib-x-car", help="See every card"):
+        home_expand.week_cards(week, cur, go)
 
 
 # ───────────────────────── Carousel ─────────────────────────
@@ -308,9 +313,11 @@ with st.container(key="gl-tl"):
                     st.rerun()
                 st.toast(e["toast"])
     st.markdown(f"<style>{''.join(css)}</style>", unsafe_allow_html=True)
+    if st.button("", icon=":material/open_in_full:", key="ib-x-tl", help="Open the calendar"):
+        home_expand.calendar(go)
 
 
-# ───────────────────────── Top matches and wallet ─────────────────────────
+# ───────────────────────── Top matches and applications ─────────────────────────
 
 tops = store.top_matches()
 apps = {a["role"]: a for a in store.applications()}
@@ -394,6 +401,8 @@ with st.container(key="bt"):
             )
             with st.container(key="marr"):
                 # The strip scrolls in the browser; these only nudge it.
+                if st.button("", icon=":material/open_in_full:", key="ib-x-top", help="See every match"):
+                    home_expand.matches(tops, mcard)
                 st.button(md_icon(PREV, "Previous"), key="ib-mprev")
                 st.button(md_icon(NEXT, "Next"), key="ib-mnext")
         # A horizontal scroller: the cards and their click targets scroll together.
@@ -410,7 +419,10 @@ with st.container(key="bt"):
         sc = store.stage_counts()
         with st.container(key="sh-apps"):
             html(f'<div class="sh"><div><b>Applications</b><span>{sum(sc.values())} total</span></div></div>')
-            st.page_link(tabs.page("applications"), label="See all")
+            with st.container(key="apps-r"):
+                if st.button("", icon=":material/open_in_full:", key="ib-x-apps", help="Open the board"):
+                    home_expand.applications_board()
+                st.page_link(tabs.page("applications"), label="See all")
 
         # The stages are a filter: the chosen one is lit, and its applications
         # are listed below. It starts on what you are working on.

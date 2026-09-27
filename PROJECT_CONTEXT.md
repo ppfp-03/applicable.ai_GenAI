@@ -67,7 +67,7 @@ The report needs team contributions, a one-page executive summary, business prob
 
 1. Load/show a bounded set of relevant internship and entry-level opportunities from a reproducible public-job snapshot.
 2. Upload a **synthetic, text-based PDF CV**, extract its text, then visibly extract a structured profile using a real runtime model.
-3. Offer three synthetic personas as an additional, clearly labeled route for development/demo/evaluation.
+3. Offer three synthetic personas as an additional, clearly labeled route for development/test/demo. These existing B-01 personas are not held-out evaluation personas; final held-out evaluation uses three separate frozen personas (D-040).
 4. Let users inspect/correct extracted information and complete an initial structured questionnaire, including explicit location, work-authorization/sponsorship information and whether they hold additional citizenships.
 5. Detect important candidate-profile gaps that matter to supported opportunities and generate targeted clarification questions linked to predefined structured fields.
 6. Apply a **closed, versioned hard-constraint taxonomy** and distinguish `eligible`, `ineligible`, `uncertain` under the implemented rules.
@@ -556,6 +556,26 @@ For the frozen set, obtain factual hard-constraint labels plus a simple 0-3 appl
 
 For clarification cases, record whether a question was actually needed, whether it targeted the correct supported field, whether the structured answer changed the expected downstream status/ranking, and whether an unnecessary/redundant question was asked. Do not claim a separate aggregate metric until the protocol defines one.
 
+### B-04 frozen evaluation procedure - approved 23 September 2026
+
+This procedure is frozen before any held-out results are produced (D-048). It freezes evaluation methodology only, not measured outcomes; no evaluation result exists yet.
+
+- Existing B-01 personas remain development/test personas only. Final held-out evaluation uses three separate frozen personas.
+- Human application priority uses an anchored scale: `0` = would not prioritize applying; `1` = low priority; `2` = reasonable priority; `3` = high priority.
+- Hard-constraint status is a separate factual judgment using `MET` / `CONFLICT` / `UNKNOWN` and is not inferred from the 0-3 priority rating.
+- Each rater constructs a Top 5 independently.
+- That rater's `CONFLICT` jobs cannot enter their Top 5; `UNKNOWN` jobs may enter.
+- If more than five jobs tie across the Top-5 cutoff, the rater privately orders the tied boundary jobs using the same application-priority judgment; stable `Job_ID` is the deterministic fallback if a tie remains.
+- Raters do not discuss first-pass ratings before both first-pass submissions are complete.
+- Primary human-referenced metrics are calculated separately for each rater.
+- Any later adjudication is supplementary and must preserve the original first-pass ratings.
+- At least one held-out persona contains one intentionally withheld approved structured fact with a pre-frozen answer, so clarification behavior is evaluated on held-out material.
+- Every atomic factual claim attached to every displayed Top-5 recommendation across the embedding-only baseline, generic-LLM baseline and hybrid system is audited for factual support, semantic evidence support and missing required evidence.
+- Unknown rate is calculated at the overall candidate-job eligibility level. Constraint-level `UNKNOWN` counts are reported separately.
+- Controlled synthetic edge cases remain separate from real-posting held-out evaluation and must be labeled as controlled cases.
+
+**Limitation:** the 23 September context integration reviewed Nils's B-04 session log [P5] but did not receive the nine underlying B-04 protocol/workbook artifacts. Their existence and intended roles are recorded in `SESSION_LOGS.md`. Artifact-level content QA remains pending before held-out execution.
+
 ### Comparable systems
 
 1. **Embedding-only:** same allowed candidate/job information converted to text; cosine-based ranking, no hidden eligibility filter.
@@ -571,7 +591,7 @@ All systems use the same frozen job universe, preferences and observation time. 
 | Explicit constraint violations in Top 5 | Human-labeled explicit-conflict recommendations / actual displayed recommendations. Empty output = N/A, not 0% success. Also show counts and list coverage. |
 | Top-5 agreement | Size of intersection between system and each human Top 5 / 5. Missing recommendations are not silently removed from the denominator. Explain ties and rater differences. |
 | Evidence support rate | Human-supported factual claims / audited factual claims. Report audited count, missing explanations and quote-match checks separately. Lexical quote presence alone is not semantic support. |
-| Output coverage and unknown rate | Number of recommendations returned; eligible/uncertain/excluded counts; data/model failures |
+| Output coverage and unknown rate | Number of recommendations returned; eligible/uncertain/excluded counts; overall candidate-job unknown rate; constraint-level `UNKNOWN` counts reported separately; data/model failures |
 | Duplicate rate | Remaining duplicates under the declared rule / evaluated records; preserve distinct positions |
 | Clarification audit | Count needed vs unnecessary questions, supported target fields, and expected downstream resolution; keep this descriptive unless a formal metric is frozen |
 
@@ -666,6 +686,7 @@ These decisions were provided in the kick-off discussion and are integrated into
 | D-045 | Onboarding step 3 (Preferences) starts with Explore, which is mandatory (all 12 stories), followed by Fine-tune; the free-text "Your ideal internship" block is removed. Explore swipes produce **suggestions**, not preferences: the role families (story `direction`, scored +1 per like and -1 per pass, positive only, top 2) and industries (story `industry`, same scoring, top 2) of the stories liked. A suggestion becomes an explicit preference only when the candidate confirms it in Fine-tune, where each row (suggested role families and industries, preferred cities, hybrid work) takes an importance: Must have 1.5, Important 1, Nice to have 0.5, Don't mind 0. Preference fit = 100 x sum(weight x match) / sum(weight), where match is 1 when the role's `role_family`, `industry`, `city` or `mode` equals the row's value; demo roles and stories carry these fields. Must have only gives the highest weight: preferences change the order and never exclude a role or decide eligibility. Fine-tune cannot be confirmed with every row at Don't mind, so preference fit is never null and never silently zero. RIASEC interests and work-design sliders stay informational and are not ranked. The importance weights are engineering heuristics, TO VALIDATE with the other ranking weights (D-022). Affected: `data/stories.json`, `data/demo.json` (role_family, industry), `core/explore.py`, `core/ranking.py`, `core/store.py`, `views/onboarding.py` and their tests. | Approved by Pierpaolo, 2026-09-26; Marco co-approval pending |
 | D-046 | Candidate languages and `HC_LANGUAGE` requirements are compared on the scale they are stated on. **Answer keys** (for approval under D-040): `level_en`, `level_it`, `level_de`, `level_fr`, `level_es`, `level_nl`, `level_zh`, `level_ja`, each under `eligibility_answers.HC_LANGUAGE.<ANSWER_KEY>`. **Representation:** a level keeps its original scale as `SCALE:LEVEL` (for example `CEFR:C1`, `HSK:4`, `JLPT:N2`, `SELF:native`). **Scales**, each ordered lowest to highest: CEFR `A1`-`C2`; HSK `1`-`6`; JLPT `N5`-`N1`; SELF `fluent`, `native`. Mandarin (`level_zh`) takes HSK and SELF only; Japanese (`level_ja`) takes JLPT and SELF only; the other keys take CEFR and SELF. **No cross-scale conversion:** levels are compared only within one scale, by that scale's ordering. **Fluent mappings**, applied to both candidate levels and job requirements: English -> `CEFR:C1`, Mandarin -> `HSK:5`, Japanese -> `JLPT:N1`; for any other language `fluent` stays on the SELF scale. **Native** is the highest level of a language: a native candidate satisfies any requirement for that language, and a native requirement is satisfied only by native (not by `CEFR:C2`, `HSK:6`, `JLPT:N1` or fluent). **CV-stated languages** are candidate-provided information: a language and level explicitly stated in the CV become an `EligibilityAnswer` with the CV as `source_document_id` and a CV evidence quote; a level is read only when the quote states it, otherwise the answer is stored with `state=unknown`. **UNKNOWN**, never a guess: (1) scale mismatch between candidate and requirement; (2) a level unsupported for that language's answer key, which is treated as a missing candidate answer; (3) an unmapped `fluent` compared with a level on another scale. A requirement on a scale the language does not take is not compared. Rationale: preserves the candidate's declared scale and avoids unsupported equivalence mappings. Affected: `config/eligibility/rule_catalogue.json` (`HC_LANGUAGE` rule version 0.2), `src/oi/intelligence/eligibility/{catalogue,parameters,inputs}.py`, `src/oi/intelligence/eligibility/rules/language.py`, `src/oi/intelligence/extraction.py`, `src/oi/providers/model_client.py`, `prompts/candidate_extraction.md` and their tests. The frozen `0.2.0-draft` contract is unchanged. | Proposed, pending required sign-off. Implementation evidence exists (26 September session log, PR #16), but no explicit project-wide approval is recorded |
 | D-047 | The 27 September demo-feedback package (`DEMO-01` to `DEMO-18`) is the immediate project-wide priority, ahead of non-blocking feature expansion; its suggested fixes stay proposals governed by existing decisions and contracts. Normalization, closure and acceptance rules live in "Demo stabilization gate". Rationale: the reported issues (blocked navigation, inconsistent candidate facts, clarification-flow problems, UI clarity) directly affect the live demo due 29 September. Affected: implementation priority and final-demo gate; `TEAM_MEMBER_STARTER_GUIDES.md` immediate priorities; acceptance/regression work in `SESSION_LOGS.md`. | Approved by Marco, 2026-09-27 |
+| D-048 | The B-04 held-out evaluation procedure is frozen before results: B-01 personas remain development-only; final held-out evaluation uses three separate frozen personas; raters use separate `MET` / `CONFLICT` / `UNKNOWN` hard-status labels and the anchored 0-3 application-priority scale; each rater's Top 5 excludes that rater's `CONFLICT` jobs but may include `UNKNOWN`; boundary ties are privately ordered then fall back to stable `Job_ID`; no rater discussion occurs before both first-pass submissions; human-referenced metrics are computed separately per rater; at least one held-out persona contains a pre-frozen withheld fact for clarification; displayed Top-5 atomic factual claims are evidence-audited; overall candidate-job unknown rate is reported separately from constraint-level `UNKNOWN` counts. | Approved by Marco, 2026-09-23; methodology only, execution/results pending |
 
 ### Proposed implementation defaults - review/freeze before independent implementation
 
@@ -677,7 +698,7 @@ These decisions were provided in the kick-off discussion and are integrated into
 | R-004 | Local sentence embeddings/direct cosine similarity; no vector DB | Proposed; exact model/version TO VALIDATE |
 | R-005 | Closed taxonomy initial candidates listed in section 7 | Proposed set; test and freeze before evaluation |
 | R-006 | Missing ranking factors remain null and are normalized/disclosed rather than silently scored zero | Proposed; exact normalization TO VALIDATE |
-| R-007 | Three personas, 20-30 frozen jobs, independent team raters, comparable baselines | Proposed operationalization of original evaluation plan |
+| R-007 | Three personas, 20-30 frozen jobs, independent team raters, comparable baselines | Superseded as a proposal by the approved B-04 methodology in D-048; held-out execution inputs and results remain pending |
 
 Accepting a baseline does not mean the corresponding behavior is implemented or tested. Keep status dimensions separate.
 
@@ -687,7 +708,7 @@ Accepting a baseline does not mean the corresponding behavior is implemented or 
 |---|---|---|
 | Q-01 | Which exact cloud runtime provider/model and access route? | Run a real structured extraction test; record model ID, access, latency, limitations, current quota/terms |
 | Q-02 | Does Greenhouse provide enough relevant coverage? | Coverage test against agreed domain/geographies; add Ashby/Lever only if a material gap is demonstrated |
-| Q-03 | What is the final hard-constraint list and exact semantics? | Test the section 7 candidates on representative postings; create truth-table cases; version/freeze |
+| Q-03 | What is the final hard-constraint list and exact semantics? | Test the section 7 candidates on representative postings; create truth-table cases; resolve the rule-owner items identified by the B-04 evaluability review: recent-graduate window, generic required-language threshold, approved Field-of-Study Equivalence Map, any applicable country-specific work-authorization rules, and deterministic treatment of "degree or equivalent experience"; then version/freeze the rule catalogue |
 | Q-04 | How should citizenship interact with work authorization/sponsorship? | Treat them separately by default; approve any country-specific inference only with explicit semantics/evidence |
 | Q-05 | What are the ranking weights and missing-factor normalization? | Tune only on development examples; freeze before held-out evaluation |
 | Q-06 | Which exact embedding model/version and dependency versions? | Select a small English model, verify license/download/performance, pin tested versions |
@@ -696,6 +717,8 @@ Accepting a baseline does not mean the corresponding behavior is implemented or 
 | Q-09 | What is the exact submission time and timezone? | Verify the official course platform; do not infer from this planning document |
 | Q-10 | How will repository/video be accessible to the grader? | Ensure grader access, working links and redistribution permission for stored source text |
 | Q-11 | What exact serializable fields define `JobSnapshot`, its source manifest and quarantine summary? | **Closed 2026-09-20.** Marco + Pierpaolo jointly approved `JobSnapshot 0.2.1-draft` under D-006/D-037, including the exact manifest/quarantine fields, canonical document-registry invariants, single-JSON persistence, A-owned loader, and text-only PDF error boundary. |
+| Q-12 | What approved clarification `ANSWER_KEY` / destination should the P02 `HC_MIN_EXPERIENCE` case use? | Giorgio/Pierpaolo as rule owners must approve the destination before this case is used as a deterministic development or held-out oracle |
+| Q-13 | Are the B-01 evaluation fixtures clean enough for automated oracle use? | Replace the non-canonical `LOC-04` fixture label and explicitly freeze any Draft Expected Outcomes before treating them as formal development oracles |
 
 ### Record a new decision
 
@@ -732,6 +755,10 @@ Confirmed earlier team decisions plus the 17 September kick-off discussion on pr
 
 **[P4] Joint A-01 shared-contract sign-off in the project conversation, 20 September 2026.**
 Marco approved A-01 Q1-Q5, including the `0.2.1-draft` version boundary. Pierpaolo then explicitly approved the same `JobSnapshot 0.2.1-draft` envelope and its normative registry, manifest/quarantine, loader and text-only PDF constraints under D-006.
+
+**[P5] Nils B-04 session log, 23 September 2026.**
+- Records the completed B-04 methodology sprint, approved methodology choices, unresolved B-01 rule-owner issues and execution dependencies.
+- The nine underlying B-04 artifacts were not supplied in the context-integration review, so this source does not independently verify their detailed contents or any measured evaluation result.
 
 The public sources below support technical assumptions, not claims about the project's implementation or measured results.
 

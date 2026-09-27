@@ -2,9 +2,9 @@
 (05_Ranking.html).
 
 Left: what happened before ranking, the top five, and one role a rule
-removed however well it matched. Right: the selected role's score taken
-apart -- four factors, fixed weights, the arithmetic, and the rule that says
-ranking never changes eligibility.
+removed however well it matched. Right: the selected role's score and the
+rule that says ranking never changes eligibility. How the score is computed
+(factors, weights, formula) is proprietary and never drawn here.
 """
 
 from __future__ import annotations
@@ -29,6 +29,11 @@ checked = sum(counts.values())
 if st.session_state[SEL] >= len(top):
     st.session_state[SEL] = 0
 
+
+def score_bar(v) -> str:
+    """One solid bar filled to the shown score -- no per-factor split."""
+    return f'<i style="flex:{v.shown};background:#0071E3"></i><i style="flex:{100 - v.shown};background:transparent"></i>'
+
 shell.topbar("matches", store.nav_counts())
 with shell.header(
     "Your matches",
@@ -51,26 +56,15 @@ with st.container(key="mt-main"):
                 f'<i style="flex:{counts["excluded"]};background:repeating-linear-gradient(135deg,#F3C9C5 0 3px,#FBEAE8 3px 6px)"></i></div>'
                 f'<div class="s-br"><div class="a" style="flex:{ranked_n}">{ranked_n} ranked · {counts["eligible"]} eligible, '
                 f'{counts["verify"]} to verify</div><div style="width:3px"></div>'
-                f'<div class="x2" style="flex:{counts["excluded"]}">{counts["excluded"]} excluded · conflict</div></div></div>'
-                '<div class="s-div"></div><div class="s-how">'
-                '<div class="s-t">How ranking works<span>Same inputs, same order</span></div>'
-                '<div class="s-flow"><div class="s-comp"><span>Profile fit</span><span>Preference fit</span>'
-                '<span>Urgency</span><span>Freshness</span></div><span class="s-ar">→</span>'
-                '<div class="s-ps"><b>Priority score</b><small>weighted sum</small></div><span class="s-ar">→</span>'
-                '<span class="s-top">Top 5</span></div></div></div>'
+                f'<div class="x2" style="flex:{counts["excluded"]}">{counts["excluded"]} excluded · conflict</div></div></div></div>'
             )
             if st.button("1 question can verify more", key="q-link"):
                 tabs.go("question")
 
         # The top five.
         with st.container(key="gl-top5"):
-            legend = "".join(
-                f'<span><i style="background:{c}"></i>{n}</span>'
-                for c, n in zip(parts.COL, ("Profile", "Preference", "Urgency", "Freshness"))
-            )
             html(
-                '<div class="sh"><div><b>Your top 5 opportunities</b><span>Ordered by priority score · 0–100</span></div>'
-                f'<div class="leg2">{legend}</div></div>'
+                '<div class="sh"><div><b>Your top 5 opportunities</b><span>Ordered by priority score · 0–100</span></div></div>'
                 '<div class="k-hd"><span>#</span><span>Role</span><span>Why it ranks here</span>'
                 "<span>Eligibility</span><span>Priority score</span></div>"
             )
@@ -84,7 +78,7 @@ with st.container(key="mt-main"):
                         f'<div class="k-jm">{esc(v.company)} · {esc(v.city)} · {esc(v.mode)}</div></div></div>'
                         f'<div><div class="k-why1">{esc(v.why)}</div><div class="k-tags"><span class="chip {cls}">{esc(text)}</span></div></div>'
                         f"{parts.eligibility_dot(v)}"
-                        f'<div class="k-sc"><div class="k-cb">{parts.bars(v)}</div><b>{v.shown}</b></div></div>'
+                        f'<div class="k-sc"><div class="k-cb">{score_bar(v)}</div><b>{v.shown}</b></div></div>'
                     )
                     hit(f"row-{i}", row, f"Select {v.company}", on_click=st.session_state.__setitem__, args=(SEL, i))
 
@@ -115,18 +109,9 @@ with st.container(key="mt-main"):
         )
         html(
             f'<div class="hero2"><div class="n">{v.shown}<small> /100</small></div>'
-            f'<div class="c">Priority score<br>{esc(text)}</div></div><div class="kstack">{parts.bars(v)}</div>'
+            f'<div class="c">Priority score<br>{esc(text)}</div></div><div class="kstack">{score_bar(v)}</div>'
         )
-        html(f'<div class="box">{parts.factor_rows(v)}</div>')
-        html(f'<div class="kform">{parts.formula(v)}</div>')
-        w = d.weights
-        html(
-            '<div class="lab">Weights<span>Same for every role</span></div><div class="wts">'
-            f'<span style="flex:{w["profile"] * 100:g};background:#0071E3;color:#fff">{w["profile"] * 100:g}%</span>'
-            f'<span style="flex:{w["preference"] * 100:g};background:#5AA2F0;color:#fff">{w["preference"] * 100:g}%</span>'
-            f'<span style="flex:{w["urgency"] * 100:g};background:#A9CDF7;color:#0B3F7A">{w["urgency"] * 100:g}%</span>'
-            f'<span style="flex:{w["freshness"] * 100:g};background:#D6E7FB;color:#0B3F7A">{w["freshness"] * 100:g}%</span></div>'
-        )
+        html(f'<div class="box why">{esc(v.why)}</div>')
         with st.container(key="end-r"):
             html(f'<div class="gate box">{parts.gate(v)}</div>')
         with st.container(key="mt-foot"):

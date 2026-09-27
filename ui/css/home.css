@@ -11,6 +11,13 @@
 .st-key-ib-help{margin-left:6px}
 .st-key-ib-help button{width:34px;height:34px;min-height:34px;font-size:15px;font-weight:650;color:var(--t2)}
 .st-key-ib-help button:hover{color:var(--blue)}
+/* The ⤢ that opens each widget's full view (ui/home_expand.py). */
+.st-key-ib-x-car{margin-left:6px}
+.st-key-ib-x-car button{width:34px;height:34px;min-height:34px}
+.st-key-ib-x-top button,.st-key-ib-x-apps button{width:30px;height:30px;min-height:30px}
+[class*="st-key-ib-x-"] button{padding:0;color:var(--t2)}
+[class*="st-key-ib-x-"] button:hover{color:var(--blue)}
+[class*="st-key-ib-x-"] button [data-testid="stIconMaterial"]{font-size:17px}
 
 /* Carousel */
 .st-key-car{position:relative;height:318px;margin-top:16px;touch-action:pan-y;cursor:grab}
@@ -65,8 +72,14 @@ html.aa-car-moving .st-key-card-uc{opacity:0;pointer-events:none;transition:opac
 .st-key-side-m1 button,.st-key-side-p1 button{width:496px;height:254px}
 
 /* Timeline */
-.st-key-gl-tl{margin-top:18px;padding:14px 22px!important;position:relative}
-.tl-h{display:flex;justify-content:space-between;font-size:13px;font-weight:640}.tl-h span{font-weight:450;color:var(--t3);font-size:12px}
+.st-key-gl-tl{margin-top:18px;padding:14px 22px!important;position:relative;transform-origin:50% 0;transition:transform .7s cubic-bezier(.16,1,.3,1),opacity .45s ease}
+/* While the calendar is open the card has turned over into it
+ * (home_expand.css flips the sheet in); on close it turns back. */
+body:has(.st-key-hx-calbar) .st-key-gl-tl{transform:perspective(1400px) rotateX(82deg) scale(.94);opacity:0;transition:transform .6s cubic-bezier(.5,0,.2,1),opacity .35s ease .12s}
+@media (prefers-reduced-motion:reduce){.st-key-gl-tl,body:has(.st-key-hx-calbar) .st-key-gl-tl{transition:none}}
+.tl-h{display:flex;justify-content:space-between;font-size:13px;font-weight:640;padding-right:40px}
+.st-key-ib-x-tl{position:absolute!important;top:10px;right:16px;z-index:6;width:auto!important}
+.st-key-ib-x-tl button{width:28px;height:28px;min-height:28px}.tl-h span{font-weight:450;color:var(--t3);font-size:12px}
 .tl-g{position:relative;height:96px;margin-top:6px}
 .tl-d{position:absolute;bottom:0;font-size:11px;color:var(--t3);font-weight:560;transform:translateX(-50%);text-align:center;line-height:1.25}
 .tl-d b{display:block;font-size:13px;color:var(--t1);font-weight:640}
@@ -116,6 +129,8 @@ html.aa-car-moving .st-key-card-uc{opacity:0;pointer-events:none;transition:opac
 /* Applications: the stages filter a list; a row expands in place. */
 .st-key-sh-apps{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;flex-wrap:nowrap!important}
 .st-key-sh-apps > div{width:auto!important}
+.st-key-apps-r{display:flex!important;flex-direction:row!important;align-items:center;gap:10px!important;width:auto!important;flex-wrap:nowrap!important}
+.st-key-apps-r [data-testid="stElementContainer"]{width:auto!important}
 .st-key-sh-apps .stPageLink a{padding:5px 14px;border-radius:999px;background:rgba(255,255,255,.85);box-shadow:inset 0 0 0 1.5px var(--blue);transition:background .15s}
 .st-key-sh-apps .stPageLink a:hover{background:var(--blueBg)}
 .st-key-sh-apps .stPageLink a p,.st-key-sh-apps .stPageLink a span{font-size:12.5px;color:var(--blue);font-weight:620}

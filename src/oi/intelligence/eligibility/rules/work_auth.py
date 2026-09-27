@@ -1,7 +1,9 @@
-"""HC_WORK_AUTH: the candidate may work in the job's country.
+"""HC_WORK_AUTH: the candidate may work in the country of the location evaluated.
 
 Evaluated only when the job explicitly states a work-authorization requirement
-(the engine returns NOT_APPLICABLE otherwise). It reads the candidate's
+(the engine returns NOT_APPLICABLE otherwise), once per alternative job
+location. The country is the parameter's `country_code` when set, otherwise
+the location's own country. It reads the candidate's
 country-specific declaration and nothing else: citizenship is never treated as
 work authorization, and no legal status is inferred.
 
@@ -19,7 +21,7 @@ work authorization, and no legal status is inferred.
 
 from __future__ import annotations
 
-from oi.intelligence.eligibility.inputs import job_countries, work_authorization
+from oi.intelligence.eligibility.inputs import work_authorization
 from oi.intelligence.eligibility.models import UnknownCause
 from oi.intelligence.eligibility.parameters import WorkAuthParams
 from oi.intelligence.eligibility.rules.base import (
@@ -44,26 +46,24 @@ def _ask(country: str, reason: str, leaves: list[str], evidence=()) -> Finding:
     )
 
 
-def _country(context: RuleContext) -> tuple[str | None, list[str]]:
-    """The parameter's country, else the job's single resolved country."""
+def _country(context: RuleContext) -> tuple[str | None, tuple[str, ...]]:
+    """The parameter's country, else the location being evaluated."""
 
     params = context.parameters
     if isinstance(params, WorkAuthParams) and params.country_code is not None:
-        return params.country_code, []
-    countries = job_countries(context.job)
-    if len(countries.codes) == 1 and not countries.has_unresolved:
-        return countries.codes[0], countries.evidence_ids
-    return None, countries.evidence_ids
+        return params.country_code, ()
+    return context.country_code, context.location_evidence_ids
 
 
 def evaluate(context: RuleContext) -> Finding:
-    """Apply the declaration table above for the job's country."""
+    """Apply the declaration table above for the location's country."""
 
     country, location_evidence = _country(context)
     if country is None:
         return unknown(
             UnknownCause.JOB_DATA_AMBIGUOUS,
-            "The posting requires work authorization, but not for one clear country.",
+            "The posting requires work authorization, but this location's "
+            "country could not be resolved.",
             job=location_evidence,
         )
 

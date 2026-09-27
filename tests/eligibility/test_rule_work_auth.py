@@ -112,12 +112,29 @@ def test_parameter_country_overrides_job_location() -> None:
     assert outcome.status is RuleStatus.MET
 
 
-@pytest.mark.parametrize(
-    "locations", [[("GB", "London"), ("NL", "Amsterdam")], [], [(None, "Remote")]]
-)
-def test_no_single_job_country_is_ambiguous(locations) -> None:
+@pytest.mark.parametrize("locations", [[], [(None, "Remote")]])
+def test_unresolvable_job_country_is_ambiguous(locations) -> None:
     outcome = single(CID, declared(True, False), locations=locations)
     assert outcome.unknown_cause is UnknownCause.JOB_DATA_AMBIGUOUS
+    assert outcome.location_key == "unresolved"
+
+
+def test_each_location_uses_its_own_country_declaration() -> None:
+    # Regression: two countries used to collapse into one job-level
+    # UNKNOWN (job_data_ambiguous) before any declaration was read.
+    job = b.job(
+        locations=[("GB", "London"), ("NL", "Amsterdam")],
+        requirements=[("req-1", CID, "mandatory")],
+    )
+    outcomes = outcomes_for(CID, declared(True, False), job)
+    assert [(o.location_key, o.status) for o in outcomes] == [
+        ("GB", RuleStatus.MET),
+        ("NL", RuleStatus.UNKNOWN),
+    ]
+    assert outcomes[1].missing_field_paths == [
+        path("NL", "authorized_to_work"),
+        path("NL", "requires_sponsorship"),
+    ]
 
 
 def test_unspecified_modality_softens_a_sponsorship_conflict() -> None:
