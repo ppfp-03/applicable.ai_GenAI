@@ -1,5 +1,5 @@
 {
-  "_comment": "Synthetic demo data for Applicable.ai. Every company is fictional. Eligibility is never stored here: the canonical engine (oi.intelligence.eligibility) decides it; core/eligibility.py only maps `profile`, the user's answers and each role's `requirements` onto it. Each role's `start` (\"2027-09\") is a synthetic scenario field, not a real posting's start date: it exists only so the degree-in-progress rule (completion before role start) is deterministic. `sponsorship` is explicit: offered, not_offered or not_stated; only not_offered can conflict. Both `start` and `sponsorship` are synthetic scenario values, set deliberately for deterministic demo evaluation only; they are not real HR posting data. Sponsorship scenario: the London non-sponsors (Replai, Lazarde) do not offer it; Deutsch Bank Shanghai requires a permit already held (see its posting quote), so it does not offer it; the other UK and Singapore roles offer it; Roshe Shanghai, Milan, Basel and Frankfurt do not state it. Roshe Shanghai's `cn_permit` is unused legacy data kept for a later cleanup; it is not read as sponsorship. Factor scores stand in for the pipeline's output; the priority score is always computed by core/ranking.py.",
+  "_comment": "Synthetic demo data for Applicable.ai. Every company is fictional. Eligibility is never stored here: the canonical engine (oi.intelligence.eligibility) decides it; core/eligibility.py only maps `profile`, the user's answers and each role's `requirements` onto it. Each role's `start` (\"2027-09\") is a synthetic scenario field, not a real posting's start date: it exists only so the degree-in-progress rule (completion before role start) is deterministic. `sponsorship` is explicit: offered, not_offered or not_stated; only not_offered can conflict. Both `start` and `sponsorship` are synthetic scenario values, set deliberately for deterministic demo evaluation only; they are not real HR posting data. Sponsorship scenario: the London non-sponsors (Replai, Lazarde) do not offer it; Deutsch Bank Shanghai requires a permit already held (see its posting quote), so it does not offer it; the other UK and Singapore roles offer it; Roshe Shanghai, Milan, Basel and Frankfurt do not state it. Roshe Shanghai's `cn_permit` is unused legacy data kept for a later cleanup; it is not read as sponsorship. Factor scores stand in for the pipeline's output; the priority score is always computed by core/ranking.py. Roles `oi50-*` are derived from the OI-50 synthetic catalogue (`source_job_id`): company, title, city, country and any explicit deadline come from the catalogue; student status, degree level, graduation window, field and sponsorship come only from the committed parameter layer (config/eligibility/job_parameters.json); language levels are the posting's own words, so non-CEFR levels stay informational. Their other hard requirements are not parameterized and are not represented. Where the posting states no deadline, `closes` is a demo closing date (the urgency note says so). Their factor scores are demo fixtures from fixed rules: profile by role family (minus 8 when a stated language is not in the profile), preference 30 + 30 preferred city + 15 product/strategy/growth family + 10 hybrid, urgency 95 - 2 x days to close (10-95), freshness 50 (no source publication date).",
   "today": "2026-09-24",
   "now": "10:55",
   "ranking_updated": "09:12",
@@ -142,6 +142,384 @@
         "permission": {"quote": "“Candidates must hold a valid permit to work or intern in mainland China.”", "line": "Requirements · line 9"},
         "field": {"quote": "“Degree in Computer Science, Statistics or a related quantitative field.”", "line": "Requirements · line 3"}
       }
+    },
+    {
+      "id": "oi50-001", "source_job_id": "SYN-JOB-001", "company": "Ardenwick Economics", "mono": "AE", "bg": "#1C1C1E",
+      "title": "Intern (European Competition practice) - m/f/d", "city": "Munich", "country": "DE", "mode": "Hybrid", "role_family": "Consulting", "industry": "Consulting",
+      "closes": "2026-10-26", "closes_label": "26 Oct", "posted_days_ago": null, "found": "2026-09-08", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · consulting role"], "preference": [40, "Consulting role · Munich · hybrid"], "urgency": [31, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Consulting role in Munich", "highlight": "Consulting · Consulting", "gaps": [],
+      "card_checks": [["ok", "Consulting · Consulting"]],
+      "requirements": {"student": true, "degree_level": "master", "fields": ["Economics"], "languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-002", "source_job_id": "SYN-JOB-002", "company": "Meridian Grove Consulting", "mono": "MG", "bg": "#3A3A3C",
+      "title": "Consulting Intern (Jan - May 2027)", "city": "Singapore", "country": "SG", "mode": "Not stated", "role_family": "Consulting", "industry": "Consulting",
+      "closes": "2026-11-02", "closes_label": "2 Nov", "posted_days_ago": null, "found": "2026-09-09", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · consulting role"], "preference": [60, "Consulting role · Singapore"], "urgency": [17, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Consulting role in Singapore", "highlight": "Consulting · Consulting", "gaps": [],
+      "card_checks": [["ok", "Consulting · Consulting"]],
+      "requirements": {"student": true, "degree_level": "bachelor", "languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-003", "source_job_id": "SYN-JOB-003", "company": "Northstar Pension Markets", "mono": "NP", "bg": "#48484A",
+      "title": "2027 Summer Internship Programme - Trading and Asset Origination", "city": "London", "country": "GB", "mode": "Not stated", "role_family": "Finance", "industry": "Banking",
+      "closes": "2026-11-08", "closes_label": "8 Nov", "posted_days_ago": null, "found": "2026-09-10", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · finance role"], "preference": [60, "Finance role · London"], "urgency": [10, "Applications close 8 Nov"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Finance role in London", "highlight": "Finance · Banking", "gaps": [],
+      "card_checks": [["ok", "Finance · Banking"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-005", "source_job_id": "SYN-JOB-005", "company": "HelioCall Systems", "mono": "HS", "bg": "#636366",
+      "title": "Strategy & Operations Intern — Office of the General Manager, Small Business", "city": "Paris", "country": "FR", "mode": "Hybrid", "role_family": "Strategy", "industry": "Technology",
+      "closes": "2026-11-16", "closes_label": "16 Nov", "posted_days_ago": null, "found": "2026-09-11", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · strategy role"], "preference": [55, "Strategy role · Paris · hybrid"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Strategy role in Paris", "highlight": "Strategy · Technology", "gaps": [],
+      "card_checks": [["ok", "Strategy · Technology"]],
+      "requirements": {"student": true, "degree_level": "master", "languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-006", "source_job_id": "SYN-JOB-006", "company": "Solvara Compliance Bank", "mono": "SC", "bg": "#6E6E73",
+      "title": "AFC Intern", "city": "Berlin", "country": "DE", "mode": "Not stated", "role_family": "Audit", "industry": "Banking",
+      "closes": "2026-11-23", "closes_label": "23 Nov", "posted_days_ago": null, "found": "2026-09-12", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [50, "Demo fixture score · audit role"], "preference": [30, "Audit role · Berlin"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Audit role in Berlin", "highlight": "Audit · Banking", "gaps": [],
+      "card_checks": [["ok", "Audit · Banking"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-007", "source_job_id": "SYN-JOB-007", "company": "Nexora Supply", "mono": "NS", "bg": "#8E8E93",
+      "title": "Supply Chain & Operations Intern (m/f/d)", "city": "Berlin", "country": "DE", "mode": "Onsite", "role_family": "Operations", "industry": "Consumer & retail",
+      "closes": "2026-11-30", "closes_label": "30 Nov", "posted_days_ago": null, "found": "2026-09-13", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [40, "Demo fixture score · operations role"], "preference": [30, "Operations role · Berlin · onsite"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Operations role in Berlin", "highlight": "Operations · Consumer & retail", "gaps": ["German C1 asked"],
+      "card_checks": [["ok", "Operations · Consumer & retail"]],
+      "requirements": {"languages": {"German": "C1", "English": "fluent"}}
+    },
+    {
+      "id": "oi50-009", "source_job_id": "SYN-JOB-009", "company": "Aurelian Investments", "mono": "AI", "bg": "#1C1C1E",
+      "title": "Intern, European Investments", "city": "Zürich", "country": "CH", "mode": "Not stated", "role_family": "Finance", "industry": "Investment management",
+      "closes": "2026-12-07", "closes_label": "7 Dec", "posted_days_ago": null, "found": "2026-09-14", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · finance role"], "preference": [30, "Finance role · Zürich"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Finance role in Zürich", "highlight": "Finance · Investment management", "gaps": [],
+      "card_checks": [["ok", "Finance · Investment management"]],
+      "requirements": {"student": true, "degree_level": "bachelor", "languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-010", "source_job_id": "SYN-JOB-010", "company": "Worknest Client Systems", "mono": "WC", "bg": "#3A3A3C",
+      "title": "Customer Success Manager Internship", "city": "Amsterdam", "country": "NL", "mode": "Hybrid", "role_family": "Sales", "industry": "Technology",
+      "closes": "2026-12-14", "closes_label": "14 Dec", "posted_days_ago": null, "found": "2026-09-15", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [46, "Demo fixture score · sales role"], "preference": [40, "Sales role · Amsterdam · hybrid"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Sales role in Amsterdam", "highlight": "Sales · Technology", "gaps": [],
+      "card_checks": [["ok", "Sales · Technology"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-011", "source_job_id": "SYN-JOB-011", "company": "Quantara Strategy", "mono": "QS", "bg": "#48484A",
+      "title": "Strategy Associate Intern (Data & AI experience)", "city": "Amsterdam", "country": "NL", "mode": "Hybrid", "role_family": "Strategy", "industry": "Consulting",
+      "closes": "2026-10-29", "closes_label": "29 Oct", "posted_days_ago": null, "found": "2026-09-16", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · strategy role"], "preference": [55, "Strategy role · Amsterdam · hybrid"], "urgency": [25, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Strategy role in Amsterdam", "highlight": "Strategy · Consulting", "gaps": [],
+      "card_checks": [["ok", "Strategy · Consulting"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-012", "source_job_id": "SYN-JOB-012", "company": "Harbor72 Capital", "mono": "HC", "bg": "#636366",
+      "title": "2027 Investment Analyst Summer Internship Program - Singapore", "city": "Singapore", "country": "SG", "mode": "Not stated", "role_family": "Finance", "industry": "Investment management",
+      "closes": "2026-11-05", "closes_label": "5 Nov", "posted_days_ago": null, "found": "2026-09-17", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · finance role"], "preference": [60, "Finance role · Singapore"], "urgency": [11, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Finance role in Singapore", "highlight": "Finance · Investment management", "gaps": [],
+      "card_checks": [["ok", "Finance · Investment management"]],
+      "requirements": {"student": true, "graduation": ["2027-12", "2028-07"], "languages": {"Mandarin": "fluent, or another Asian language"}}
+    },
+    {
+      "id": "oi50-013", "source_job_id": "SYN-JOB-013", "company": "Cairnholm Advisory", "mono": "CA", "bg": "#6E6E73",
+      "title": "Consultant - Intern Hires", "city": "London", "country": "GB", "mode": "Not stated", "role_family": "Consulting", "industry": "Consulting",
+      "closes": "2026-11-12", "closes_label": "12 Nov", "posted_days_ago": null, "found": "2026-09-18", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · consulting role"], "preference": [60, "Consulting role · London"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Consulting role in London", "highlight": "Consulting · Consulting", "gaps": [],
+      "card_checks": [["ok", "Consulting · Consulting"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-014", "source_job_id": "SYN-JOB-014", "company": "TriArc Fund Services", "mono": "TF", "bg": "#8E8E93",
+      "title": "Junior Fund Accountant - Graduate Opportunities", "city": "Dublin", "country": "IE", "mode": "Not stated", "role_family": "Finance", "industry": "Investment management",
+      "closes": "2026-11-19", "closes_label": "19 Nov", "posted_days_ago": null, "found": "2026-09-19", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · finance role"], "preference": [30, "Finance role · Dublin"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Finance role in Dublin", "highlight": "Finance · Investment management", "gaps": [],
+      "card_checks": [["ok", "Finance · Investment management"]],
+      "requirements": {"degree_level": "bachelor", "languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-015", "source_job_id": "SYN-JOB-015", "company": "Falconridge Markets", "mono": "FM", "bg": "#1C1C1E",
+      "title": "2027 Equity Middle Office Intern", "city": "London", "country": "GB", "mode": "Not stated", "role_family": "Operations", "industry": "Investment management",
+      "closes": "2026-11-26", "closes_label": "26 Nov", "posted_days_ago": null, "found": "2026-09-20", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [48, "Demo fixture score · operations role"], "preference": [60, "Operations role · London"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Operations role in London", "highlight": "Operations · Investment management", "gaps": [],
+      "card_checks": [["ok", "Operations · Investment management"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-016", "source_job_id": "SYN-JOB-016", "company": "Virtova Client Markets", "mono": "VC", "bg": "#3A3A3C",
+      "title": "2027 Summer Internship - Client Support", "city": "London", "country": "GB", "mode": "Onsite", "role_family": "Operations", "industry": "Banking",
+      "closes": "2026-12-11", "closes_label": "11 Dec", "posted_days_ago": null, "found": "2026-09-21", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [48, "Demo fixture score · operations role"], "preference": [60, "Operations role · London · onsite"], "urgency": [10, "Applications close 11 Dec"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Operations role in London", "highlight": "Operations · Banking", "gaps": [],
+      "card_checks": [["ok", "Operations · Banking"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-018", "source_job_id": "SYN-JOB-018", "company": "Propella Strategy", "mono": "PS", "bg": "#48484A",
+      "title": "Associate Intern", "city": "Shanghai", "country": "CN", "mode": "Not stated", "role_family": "Consulting", "industry": "Consulting",
+      "closes": "2026-12-10", "closes_label": "10 Dec", "posted_days_ago": null, "found": "2026-09-22", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · consulting role"], "preference": [60, "Consulting role · Shanghai"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Consulting role in Shanghai", "highlight": "Consulting · Consulting", "gaps": [],
+      "card_checks": [["ok", "Consulting · Consulting"]],
+      "requirements": {"languages": {"Mandarin": "fluent", "English": "fluent"}}
+    },
+    {
+      "id": "oi50-019", "source_job_id": "SYN-JOB-019", "company": "Artevia Media", "mono": "AM", "bg": "#636366",
+      "title": "Stage - Consultant(e) Média - Paris", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Marketing", "industry": "Media",
+      "closes": "2026-12-17", "closes_label": "17 Dec", "posted_days_ago": null, "found": "2026-09-08", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [44, "Demo fixture score · marketing role"], "preference": [30, "Marketing role · Paris"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Marketing role in Paris", "highlight": "Marketing · Media", "gaps": [],
+      "card_checks": [["ok", "Marketing · Media"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-021", "source_job_id": "SYN-JOB-021", "company": "IberiaReach Sales", "mono": "IS", "bg": "#6E6E73",
+      "title": "Sales Intern, Iberia Market (6 months)", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Sales", "industry": "Technology",
+      "closes": "2026-11-01", "closes_label": "1 Nov", "posted_days_ago": null, "found": "2026-09-09", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [38, "Demo fixture score · sales role"], "preference": [30, "Sales role · Paris"], "urgency": [19, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Sales role in Paris", "highlight": "Sales · Technology", "gaps": ["Spanish fluent asked"],
+      "card_checks": [["ok", "Sales · Technology"]],
+      "requirements": {"student": true, "degree_level": "bachelor", "languages": {"Spanish": "fluent", "English": "fluent"}}
+    },
+    {
+      "id": "oi50-022", "source_job_id": "SYN-JOB-022", "company": "Voxera Product Marketing", "mono": "VP", "bg": "#8E8E93",
+      "title": "Product Marketing Intern, AI Voice Agent", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Marketing", "industry": "Technology",
+      "closes": "2026-11-08", "closes_label": "8 Nov", "posted_days_ago": null, "found": "2026-09-10", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [44, "Demo fixture score · marketing role"], "preference": [30, "Marketing role · Paris"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Marketing role in Paris", "highlight": "Marketing · Technology", "gaps": [],
+      "card_checks": [["ok", "Marketing · Technology"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-023", "source_job_id": "SYN-JOB-023", "company": "Programmatica Media", "mono": "PM", "bg": "#1C1C1E",
+      "title": "Intern - Display & Programmatic Consultant - Paris", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Marketing", "industry": "Media",
+      "closes": "2026-11-15", "closes_label": "15 Nov", "posted_days_ago": null, "found": "2026-09-11", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [44, "Demo fixture score · marketing role"], "preference": [30, "Marketing role · Paris"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Marketing role in Paris", "highlight": "Marketing · Media", "gaps": [],
+      "card_checks": [["ok", "Marketing · Media"]],
+      "requirements": {"student": true, "languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-024", "source_job_id": "SYN-JOB-024", "company": "AlphaBridge Advisory", "mono": "AA", "bg": "#3A3A3C",
+      "title": "Strategy & Deals Graduate Associate (2027)", "city": "London", "country": "GB", "mode": "Hybrid", "role_family": "Strategy", "industry": "Consulting",
+      "closes": "2026-10-18", "closes_label": "18 Oct", "posted_days_ago": null, "found": "2026-09-12", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · strategy role"], "preference": [85, "Strategy role · London · hybrid"], "urgency": [47, "Applications close 18 Oct"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Strategy role in London", "highlight": "Strategy · Consulting", "gaps": [],
+      "card_checks": [["ok", "Strategy · Consulting"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-025", "source_job_id": "SYN-JOB-025", "company": "Insurient Consulting", "mono": "IC", "bg": "#48484A",
+      "title": "Insurance Consulting Summer Internship", "city": "London", "country": "GB", "mode": "Not stated", "role_family": "Consulting", "industry": "Insurance",
+      "closes": "2026-11-29", "closes_label": "29 Nov", "posted_days_ago": null, "found": "2026-09-13", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · consulting role"], "preference": [60, "Consulting role · London"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Consulting role in London", "highlight": "Consulting · Insurance", "gaps": [],
+      "card_checks": [["ok", "Consulting · Insurance"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-028", "source_job_id": "SYN-JOB-028", "company": "Overtide Strategy", "mono": "OS", "bg": "#636366",
+      "title": "Internship - Business & Strategy Analyst", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Strategy", "industry": "Logistics",
+      "closes": "2026-12-06", "closes_label": "6 Dec", "posted_days_ago": null, "found": "2026-09-14", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [52, "Demo fixture score · strategy role"], "preference": [45, "Strategy role · Paris"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Strategy role in Paris", "highlight": "Strategy · Logistics", "gaps": ["French fluent asked"],
+      "card_checks": [["ok", "Strategy · Logistics"]],
+      "requirements": {"languages": {"French": "fluent"}}
+    },
+    {
+      "id": "oi50-029", "source_job_id": "SYN-JOB-029", "company": "Portlane Operations", "mono": "PO", "bg": "#6E6E73",
+      "title": "Internship - Operations Management (End-of-Studies)", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Operations", "industry": "Logistics",
+      "closes": "2026-12-13", "closes_label": "13 Dec", "posted_days_ago": null, "found": "2026-09-15", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [40, "Demo fixture score · operations role"], "preference": [30, "Operations role · Paris"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Operations role in Paris", "highlight": "Operations · Logistics", "gaps": ["French fluent asked"],
+      "card_checks": [["ok", "Operations · Logistics"]],
+      "requirements": {"languages": {"French": "fluent"}}
+    },
+    {
+      "id": "oi50-030", "source_job_id": "SYN-JOB-030", "company": "Portlane Growth", "mono": "PG", "bg": "#8E8E93",
+      "title": "Internship - Business Developer (BDR) - France", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Sales", "industry": "Logistics",
+      "closes": "2026-10-28", "closes_label": "28 Oct", "posted_days_ago": null, "found": "2026-09-16", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [38, "Demo fixture score · sales role"], "preference": [30, "Sales role · Paris"], "urgency": [27, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Sales role in Paris", "highlight": "Sales · Logistics", "gaps": ["French fluent asked"],
+      "card_checks": [["ok", "Sales · Logistics"]],
+      "requirements": {"languages": {"French": "fluent", "English": "fluent"}}
+    },
+    {
+      "id": "oi50-031", "source_job_id": "SYN-JOB-031", "company": "Portlane Italia", "mono": "PI", "bg": "#1C1C1E",
+      "title": "Internship - Business Development Intern", "city": "Milan", "country": "IT", "mode": "Not stated", "role_family": "Sales", "industry": "Logistics",
+      "closes": "2026-11-04", "closes_label": "4 Nov", "posted_days_ago": null, "found": "2026-09-17", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [46, "Demo fixture score · sales role"], "preference": [30, "Sales role · Milan"], "urgency": [13, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Sales role in Milan", "highlight": "Sales · Logistics", "gaps": [],
+      "card_checks": [["ok", "Sales · Logistics"]],
+      "requirements": {"languages": {"Italian": "native/fluent", "English": "good professional level"}}
+    },
+    {
+      "id": "oi50-032", "source_job_id": "SYN-JOB-032", "company": "Portlane Iberia", "mono": "PI", "bg": "#3A3A3C",
+      "title": "Operations Internship - Spain", "city": "Barcelona", "country": "ES", "mode": "Not stated", "role_family": "Operations", "industry": "Logistics",
+      "closes": "2026-11-11", "closes_label": "11 Nov", "posted_days_ago": null, "found": "2026-09-18", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [40, "Demo fixture score · operations role"], "preference": [30, "Operations role · Barcelona"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Operations role in Barcelona", "highlight": "Operations · Logistics", "gaps": ["Spanish fluent asked"],
+      "card_checks": [["ok", "Operations · Logistics"]],
+      "requirements": {"languages": {"Spanish": "fluent"}}
+    },
+    {
+      "id": "oi50-033", "source_job_id": "SYN-JOB-033", "company": "BlueRoad Strategy", "mono": "BS", "bg": "#48484A",
+      "title": "Strategy & Business Analyst Intern", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Strategy", "industry": "Consulting",
+      "closes": "2026-11-18", "closes_label": "18 Nov", "posted_days_ago": null, "found": "2026-09-19", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · strategy role"], "preference": [45, "Strategy role · Paris"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Strategy role in Paris", "highlight": "Strategy · Consulting", "gaps": [],
+      "card_checks": [["ok", "Strategy · Consulting"]],
+      "requirements": {"student": true, "languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-034", "source_job_id": "SYN-JOB-034", "company": "ReMarka Risk", "mono": "RR", "bg": "#636366",
+      "title": "Fraud and Risk Officer Intern", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Finance", "industry": "Fintech",
+      "closes": "2026-11-25", "closes_label": "25 Nov", "posted_days_ago": null, "found": "2026-09-20", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · finance role"], "preference": [30, "Finance role · Paris"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Finance role in Paris", "highlight": "Finance · Fintech", "gaps": [],
+      "card_checks": [["ok", "Finance · Fintech"]],
+      "requirements": {"student": true, "languages": {"English": "fully professional"}}
+    },
+    {
+      "id": "oi50-035", "source_job_id": "SYN-JOB-035", "company": "Kinetiq Sales Ops", "mono": "KS", "bg": "#6E6E73",
+      "title": "Sales Ops Intern", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Sales", "industry": "Technology",
+      "closes": "2026-12-02", "closes_label": "2 Dec", "posted_days_ago": null, "found": "2026-09-21", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [46, "Demo fixture score · sales role"], "preference": [30, "Sales role · Paris"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Sales role in Paris", "highlight": "Sales · Technology", "gaps": [],
+      "card_checks": [["ok", "Sales · Technology"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-036", "source_job_id": "SYN-JOB-036", "company": "Dedalia Investment Intelligence", "mono": "DI", "bg": "#8E8E93",
+      "title": "Investment & Strategy Analyst Intern (End-of-Studies)", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Strategy", "industry": "Investment management",
+      "closes": "2026-12-09", "closes_label": "9 Dec", "posted_days_ago": null, "found": "2026-09-22", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · strategy role"], "preference": [45, "Strategy role · Paris"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Strategy role in Paris", "highlight": "Strategy · Investment management", "gaps": [],
+      "card_checks": [["ok", "Strategy · Investment management"]],
+      "requirements": {"languages": {"English": "strong written and spoken"}}
+    },
+    {
+      "id": "oi50-037", "source_job_id": "SYN-JOB-037", "company": "Fundry Operations", "mono": "FO", "bg": "#1C1C1E",
+      "title": "Operations & Strategy Internship", "city": "Berlin", "country": "DE", "mode": "Not stated", "role_family": "Operations", "industry": "Fintech",
+      "closes": "2026-12-16", "closes_label": "16 Dec", "posted_days_ago": null, "found": "2026-09-08", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [48, "Demo fixture score · operations role"], "preference": [30, "Operations role · Berlin"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Operations role in Berlin", "highlight": "Operations · Fintech", "gaps": [],
+      "card_checks": [["ok", "Operations · Fintech"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-038", "source_job_id": "SYN-JOB-038", "company": "Tellaris Strategy", "mono": "TS", "bg": "#3A3A3C",
+      "title": "Internship - Strategy & BizOps", "city": "Berlin", "country": "DE", "mode": "Onsite", "role_family": "Strategy", "industry": "Technology",
+      "closes": "2026-10-31", "closes_label": "31 Oct", "posted_days_ago": null, "found": "2026-09-09", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [52, "Demo fixture score · strategy role"], "preference": [45, "Strategy role · Berlin · onsite"], "urgency": [21, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Strategy role in Berlin", "highlight": "Strategy · Technology", "gaps": ["German fluent asked"],
+      "card_checks": [["ok", "Strategy · Technology"]],
+      "requirements": {"languages": {"English": "fluent", "German": "fluent"}}
+    },
+    {
+      "id": "oi50-039", "source_job_id": "SYN-JOB-039", "company": "Luxora Commerce", "mono": "LC", "bg": "#48484A",
+      "title": "Intern, Marketing (Dutch Speaking)", "city": "Amsterdam", "country": "NL", "mode": "Hybrid", "role_family": "Marketing", "industry": "Consumer & retail",
+      "closes": "2026-11-07", "closes_label": "7 Nov", "posted_days_ago": null, "found": "2026-09-10", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [36, "Demo fixture score · marketing role"], "preference": [40, "Marketing role · Amsterdam · hybrid"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Marketing role in Amsterdam", "highlight": "Marketing · Consumer & retail", "gaps": ["Dutch fluent asked"],
+      "card_checks": [["ok", "Marketing · Consumer & retail"]],
+      "requirements": {"student": true, "languages": {"Dutch": "fluent", "English": "fluent"}}
+    },
+    {
+      "id": "oi50-040", "source_job_id": "SYN-JOB-040", "company": "Lendwell Analytics", "mono": "LA", "bg": "#636366",
+      "title": "Summer Intern 2027 - Growth & Analytics", "city": "London", "country": "GB", "mode": "Hybrid", "role_family": "Growth", "industry": "Fintech",
+      "closes": "2026-11-14", "closes_label": "14 Nov", "posted_days_ago": null, "found": "2026-09-11", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [54, "Demo fixture score · growth role"], "preference": [85, "Growth role · London · hybrid"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Growth role in London", "highlight": "Growth · Fintech", "gaps": [],
+      "card_checks": [["ok", "Growth · Fintech"]],
+      "requirements": {"degree_level": "bachelor", "languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-041", "source_job_id": "SYN-JOB-041", "company": "Rainford Merchant Bank", "mono": "RM", "bg": "#6E6E73",
+      "title": "2027 Summer Analyst Program", "city": "London", "country": "GB", "mode": "Onsite", "role_family": "Finance", "industry": "Banking",
+      "closes": "2026-11-21", "closes_label": "21 Nov", "posted_days_ago": null, "found": "2026-09-12", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · finance role"], "preference": [60, "Finance role · London · onsite"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Finance role in London", "highlight": "Finance · Banking", "gaps": [],
+      "card_checks": [["ok", "Finance · Banking"]],
+      "requirements": {"graduation": ["2027-01", "2027-12"], "languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-042", "source_job_id": "SYN-JOB-042", "company": "Rainford Asia", "mono": "RA", "bg": "#8E8E93",
+      "title": "2027 Off-Cycle Analyst", "city": "Singapore", "country": "SG", "mode": "Onsite", "role_family": "Finance", "industry": "Banking",
+      "closes": "2026-11-28", "closes_label": "28 Nov", "posted_days_ago": null, "found": "2026-09-13", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · finance role"], "preference": [60, "Finance role · Singapore · onsite"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Finance role in Singapore", "highlight": "Finance · Banking", "gaps": [],
+      "card_checks": [["ok", "Finance · Banking"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-043", "source_job_id": "SYN-JOB-043", "company": "Shopwave Payments", "mono": "SP", "bg": "#1C1C1E",
+      "title": "Business & Strategy Analyst Intern (Regional Payments)", "city": "Singapore", "country": "SG", "mode": "Onsite", "role_family": "Strategy", "industry": "Fintech",
+      "closes": "2026-12-05", "closes_label": "5 Dec", "posted_days_ago": null, "found": "2026-09-14", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · strategy role"], "preference": [75, "Strategy role · Singapore · onsite"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Strategy role in Singapore", "highlight": "Strategy · Fintech", "gaps": [],
+      "card_checks": [["ok", "Strategy · Fintech"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-045", "source_job_id": "SYN-JOB-045", "company": "Valora Finance Lab", "mono": "VF", "bg": "#3A3A3C",
+      "title": "Finance Internship 2027 - Management Control", "city": "Paris", "country": "FR", "mode": "Hybrid", "role_family": "Finance", "industry": "Fintech",
+      "closes": "2026-12-12", "closes_label": "12 Dec", "posted_days_ago": null, "found": "2026-09-15", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [52, "Demo fixture score · finance role"], "preference": [40, "Finance role · Paris · hybrid"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Finance role in Paris", "highlight": "Finance · Fintech", "gaps": ["French fluent asked"],
+      "card_checks": [["ok", "Finance · Fintech"]],
+      "requirements": {"student": true, "languages": {"French": "fluent", "English": "professional"}}
+    },
+    {
+      "id": "oi50-046", "source_job_id": "SYN-JOB-046", "company": "Clarity Health Operations", "mono": "CH", "bg": "#48484A",
+      "title": "Operations Intern (Internship to Full-time)", "city": "Berlin", "country": "DE", "mode": "Onsite", "role_family": "Operations", "industry": "Healthcare",
+      "closes": "2026-10-27", "closes_label": "27 Oct", "posted_days_ago": null, "found": "2026-09-16", "sponsorship": "not_offered", "start": "2027-09",
+      "factors": {"profile": [40, "Demo fixture score · operations role"], "preference": [30, "Operations role · Berlin · onsite"], "urgency": [29, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Operations role in Berlin", "highlight": "Operations · Healthcare", "gaps": ["German fluent/native or near-native asked"],
+      "card_checks": [["ok", "Operations · Healthcare"]],
+      "requirements": {"languages": {"German": "fluent/native or near-native", "English": "fluent"}}
+    },
+    {
+      "id": "oi50-047", "source_job_id": "SYN-JOB-047", "company": "Fintech Arc Partners", "mono": "FA", "bg": "#636366",
+      "title": "2027 January IBD Intern Analyst", "city": "London", "country": "GB", "mode": "Not stated", "role_family": "Finance", "industry": "Banking",
+      "closes": "2026-11-03", "closes_label": "3 Nov", "posted_days_ago": null, "found": "2026-09-17", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [60, "Demo fixture score · finance role"], "preference": [60, "Finance role · London"], "urgency": [15, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Finance role in London", "highlight": "Finance · Banking", "gaps": [],
+      "card_checks": [["ok", "Finance · Banking"]],
+      "requirements": {"degree_level": "bachelor", "languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-049", "source_job_id": "SYN-JOB-049", "company": "Anara Merchandising", "mono": "AM", "bg": "#6E6E73",
+      "title": "Merchandising & Buying Intern", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Marketing", "industry": "Consumer & retail",
+      "closes": "2026-11-10", "closes_label": "10 Nov", "posted_days_ago": null, "found": "2026-09-18", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [44, "Demo fixture score · marketing role"], "preference": [30, "Marketing role · Paris"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Marketing role in Paris", "highlight": "Marketing · Consumer & retail", "gaps": [],
+      "card_checks": [["ok", "Marketing · Consumer & retail"]],
+      "requirements": {"languages": {"English": "fluent"}}
+    },
+    {
+      "id": "oi50-050", "source_job_id": "SYN-JOB-050", "company": "Retaila Commerce Advisory", "mono": "RC", "bg": "#8E8E93",
+      "title": "Intern - E-retail Consultant - Paris", "city": "Paris", "country": "FR", "mode": "Not stated", "role_family": "Consulting", "industry": "Consumer & retail",
+      "closes": "2026-11-17", "closes_label": "17 Nov", "posted_days_ago": null, "found": "2026-09-19", "sponsorship": "not_stated", "start": "2027-09",
+      "factors": {"profile": [52, "Demo fixture score · consulting role"], "preference": [30, "Consulting role · Paris"], "urgency": [10, "Rolling posting · demo closing date"], "freshness": [50, "Demo fixture score · no source publication date"]},
+      "why": "Consulting role in Paris", "highlight": "Consulting · Consumer & retail", "gaps": ["French fluent asked"],
+      "card_checks": [["ok", "Consulting · Consumer & retail"]],
+      "requirements": {"student": true, "languages": {"French": "fluent", "English": "fluent"}}
     }
   ],
   "applications": [

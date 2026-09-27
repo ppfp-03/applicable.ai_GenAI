@@ -45,7 +45,8 @@ def reqs(role_id: str) -> dict:
 
 
 def test_every_role_has_the_synthetic_start_and_explicit_sponsorship():
-    assert len(D.roles) == 12
+    # 12 curated roles plus 42 derived from the OI-50 catalogue (`oi50-*`).
+    assert len(D.roles) == 54
     for r in D.roles:
         assert r.raw["start"] == "2027-09"
         assert r.raw["sponsorship"] in eligibility.SPONSORSHIP
@@ -182,6 +183,8 @@ def test_in_progress_policy(graduation, start, policy):
 
 def test_in_progress_msc_counts_before_the_synthetic_start():
     for r in D.roles:
+        if not r.raw["requirements"].get("degree_level"):
+            continue  # a role that states no degree has nothing to count
         result = eligibility.assess(r.raw, D.profile, {"uk_work": "yes"})
         assert outcome(result, eligibility.DEGREE).status is RuleStatus.MET, r.id
 
@@ -245,8 +248,9 @@ def test_tiles_and_standing_render_the_engine_unchanged(ans):
 def test_limitations_never_affect_the_standing():
     for r in D.roles:
         v = store.view(r, {"uk_work": "yes"})
-        has_hsk = any("HSK" in lvl for lvl in r.raw["requirements"].get("languages", {}).values())
-        assert bool(v.limitations) == has_hsk, r.id
+        unchecked = any(lvl not in ("A1", "A2", "B1", "B2", "C1", "C2")
+                        for lvl in r.raw["requirements"].get("languages", {}).values())
+        assert bool(v.limitations) == unchecked, r.id
         assert all(c.status != "not_met" for c in v.criteria if c.id == "language")
 
 

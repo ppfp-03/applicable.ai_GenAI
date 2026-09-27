@@ -55,19 +55,30 @@
       if (a <= 1) { x = SLIDE * a; sc = 1 - .2 * a; op = 1 - .2 * a; }
       else if (a <= 2) { x = SLIDE + 250 * (a - 1); sc = .8 - .18 * (a - 1); op = .8 * (2 - a); }
       else { x = 720; sc = .62; op = 0; }
+      // Towards the centre the glass thickens and lifts into the native card's
+      // look, so the hand-over at either end of a move is invisible.
+      const f = Math.max(0, 1 - a);
       const st = el.style;
-      st.transition = animate ? `transform .45s ${EASE},opacity .45s ${EASE},background-color .45s ${EASE}` : 'none';
+      // z-index rides the same curve: the two cards swap layers halfway, not on the first frame.
+      st.transition = animate ? ['transform', 'opacity', 'background-color', 'box-shadow', 'z-index'].map(k => `${k} .45s ${EASE}`).join(',') : 'none';
       st.transform = `translateX(calc(-50% + ${(dir * x).toFixed(1)}px)) scale(${sc.toFixed(4)})`;
       st.opacity = op.toFixed(3);
       st.zIndex = a < .5 ? 5 : a < 1.5 ? 4 : 3;
-      st.backgroundColor = `rgba(255,255,255,${(.62 + .35 * Math.max(0, 1 - a)).toFixed(3)})`;
+      st.backgroundColor = `rgba(255,255,255,${(.62 + .35 * f).toFixed(3)})`;
+      st.boxShadow = `0 1px 0 #fff inset,0 ${(8 + 12 * f).toFixed(1)}px ${(28 + 22 * f).toFixed(1)}px rgba(28,40,64,${(.07 + .05 * f).toFixed(3)}),0 0 0 .5px rgba(0,0,0,${(.05 + .01 * f).toFixed(3)})`;
     });
   }
 
+  /* Hand back to the native card in one frame: no cross-fade, so the glass
+   * never thins out on the way. */
   function settle() {
     CAR.p = null;
-    document.querySelectorAll('.car-side .uc').forEach(el => { el.style.cssText = ''; });
+    const cards = document.querySelectorAll('.car-side .uc');
+    cards.forEach(el => { el.style.cssText = 'transition:none'; });
     H.classList.remove('aa-car-moving');
+    dotsRest();
+    void document.body.offsetWidth;
+    requestAnimationFrame(() => cards.forEach(el => { el.style.cssText = ''; }));
   }
 
   /* Animate to position `to`, then commit the card that lands in the centre. */
@@ -80,6 +91,7 @@
     void s.offsetWidth;
     CAR.p = to;
     place(to, true);
+    dotsTween(to);
     const tok = ++CAR.token;
     const idx = ((Math.round(to) % n) + n) % n;
     setTimeout(() => { if (tok === CAR.token) commit(idx, tok); }, 460);
@@ -101,6 +113,107 @@
     let d = ((idx - b) % n + n) % n;
     if (d > n / 2) d -= n;
     slide(b + d);
+  }
+
+  // ───────────────────────── Dots ─────────────────────────
+  /* While the carousel moves, the dash is a liquid-glass lens that rides the
+   * same continuous position: the dots swell and shrink as it passes, and the
+   * lens stretches ahead with its speed and settles when it lands. At rest the
+   * page's own dash (CSS) takes over; both look the same. */
+
+  const DOT = { p: null, raf: 0, v: 0, dir: 0, s: 0, t: 0 };
+  const DOT_W = 6, DOT_ON = 20;
+
+  // cubic-bezier(.2,.8,.2,1), the carousel's easing, for the per-frame tween.
+  function ease(u) {
+    const bx = t => 3 * .2 * t * (1 - t) * (1 - t) + 3 * .2 * t * t * (1 - t) + t * t * t;
+    const by = t => 3 * .8 * t * (1 - t) * (1 - t) + 3 * t * t * (1 - t) + t * t * t;
+    let lo = 0, hi = 1;
+    for (let i = 0; i !== 24; i++) { const m = (lo + hi) / 2; if (bx(m) > u) hi = m; else lo = m; }
+    return by((lo + hi) / 2);
+  }
+
+  function dotParts() {
+    const box = document.querySelector('.st-key-dots'); if (!box) return null;
+    const btns = [];
+    box.querySelectorAll('[class*="st-key-dot-"]').forEach(h => {
+      const m = /^dot-(?:on-)?(\d+)$/.exec(keyOf(h)), b = h.querySelector('button');
+      if (m && b) btns[+m[1]] = b;
+    });
+    if (!btns.length) return null;
+    let lens = box.querySelector(':scope > .dot-lens');
+    if (!lens) {
+      lens = document.createElement('span');  // not a div: the row rules style its child divs
+      lens.className = 'dot-lens';
+      lens.append(document.createElement('i'), document.createElement('i'));
+      box.appendChild(lens);
+    }
+    return { box, btns, lens };
+  }
+
+  /* Draw the dots for a continuous position p (index at the centre). */
+  function dotsDraw(p) {
+    const d = dotParts(); if (!d) return;
+    const n = d.btns.length;
+    const near = k => { let o = ((k - p) % n + n) % n; if (o > n / 2) o -= n; return Math.max(0, 1 - Math.abs(o)); };
+    const w = d.btns.map((b, k) => DOT_W + (DOT_ON - DOT_W) * near(k));
+    d.btns.forEach((b, k) => { b.style.transition = 'none'; b.style.width = w[k].toFixed(2) + 'px'; });
+    // Slot edges in stage px, measured after the dots have swollen.
+    const box = d.box.getBoundingClientRect(), k0 = ratio(d.box);
+    const xs = d.btns.map(b => (b.getBoundingClientRect().left - box.left) * k0);
+    const fl = Math.floor(p), t = p - fl, i = ((fl % n) + n) % n, j = (i + 1) % n;
+    const [a, b] = d.lens.children;
+    // Stretch leads in the direction of travel and squeezes the glass thin.
+    const s = DOT.s, grow = 7 * s, dir = DOT.dir;
+    const put = (el, left, right, op) => {
+      if (dir > 0) right += grow; else if (dir) left -= grow;
+      el.style.transform = `translateX(${left.toFixed(2)}px) scaleY(${(1 - .22 * s).toFixed(3)})`;
+      el.style.width = Math.max(0, right - left).toFixed(2) + 'px';
+      el.style.opacity = op.toFixed(3);
+    };
+    if (j === 0 && n > 1) {
+      // Wrapping round: the dash drains out of the last dot into the first.
+      put(a, xs[i], xs[i] + w[i], 1 - t);
+      put(b, xs[j], xs[j] + w[j], t);
+    } else {
+      put(a, xs[i] + (xs[j] - xs[i]) * t, xs[i] + w[i] + (xs[j] + w[j] - xs[i] - w[i]) * t, 1);
+      b.style.opacity = '0';
+    }
+    H.classList.add('aa-dots-live');
+  }
+
+  /* Follow p directly (dragging); speed sets the stretch. */
+  function dotsTo(p) {
+    cancelAnimationFrame(DOT.raf);
+    const now = performance.now(), dt = Math.max(1, now - (DOT.t || now - 16));
+    if (DOT.p !== null) DOT.v = (p - DOT.p) / dt;
+    if (Math.abs(DOT.v) > 1e-4) DOT.dir = Math.sign(DOT.v);
+    DOT.s += (Math.min(1, Math.abs(DOT.v) * 160) - DOT.s) * .35;
+    DOT.p = p; DOT.t = now;
+    dotsDraw(p);
+  }
+
+  /* Glide to `to` on the carousel's curve, then let the stretch relax. */
+  function dotsTween(to) {
+    const s = side(); if (!s) return;
+    const from = DOT.p === null ? +s.dataset.cur : DOT.p, t0 = performance.now();
+    if (DOT.p === null) { DOT.p = from; DOT.v = 0; DOT.s = 0; }
+    cancelAnimationFrame(DOT.raf);
+    (function frame() {
+      const u = Math.min(1, (performance.now() - t0) / 450);
+      const p = from + (to - from) * ease(u);
+      dotsTo(p);
+      if (u !== 1 || DOT.s > .01) DOT.raf = requestAnimationFrame(frame);
+      else { DOT.s = 0; dotsDraw(p); }
+    })();
+  }
+
+  function dotsRest() {
+    cancelAnimationFrame(DOT.raf);
+    DOT.p = null; DOT.v = 0; DOT.dir = 0; DOT.s = 0; DOT.t = 0;
+    const d = dotParts();
+    if (d) d.btns.forEach(b => { b.style.transition = ''; b.style.width = ''; });
+    H.classList.remove('aa-dots-live');
   }
 
   // ───────────────────────── Top matches ─────────────────────────
@@ -170,6 +283,7 @@
       track(c.pts, e);
       CAR.p = c.p0 - dx * c.k / SLIDE;
       place(CAR.p, false);
+      dotsTo(CAR.p);
       return;
     }
     const d = MR.drag;

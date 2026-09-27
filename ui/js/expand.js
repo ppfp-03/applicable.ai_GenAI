@@ -7,8 +7,10 @@
  * full content on its back. Esc, the close button or a press outside turn it
  * back into the card.
  *
- *  - Display only: nothing here talks to the server. The native buttons laid
- *    over a card (Edit profile, + Add …) sit above it and keep their clicks.
+ *  - Display only, but for one button: an editable card (data-edit) opens with
+ *    a pencil that presses the hidden native button named there, which opens
+ *    the editor on that section alone. The native buttons laid over a card
+ *    (Edit profile, + Add …) sit above it and keep their clicks.
  *  - The page's stage is zoomed (--aa-k, ui/theme.py); the copy is zoomed the
  *    same way, so it reads at the card's own size.
  *  - With reduced motion the panel only fades in and out.
@@ -28,6 +30,14 @@
     const g = document.createElementNS(NS, 'svg'), d = document.createElementNS(NS, 'path');
     [['width', 12], ['height', 12], ['viewBox', '0 0 16 16']].forEach(([k, v]) => g.setAttribute(k, v));
     [['d', 'M4 4l8 8M12 4l-8 8'], ['stroke', 'currentColor'], ['stroke-width', 2], ['stroke-linecap', 'round'], ['fill', 'none']]
+      .forEach(([k, v]) => d.setAttribute(k, v));
+    g.appendChild(d);
+    return g;
+  }
+  function pencil() {
+    const g = document.createElementNS(NS, 'svg'), d = document.createElementNS(NS, 'path');
+    [['width', 13], ['height', 13], ['viewBox', '0 0 16 16']].forEach(([k, v]) => g.setAttribute(k, v));
+    [['d', 'M10.5 2.5l3 3L6 13H3v-3z'], ['stroke', 'currentColor'], ['stroke-width', 1.6], ['stroke-linejoin', 'round'], ['fill', 'none']]
       .forEach(([k, v]) => d.setAttribute(k, v));
     g.appendChild(d);
     return g;
@@ -94,6 +104,15 @@
     const shut = document.createElement('button');
     shut.type = 'button'; shut.className = 'xp-x'; shut.appendChild(cross());
     shut.setAttribute('aria-label', 'Close');
+    let edit = null;
+    if (card.dataset.edit) {
+      edit = document.createElement('button');
+      edit.type = 'button'; edit.className = 'xp-x xp-ed'; edit.appendChild(pencil());
+      const what = title ? title.textContent : 'this section';
+      edit.setAttribute('aria-label', 'Edit ' + what); edit.title = 'Edit ' + what;
+      edit.dataset.key = card.dataset.edit;
+      head.appendChild(edit);
+    }
     head.appendChild(shut);
     const body = document.createElement('div');
     body.className = 'xp-body';
@@ -116,7 +135,7 @@
     const h = Math.min(inner.scrollHeight, vh - MARGIN * 2);
     const b1 = { left: (vw - w) / 2, top: (vh - h) / 2, width: w, height: h };
     Object.assign(fly.style, px(b0));
-    return { card, veil, fly, rot, front, back, inner, shut, b0, b1 };
+    return { card, veil, fly, rot, front, back, inner, shut, edit, b0, b1 };
   }
 
   // The shadow deepens as the card leaves the page. It sits on the faces, so it turns with them.
@@ -135,6 +154,11 @@
     card.classList.add('xp-away');
     o.veil.addEventListener('click', hide);
     o.shut.addEventListener('click', hide);
+    if (o.edit) o.edit.addEventListener('click', () => {
+      const native = document.querySelector('.st-key-' + o.edit.dataset.key + ' button');
+      hide();
+      if (native) native.click();
+    });
 
     const done = () => {
       o.busy = false;
@@ -222,8 +246,13 @@
   document.addEventListener('keydown', e => {
     if (open) {
       if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); hide(); }
-      // Keep focus inside the panel: its close button is the only stop.
-      else if (e.key === 'Tab') { e.preventDefault(); open.shut.focus({ preventScroll: true }); }
+      // Keep focus inside the panel: its edit and close buttons are the only stops.
+      else if (e.key === 'Tab') {
+        e.preventDefault();
+        const stops = [open.edit, open.shut].filter(Boolean);
+        const at = stops.indexOf(document.activeElement);
+        stops[(at + (e.shiftKey ? stops.length - 1 : 1)) % stops.length].focus({ preventScroll: true });
+      }
       return;
     }
     if (e.key !== 'Enter' && e.key !== ' ') return;

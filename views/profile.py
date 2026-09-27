@@ -47,9 +47,6 @@ def confirm(i: int) -> None:
     status[s["id"]] = "ok"
     if s["id"] == store.CONSENT_SECTION:
         store.give_consent()
-    note = st.session_state.get(f"note-{s['id']}", "").strip()
-    if note:
-        st.session_state[store.NOTES].setdefault(s["id"], []).append(note)
     nxt = next((j for j, x in enumerate(sections) if status[x["id"]] != "ok"), None)
     if nxt is not None:
         st.session_state[CUR] = nxt
@@ -171,19 +168,11 @@ with st.container(key="pf-main"):
             f'<div class="box">{checks}</div>'
             f'<div class="sig">{sig}</div>'
         )
-        with st.container(key="note"):
-            html('<div class="lab">Correction note<span>Saved to your audit log</span></div>')
-            st.text_area(
-                "Correction note",
-                key=f"note-{sid}",
-                placeholder="Explain what you changed, e.g. “Singapore: requires Employment Pass sponsorship.”",
-                label_visibility="collapsed",
-            )
         with st.container(key="pf-foot"):
             # Consent is given or not: there is nothing to correct.
             if sid != store.CONSENT_SECTION and st.button("Mark as incorrect", key="bad"):
                 status[sid] = "rev"
-                st.toast("Correct the values above, then add a note")
+                st.toast("Correct the values above")
             ok = status[sid] == "ok"
             st.button(
                 "Confirmed" if ok else s.get("cta", "Confirm section"),

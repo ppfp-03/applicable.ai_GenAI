@@ -175,24 +175,35 @@ def evaluate(profile: dict, answers: dict, role: dict, *, permission: Criterion)
                              f"Enrolled at {profile.get('school', 'university')}",
                              "The role is for enrolled students; you are enrolled.", "enrolled = true → allowed"))
 
-    lo, hi = req["graduation"]
     grad = degree["graduation"]
-    ok = lo <= grad <= hi
-    out.append(Criterion("graduation", CRITERION_NAMES["graduation"], "met" if ok else "not_met",
-                         f"{_month(grad)} · {'in window' if ok else 'outside window'}",
-                         f"Graduation window {_month(lo)} – {_month(hi)}; you graduate {_month(grad)}.",
-                         f"{lo} ≤ {grad} ≤ {hi} → {'true' if ok else 'false'}"))
+    if req.get("graduation"):
+        lo, hi = req["graduation"]
+        ok = lo <= grad <= hi
+        out.append(Criterion("graduation", CRITERION_NAMES["graduation"], "met" if ok else "not_met",
+                             f"{_month(grad)} · {'in window' if ok else 'outside window'}",
+                             f"Graduation window {_month(lo)} – {_month(hi)}; you graduate {_month(grad)}.",
+                             f"{lo} ≤ {grad} ≤ {hi} → {'true' if ok else 'false'}"))
+    else:
+        out.append(Criterion("graduation", CRITERION_NAMES["graduation"], "met", "No graduation window",
+                             "The posting sets no graduation window.", "none → allowed"))
 
-    need = req["degree_level"]
-    ok = _DEGREES.index(degree["level"]) >= _DEGREES.index(need)
-    out.append(Criterion("degree", CRITERION_NAMES["degree"], "met" if ok else "not_met",
-                         f"{_DEGREE_SHORT[degree['level']]} · {_DEGREE_LABEL[need]} required",
-                         f"{_DEGREE_LABEL[need]} required; you hold {degree['label']}.",
-                         f"{degree['level']} ≥ {need} → {'true' if ok else 'false'}"))
+    need = req.get("degree_level")
+    if need:
+        ok = _DEGREES.index(degree["level"]) >= _DEGREES.index(need)
+        out.append(Criterion("degree", CRITERION_NAMES["degree"], "met" if ok else "not_met",
+                             f"{_DEGREE_SHORT[degree['level']]} · {_DEGREE_LABEL[need]} required",
+                             f"{_DEGREE_LABEL[need]} required; you hold {degree['label']}.",
+                             f"{degree['level']} ≥ {need} → {'true' if ok else 'false'}"))
+    else:
+        out.append(Criterion("degree", CRITERION_NAMES["degree"], "met", "No degree requirement",
+                             "The posting sets no degree requirement.", "none → allowed"))
 
     fields = req.get("fields", [])
     field = degree["field"]
-    if field in fields:
+    if not fields:
+        out.append(Criterion("field", CRITERION_NAMES["field"], "met", "No field requirement",
+                             "The posting sets no field of study.", "none → allowed"))
+    elif field in fields:
         out.append(Criterion("field", CRITERION_NAMES["field"], "met", f"{field} · accepted",
                              f"The posting accepts {', '.join(fields)}.", f"{field} ∈ accepted → true"))
     elif req.get("related_ok"):

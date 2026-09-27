@@ -130,7 +130,7 @@ def month(ym: str) -> str:
 def cefr_asks() -> dict[str, str]:
     """Languages the posting asks at a CEFR level (the ones a fixed rule checks)."""
     return {lang: lvl for lang, lvl in role.requirements.get("languages", {}).items()
-            if not lvl.startswith("HSK")}
+            if lvl in ("A1", "A2", "B1", "B2", "C1", "C2")}
 
 
 def they_ask(c) -> str:
@@ -143,12 +143,16 @@ def they_ask(c) -> str:
     if c.id == "student":
         return "Open to enrolled students" if req.get("student") else "No student requirement"
     if c.id == "graduation":
+        if not req.get("graduation"):
+            return "No graduation window"
         lo, hi = req["graduation"]
         return f"Graduating between {month(lo)} and {month(hi)}"
     if c.id == "degree":
-        return f"{DEGREE[req['degree_level']]} degree"
+        return f"{DEGREE[req['degree_level']]} degree" if req.get("degree_level") else "No degree requirement"
     if c.id == "field":
         fields = req.get("fields", [])
+        if not fields:
+            return "No field requirement"
         return "Degree in " + ", ".join(fields) + (" or a related field" if req.get("related_ok") else "")
     if c.id == "language":
         asks = cefr_asks()

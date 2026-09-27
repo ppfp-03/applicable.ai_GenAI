@@ -1,6 +1,6 @@
 """Visible demo numbers and work-authorisation copy match the demo data.
 
-Counts are taken from the roles actually available (8 in the baseline, 12
+Counts are taken from the roles actually available (50 in the baseline, 54
 after the simulated ingestion event) under the canonical checks; there is no
 larger catalogue behind them. Citizenship is never presented as permission to
 work.
@@ -33,7 +33,7 @@ def test_no_static_catalogue_numbers_remain():
     assert "catalog" not in RAW
 
 
-@pytest.mark.parametrize("ran, total", [(False, 8), (True, 12)])
+@pytest.mark.parametrize("ran, total", [(False, 50), (True, 54)])
 @pytest.mark.parametrize("uk", ["current", None, "yes", "no", "unsure"])
 def test_counts_are_the_available_roles(ran, total, uk):
     if ran:

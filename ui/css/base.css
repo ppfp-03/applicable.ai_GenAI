@@ -206,10 +206,23 @@ html.aa-dragging,html.aa-dragging *{user-select:none!important;-webkit-user-sele
 /* Popovers open as glass sheets. */
 [data-testid="stPopoverBody"]{border-radius:18px;border:0;box-shadow:0 20px 50px rgba(28,40,64,.16),0 0 0 .5px rgba(0,0,0,.08);background:rgba(255,255,255,.97);font-family:"Inter",sans-serif}
 
+/* Hover hints (help=) share the toasts' dark pill. As in toasts, the reset
+ * paragraph margin no longer cancels Markdown's -1rem, so without the margin
+ * reset the box collapsed and cut the text in half. */
+[data-testid="stTooltipContent"]{background:rgba(29,29,31,.92)!important;color:#fff!important;border:0!important;border-radius:10px!important;padding:7px 12px!important;max-width:280px;overflow:visible!important;backdrop-filter:blur(20px);box-shadow:0 8px 24px rgba(28,40,64,.2)!important;font-family:"Inter",sans-serif}
+[data-testid="stTooltipContent"] [data-testid="stMarkdownContainer"]{margin:0!important}
+[data-testid="stTooltipContent"] *{color:#fff!important;font-size:12.5px!important;font-weight:560;line-height:1.4!important}
+
 /* Toasts are the mockups' dark pill, bottom centre. */
-[data-testid="stToastContainer"]{left:50%!important;right:auto!important;top:auto!important;bottom:36px!important;transform:translateX(-50%);align-items:center}
-[data-testid="stToast"]{background:rgba(29,29,31,.88)!important;color:#fff!important;border-radius:999px!important;padding:10px 18px!important;backdrop-filter:blur(20px);box-shadow:none!important;min-width:0!important;width:auto!important;max-width:none!important}
+[data-testid="stToastContainer"]{left:50%!important;right:auto!important;top:auto!important;bottom:36px!important;margin:0!important;transform:translateX(-50%);align-items:center}
+[data-testid="stToast"]{align-items:center;justify-content:center;background:rgba(29,29,31,.92)!important;color:#fff!important;border-radius:999px!important;padding:11px 22px!important;backdrop-filter:blur(20px);box-shadow:0 10px 30px rgba(28,40,64,.22),0 0 0 .5px rgba(255,255,255,.08)!important;filter:none!important;min-width:0!important;width:auto!important;max-width:min(560px,calc(100vw - 32px))!important}
 [data-testid="stToast"] *{color:#fff!important;font-family:"Inter",sans-serif;font-size:13px!important;font-weight:560}
+[data-testid="stToast"] > div,[data-testid="stToast"] > div > div{align-items:center;justify-content:center;min-height:0}
+/* Streamlit pulls Markdown up by 1rem and lets the paragraph margin cancel it;
+ * base resets that margin, so inside the pill the text collapsed to nothing. */
+[data-testid="stToast"] [data-testid="stMarkdownContainer"]{margin:0!important}
+[data-testid="stToast"] [data-testid="stToastText"]{text-align:center;line-height:1.4!important}
+[data-testid="stToast"] p{line-height:1.4!important}
 [data-testid="stToast"] [data-testid="stToastDynamicIcon"],[data-testid="stToast"] button{display:none}
 
 /* Dialogs follow the glass card. */

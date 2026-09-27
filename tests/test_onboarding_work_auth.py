@@ -5,6 +5,7 @@ listed in config/markets.json. Until they are, no later step opens.
 """
 
 import json
+import re
 from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
@@ -69,7 +70,7 @@ def test_the_platform_countries_come_from_config() -> None:
 def test_without_a_declaration_step_2_cannot_be_confirmed() -> None:
     at = at_step2()
     shown = page(at)
-    assert shown.count('Required · add it in <span class="p-link') == 2
+    assert shown.count('<div class="p-v">Not added yet</div><div class="p-act">') == 2
     assert "Add your work authorization and sponsorship in Edit profile to continue." in shown
     at.button(key="next").click().run()
     assert not at.exception
@@ -100,9 +101,9 @@ def test_the_calls_to_action_open_the_work_authorization_tab_even_with_a_cv() ->
         assert at.session_state["ed_tab"] == "Work authorization"
 
 
-#: Every way into the profile editor from step 2: the top chip, each card's
-#: call to action, and the "Edit profile" link inside each required card.
-ENTRY_POINTS = ("oo-edit", "oo-wa", "oo-sp", "oo-wa-link", "oo-sp-link")
+#: Every way into the profile editor from step 2: the top chip and each
+#: required card's one call to action.
+ENTRY_POINTS = ("oo-edit", "oo-wa", "oo-sp")
 
 
 def test_every_entry_point_opens_the_same_editor_on_work_authorization() -> None:
@@ -126,23 +127,20 @@ def test_saving_is_the_same_whichever_entry_point_opened_the_editor() -> None:
     assert results["oo-edit"] == ({"authorized": [*EU, "GB"], "sponsorship": ["CN", "SG"]}, "yes", "yes")
 
 
-def test_each_required_card_links_its_edit_profile_text_to_the_editor() -> None:
+def test_each_required_card_has_one_call_to_action() -> None:
     shown = page(at_step2())
-    assert shown.count('Required · add it in <span class="p-link') == 2
-    assert '<span class="p-link wa-link">Edit profile</span>' in shown
-    assert '<span class="p-link sp-link">Edit profile</span>' in shown
-    for key in ("oo-wa-link", "oo-sp-link"):
-        at = at_step2(cv=True)
-        at.button(key=key).click().run()
-        assert not at.exception
-        assert at.session_state["ed_tab"] == "Work authorization"
+    assert "add it in" not in shown
+    assert "p-link" not in shown
+    for key, cta in (("wa", "+ Add work authorization"), ("sp", "+ Add sponsorship")):
+        assert shown.count(f'<span class="w-chip p-cta {key}">{cta}</span>') == 1
+    assert not [b for b in at_step2().button if b.key in ("oo-wa-link", "oo-sp-link")]
 
 
 def test_once_declared_the_required_calls_to_action_are_gone() -> None:
     at = at_step2(declared={"authorized": EU, "sponsorship": []})
     assert "+ Add work authorization" not in page(at)
-    assert 'class="p-link' not in page(at)
-    assert not [b for b in at.button if b.key in ("oo-wa", "oo-sp", "oo-wa-link", "oo-sp-link")]
+    assert "Not added yet" not in page(at)
+    assert not [b for b in at.button if b.key in ("oo-wa", "oo-sp")]
 
 
 def test_the_step_pills_cannot_skip_past_step_2() -> None:
@@ -461,3 +459,82 @@ def test_without_a_cv_the_editor_does_not_speak_of_one() -> None:
     at = editor(at_step2())
     assert "Tell us where you can work." in page(at)
     assert "Review what we read from your CV" not in page(at)
+
+
+# --- Card order, section editing, the refusal notice -------------------------
+
+
+def test_the_cards_to_fill_in_share_the_last_row() -> None:
+    shown = page(at_step2(cv=True))
+    order = [shown.index(f"<b>{t}</b>") for t in ("Skills", "Education", "Experience", "Languages",
+                                                   "Work authorization", "Sponsorship")]
+    assert order == sorted(order)
+
+
+#: Each card's own edit button, and the one section it opens.
+SECTION_BUTTONS = {
+    "xe-skills": "ed-skill-new", "xe-education": "ed-add-education", "xe-experience": "ed-add-experience",
+    "xe-languages": "ed-add-languages", "xe-work": "ed-wa-auth", "xe-sponsorship": "ed-wa-auth",
+}
+
+
+def widget_keys(at) -> set:
+    return {w.key for w in [*at.button, *at.text_input, *at.get("button_group")] if w.key}
+
+
+def test_each_card_edit_button_opens_its_section_alone() -> None:
+    for button, widget in SECTION_BUTTONS.items():
+        at = at_step2(cv=True)
+        at.button(key=button).click().run()
+        assert not at.exception, button
+        assert not at.tabs, button
+        keys = widget_keys(at)
+        assert widget in keys, button
+        others = set(SECTION_BUTTONS.values()) - {widget}
+        assert not keys & others, (button, keys & others)
+        assert at.button(key="ed-save") and at.button(key="ed-cancel"), button
+
+
+def test_a_cv_section_saves_alone_without_the_work_authorization() -> None:
+    at = at_step2(cv=True)
+    at.button(key="xe-skills").click().run()
+    at.text_input(key="ed-skill-new").set_value("Tableau")
+    at.button(key="ed-save").click().run()
+    assert not at.exception
+    assert "ed_error" not in at.session_state
+    assert "ed_draft" not in at.session_state
+    assert declared(at) is None
+    assert "Tableau" in [f.value for f in at.session_state[store.CANDIDATE].skills]
+
+
+def test_the_work_authorization_saves_alone() -> None:
+    at = at_step2(cv=True)
+    at.button(key="xe-sponsorship").click().run()
+    answer(at, ["EU"])
+    assert declared(at) == {"authorized": EU, "sponsorship": OTHERS}
+
+
+def test_without_a_cv_only_the_declared_cards_can_be_edited() -> None:
+    shown = page(at_step2())
+    assert shown.count("data-edit=") == 2
+    assert 'data-edit="xe-work"' in shown and 'data-edit="xe-sponsorship"' in shown
+
+
+def test_every_refused_confirm_shows_the_error_again() -> None:
+    at = at_step2()
+    seen = []
+    for _ in range(3):
+        at.button(key="next").click().run()
+        assert not at.exception
+        shown = page(at)
+        assert "You can’t continue yet" in shown
+        seen.append(re.search(r'class="ob-notice (f\d)"', shown).group(1))
+    # A new animation each time, so the browser plays it again.
+    assert seen[0] != seen[1] != seen[2]
+
+
+def test_explore_has_no_just_for_you_note() -> None:
+    at = at_step2(declared={"authorized": EU, "sponsorship": OTHERS}, cv=True, step="3b")
+    shown = page(at)
+    assert "Just for you" not in shown
+    assert "This is for you, not employers" not in shown

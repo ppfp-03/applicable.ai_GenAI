@@ -1,11 +1,18 @@
 /* Home — from 01_Dashboard.html. */
 
 /* Header right: carousel dots and arrows. */
-.st-key-dots{display:flex!important;flex-direction:row!important;gap:6px!important;align-items:center;width:auto!important;margin-right:12px;flex-wrap:nowrap!important}
-.st-key-dots [data-testid="stElementContainer"]{width:auto!important}
-[class*="st-key-dot-"] button{width:6px;height:6px;min-height:6px;padding:0;border-radius:3px;background:rgba(0,0,0,.18);box-shadow:none;transition:width .3s,background .3s}
+.st-key-dots{position:relative;display:flex!important;flex-direction:row!important;gap:6px!important;align-items:center;width:auto!important;margin-right:12px;flex-wrap:nowrap!important}
+.st-key-dots [data-testid="stElementContainer"],.st-key-dots .stButton{width:auto!important;min-width:0!important}
+[class*="st-key-dot-"] button{width:6px;height:6px;min-height:6px;padding:0;border-radius:3px;background:rgba(0,0,0,.18);box-shadow:none;transition:background .3s}
 [class*="st-key-dot-"] button:hover{background:rgba(0,0,0,.3)}
-[class*="st-key-dot-on-"] button,[class*="st-key-dot-on-"] button:hover{width:20px;background:var(--t1)}
+/* The dash is a drop of dark glass: a lit top edge over a deeper base. */
+[class*="st-key-dot-on-"] button,[class*="st-key-dot-on-"] button:hover,.dot-lens i{width:20px;background:linear-gradient(180deg,#48484C 0%,var(--t1) 70%);box-shadow:inset 0 .5px 0 rgba(255,255,255,.45),0 1px 2px rgba(28,40,64,.18)}
+/* While the carousel moves, ui/js/home.js swells the dots and slides a lens
+ * over them; the page's own dash waits underneath as a plain dot. */
+.dot-lens{display:none;position:absolute;left:0;top:50%;height:6px;margin-top:-3px;width:0;pointer-events:none;z-index:1}
+.dot-lens i{position:absolute;left:0;top:0;height:6px;border-radius:3px;display:block;transform-origin:50% 50%;will-change:transform,width}
+html.aa-dots-live .dot-lens{display:block}
+html.aa-dots-live [class*="st-key-dot-"] button{background:rgba(0,0,0,.18);box-shadow:none;transition:none}
 .st-key-ib-prev button,.st-key-ib-next button{width:34px;height:34px;min-height:34px}
 /* The "?" that opens the intro guide again (ui/home_guide.py). */
 .st-key-ib-help{margin-left:6px}
@@ -50,8 +57,11 @@
 .nrow b{font-weight:600}.nrow .r{color:var(--t2)}.nrow .s{margin-left:auto;font-weight:650}
 
 /* The centre card is a native container, so its buttons are real. */
-.st-key-card-uc{position:absolute!important;left:50%;top:0;transform:translateX(-50%);width:620px!important;height:318px;padding:22px 24px;z-index:5;display:flex;flex-direction:column;cursor:auto;transition:opacity .2s}
-html.aa-car-moving .st-key-card-uc{opacity:0;pointer-events:none;transition:opacity .12s}
+.st-key-card-uc{position:absolute!important;left:50%;top:0;transform:translateX(-50%);width:620px!important;height:318px;padding:22px 24px;z-index:5;display:flex;flex-direction:column;cursor:auto}
+/* The drawn copy underneath matches it exactly, so the swap is instant both
+ * ways: a cross-fade would thin the glass for a moment. */
+html.aa-car-moving .st-key-card-uc{opacity:0;pointer-events:none}
+html.aa-car-moving .uc[data-o="0"]{opacity:1;background-color:rgba(255,255,255,.97);box-shadow:0 1px 0 #fff inset,0 20px 50px rgba(28,40,64,.12),0 0 0 .5px rgba(0,0,0,.06)}
 .st-key-card-uc > div{width:100%}
 .st-key-ucf{display:flex!important;flex-direction:row!important;align-items:center;gap:10px!important;margin-top:auto;flex-wrap:nowrap!important}
 .st-key-ucf [data-testid="stElementContainer"]{width:auto!important}

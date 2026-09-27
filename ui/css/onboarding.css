@@ -110,6 +110,7 @@
 .tog:after{content:"";position:absolute;right:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)}
 .tog.off{background:#E5E5EA}.tog.off:after{right:auto;left:2px}
 .sel3{font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:5px 10px;display:inline-flex;align-items:center;gap:6px}
+.sel3{white-space:nowrap;flex:none}
 .sel3.q{border-style:dashed;color:var(--amber);border-color:#E9C58F}
 .cb{width:18px;height:18px;border-radius:5px;background:var(--blue);display:grid;place-items:center;flex:none}
 .cb.off{background:#fff;border:1.5px solid #C7C7CC}
@@ -496,18 +497,30 @@
 /* A required card left empty after "Confirm profile" was pressed. */
 .p-s.miss{box-shadow:0 0 0 1.5px var(--red),0 4px 14px rgba(28,40,64,.05)}
 .p-s .p-act{margin-top:auto;padding-top:10px}
-/* Why a press did not continue (Confirm profile, or a later step): centred on the viewport, in liquid glass. */
-.ob-notice{position:fixed;left:50%;top:50%;z-index:1000;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:10px;width:max-content;max-width:calc(100vw - 32px);padding:14px 24px 14px 20px;border-radius:999px;
-  font-size:14px;line-height:20px;font-weight:560;letter-spacing:-.005em;color:var(--t1);text-align:center;pointer-events:none;isolation:isolate;
-  background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.80));backdrop-filter:blur(30px) saturate(210%) brightness(1.05);-webkit-backdrop-filter:blur(30px) saturate(210%) brightness(1.05);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.45),inset 0 0 14px rgba(255,255,255,.35),0 14px 36px rgba(28,40,64,.16),0 2px 6px rgba(28,40,64,.08),0 0 0 .5px rgba(0,0,0,.08);
-  transform:translate(-50%,-50%);animation:ob-notice 4.2s cubic-bezier(.2,.8,.2,1) both}
-.ob-notice i{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px var(--redBg);flex:none}
-.ob-notice span{min-width:0}
-@keyframes ob-notice{0%{opacity:0;transform:translate(-50%,-50%) scale(.94)}8%,82%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.98)}}
-@media (max-width:640px){.ob-notice{border-radius:20px;padding:12px 18px;font-size:13px;line-height:18px}}
-@media (prefers-reduced-motion:reduce){.ob-notice{animation:ob-notice-fade 4.2s linear both}}
-@keyframes ob-notice-fade{0%,100%{opacity:0}6%,84%{opacity:1}}
+/* Why a press did not continue (Confirm profile, or a later step): an error, centred on the viewport,
+   in red-tinted glass with a warning triangle. It shakes once as it lands, like a refused password.
+   Two identical animations, swapped on every refusal (.f0/.f1), so a repeated press plays it again. */
+.ob-notice{position:fixed;left:50%;top:50%;z-index:1000;box-sizing:border-box;display:flex;align-items:center;gap:12px;width:max-content;max-width:min(560px,calc(100vw - 32px));padding:14px 22px 14px 16px;border-radius:18px;
+  font-size:14px;line-height:20px;font-weight:560;letter-spacing:-.005em;color:#8E1B16;text-align:left;pointer-events:none;isolation:isolate;
+  background:linear-gradient(180deg,rgba(255,236,234,.90),rgba(255,222,219,.82));backdrop-filter:blur(30px) saturate(190%);-webkit-backdrop-filter:blur(30px) saturate(190%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 0 0 1px rgba(196,48,43,.28),0 18px 44px rgba(196,48,43,.22),0 2px 8px rgba(28,40,64,.10);
+  transform:translate(-50%,-50%)}
+.ob-notice.f0{animation:ob-notice-a 4.6s cubic-bezier(.2,.8,.2,1) both}
+.ob-notice.f1{animation:ob-notice-b 4.6s cubic-bezier(.2,.8,.2,1) both}
+.ob-notice svg{flex:none;width:26px;height:26px;filter:drop-shadow(0 1px 2px rgba(196,48,43,.35))}
+.ob-notice b{display:block;font-size:14.5px;font-weight:700;color:#7A1411}
+.ob-notice span{min-width:0;display:block}
+.ob-notice span span{font-weight:500;color:#8E1B16}
+@keyframes ob-notice-a{0%{opacity:0;transform:translate(-50%,-50%) scale(.94)}6%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  9%{transform:translate(calc(-50% - 9px),-50%)}12%{transform:translate(calc(-50% + 7px),-50%)}15%{transform:translate(calc(-50% - 4px),-50%)}18%{transform:translate(calc(-50% + 2px),-50%)}
+  21%,84%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-50%) scale(.98)}}
+@keyframes ob-notice-b{0%{opacity:0;transform:translate(-50%,-50%) scale(.94)}6%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  9%{transform:translate(calc(-50% - 9px),-50%)}12%{transform:translate(calc(-50% + 7px),-50%)}15%{transform:translate(calc(-50% - 4px),-50%)}18%{transform:translate(calc(-50% + 2px),-50%)}
+  21%,84%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-50%) scale(.98)}}
+@media (max-width:640px){.ob-notice{padding:12px 16px 12px 14px;font-size:13px;line-height:18px}}
+@media (prefers-reduced-motion:reduce){.ob-notice.f0{animation:ob-notice-fa 4.6s linear both}.ob-notice.f1{animation:ob-notice-fb 4.6s linear both}}
+@keyframes ob-notice-fa{0%,100%{opacity:0}6%,86%{opacity:1}}
+@keyframes ob-notice-fb{0%,100%{opacity:0}6%,86%{opacity:1}}
 /* One-line entries must not widen their column: cut them, the tooltip has the rest. */
 .p-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .p-e{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -582,7 +595,7 @@
 .a4-r{justify-content:center;border-radius:22px;padding:24px 26px;background:rgba(255,255,255,.62);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.85);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 8px 28px rgba(28,40,64,.07),0 0 0 .5px rgba(0,0,0,.05)}
 .p4-r{border-bottom:1px solid rgba(0,0,0,.05)}
 /* 5 shortlist carousel */
-.cr{padding:6px 0 0}
+.cr{padding:6px 0 36px}
 .cc{border:0;border-radius:26px;background:rgba(255,255,255,.93);box-shadow:0 1px 0 #fff inset,0 20px 50px rgba(28,40,64,.12),0 0 0 .5px rgba(0,0,0,.06);background:rgba(255,255,255,.8)}
 .cc.c0{background:rgba(255,255,255,.95);box-shadow:0 1px 0 #fff inset,0 20px 50px rgba(28,40,64,.14),0 0 0 .5px rgba(0,0,0,.06)}
 .cc-bar{background:rgba(0,0,0,.06)}
@@ -683,6 +696,10 @@
 .xp-x{flex:none;width:28px;height:28px;border-radius:50%;border:0;padding:0;display:grid;place-items:center;cursor:pointer;color:var(--t2);background:rgba(0,0,0,.05);transition:background .2s,color .2s}
 .xp-x:hover{background:rgba(0,0,0,.09);color:var(--t1)}
 .xp-x:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+/* The opened card's own edit button, beside its close button; its native twin stays out of sight. */
+.xp-in .p-h .xp-ed + .xp-x{margin-left:-4px}
+.xp-ed:hover{color:var(--blue);background:var(--blueBg)}
+.st-key-xp-edits{display:none!important}
 .xp-body{margin-top:6px}
 .xp-body .p-chips{margin-top:14px}
 .xp-body .p-v{white-space:normal}
@@ -710,11 +727,11 @@
 .a4-fr .t{font-size:15px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
 .a4-fr .s{font-size:13px;color:var(--t2);margin-top:2px}
 .a4-fr .n{font-size:24px;font-weight:700;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
-/* 2 · The inline "Edit profile" in each required card: a secondary text link.
+/* 2 · The one call to action of each required card: a filled pill.
    Its invisible overlay button takes the pointer, so hover is read from it. */
-.p-link{font-weight:600;color:var(--t1);text-decoration:underline;text-decoration-color:rgba(0,0,0,.28);text-underline-offset:2px;cursor:pointer}
-.stApp:has(.st-key-oo-wa-link button:hover) .p-link.wa-link,
-.stApp:has(.st-key-oo-sp-link button:hover) .p-link.sp-link{text-decoration-color:currentColor;color:#000}
+.p-s .p-cta{background:var(--blue);color:#fff;font-weight:600;padding:7px 14px;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:filter .15s}
+.stApp:has(.st-key-oo-wa button:hover) .p-cta.wa,
+.stApp:has(.st-key-oo-sp button:hover) .p-cta.sp{filter:brightness(.92)}
 
 /* Step 1: the consent note under "Choose file" (uploading gives the consent). */
 .u-consent{max-width:440px;margin-top:14px;font-size:11.5px;line-height:16px;color:var(--t3);text-align:center}

@@ -76,13 +76,11 @@ BTN_7 = [(1336, 194, 135, 34), (1405, 324, 66, 34), (1405, 454, 66, 34), (1405, 
 #: The "Edit profile" chip beside the step 2 title, as (right, y, w, h): its
 #: panel stretches with the window, the fixed-width CV panel to its right does not.
 EDIT_2 = (509, 27, 122, 32)
-#: The call to action on each empty required card: Work authorization, in the
-#: right column, measured from the stage's middle as its column stretches with
-#: the window; Sponsorship, in the left column, from the stage's left edge.
-CTA_2 = {"wa": (-216, 531, 176, 28), "sp": (47, 742, 138, 28)}
-#: The inline "Edit profile" link in the same two cards, placed like CTA_2
-#: (Work authorization from the stage's middle, Sponsorship from its left edge).
-LINK_2 = {"wa-link": (-99, 430, 70, 20), "sp-link": (164, 640, 70, 20)}
+#: The call to action on each empty required card, both on the last row:
+#: Work authorization, in the left column, from the stage's left edge;
+#: Sponsorship, in the right column, measured from the stage's middle as its
+#: column stretches with the window.
+CTA_2 = {"wa": (47, 739, 181, 30), "sp": (-216, 739, 142, 30)}
 
 IMPORTANCE = ["Must have", "Important", "Nice to have", "Don’t mind"]
 
@@ -111,6 +109,12 @@ NEEDS_CONSENT = "Upload your CV in step 1 to continue: uploading it gives your c
 CONSENT_NOTE = (
     '<div class="u-consent">By uploading your CV you consent to Applicable.ai processing your data '
     "to check and rank opportunities. Nothing is sent to employers.</div>"
+)
+#: The error notice's icon: a red warning triangle.
+WARNING = (
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.6a2 2 0 0 1 3.4 0l8.1 14.1A2 2 0 0 1 20.1 21H3.9a2 2 0 0 1-1.7-3.3z" '
+    'fill="#E5392F"/><path d="M12 8.5v5.2" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'
+    '<circle cx="12" cy="17.1" r="1.3" fill="#fff"/></svg>'
 )
 #: Shown when "Confirm profile" is pressed with a required card still empty.
 MISSING_INFO = "Complete the missing information to continue: work authorization and sponsorship."
@@ -279,8 +283,6 @@ REQUIRED = '<span class="w-b am"><i></i>Required</span>'
 MISSING = '<span class="w-b rd"><i></i>Required</span>'
 #: Each required card's call to action, by card title: it opens the editor.
 REQUIRED_CTA = {"Work authorization": "+ Add work authorization", "Sponsorship": "+ Add sponsorship"}
-#: The inline "Edit profile" link in each required card, by card title: its overlay key.
-LINK_CLASS = {"Work authorization": "wa-link", "Sponsorship": "sp-link"}
 #: Hover text of a value the user edited, which no CV quote backs.
 EDITED = "Edited by you"
 PENCIL = (
@@ -295,12 +297,25 @@ EXPAND = (
 )
 
 
-def profile_card(title: str, badge: str, body: str, src: str = "", cls: str = "", full: str = "") -> str:
+#: The editor tab each card's own edit button opens on its own.
+SECTION_TAB = {"Skills": "Skills", "Education": "Education", "Experience": "Experience",
+               "Languages": "Languages", "Work authorization": "Work authorization", "Sponsorship": "Work authorization"}
+
+
+def edit_key(title: str) -> str:
+    """The hidden button that opens a card's section alone in the editor."""
+    return f"xe-{title.split()[0].lower()}"
+
+
+def profile_card(title: str, badge: str, body: str, src: str = "", cls: str = "", full: str = "",
+                 edit: bool = False) -> str:
     """One section card. `full` is everything the card holds, uncut: pressing
-    the card opens it in place (ui/js/expand.js). It defaults to `body`."""
+    the card opens it in place (ui/js/expand.js). It defaults to `body`.
+    With `edit`, the opened card offers to edit this section alone."""
     source = f'<div class="p-src">{DOC_ICON}{src}</div>' if src else ""
+    data = f' data-edit="{edit_key(title)}"' if edit else ""
     return (
-        f'<div class="w-card xp p-s{cls}" role="button" tabindex="0" aria-haspopup="dialog" '
+        f'<div class="w-card xp p-s{cls}"{data} role="button" tabindex="0" aria-haspopup="dialog" '
         f'aria-label="Open {title}"><div class="p-h"><div class="ic">{ICONS[title]}</div>'
         f"<b>{title}</b>{badge}</div>{body}{source}"
         f'<div class="xp-full">{full or body}</div>{EXPAND}</div>'
@@ -363,7 +378,7 @@ def cv_card(profile, title: str, field: str) -> str:
         return profile_card(title, NOT_READ, '<div class="p-v">Upload your CV in step 1</div>')
     facts = section_facts(profile, field)
     if not facts:
-        return profile_card(title, NOT_FOUND, '<div class="p-v">Not stated in your CV</div>')
+        return profile_card(title, NOT_FOUND, '<div class="p-v">Not stated in your CV</div>', edit=True)
     text = language_label if field == LANGUAGES[1] else (lambda fact: fact.value)
 
     def item(fact, tag: str, cls: str = "") -> str:
@@ -392,7 +407,7 @@ def cv_card(profile, title: str, field: str) -> str:
     edited = sum(store.is_edited(profile, f) for f in facts)
     src = [f"From your CV · {quote_count(quotes)}"] if quotes else []
     src += [f"{edited} edited by you"] if edited else []
-    return profile_card(title, FOUND, body, " · ".join(src), full=full)
+    return profile_card(title, FOUND, body, " · ".join(src), full=full, edit=True)
 
 
 def country_list(codes: list[str]) -> str:
@@ -413,19 +428,19 @@ def work_auth_cards() -> list[str]:
         return [
             profile_card(
                 t, badge,
-                f'<div class="p-v">Required · add it in <span class="p-link {LINK_CLASS[t]}">Edit profile</span></div>'
-                f'<div class="p-act"><span class="w-chip add p-cta">{cta}</span></div>',
-                cls=cls,
+                f'<div class="p-v">Not added yet</div>'
+                f'<div class="p-act"><span class="w-chip p-cta {key}">{cta}</span></div>',
+                cls=cls, edit=True,
                 # Opened, the call to action would press nothing: it is left out.
-                full='<div class="p-v">Required · add it in Edit profile</div>',
+                full='<div class="p-v">Not added yet</div>',
             )
-            for t, cta in REQUIRED_CTA.items()
+            for key, (t, cta) in zip(CTA_2, REQUIRED_CTA.items())
         ]
     authorized = country_list(decl["authorized"]) or "None of our countries"
     sponsorship = country_list(decl["sponsorship"]) or "Not needed anywhere"
     return [
-        profile_card("Work authorization", DECLARED, f'<div class="p-v">{esc(authorized)}</div>', "Declared by you"),
-        profile_card("Sponsorship", DECLARED, f'<div class="p-v">{esc(sponsorship)}</div>', "Declared by you"),
+        profile_card("Work authorization", DECLARED, f'<div class="p-v">{esc(authorized)}</div>', "Declared by you", edit=True),
+        profile_card("Sponsorship", DECLARED, f'<div class="p-v">{esc(sponsorship)}</div>', "Declared by you", edit=True),
     ]
 
 
@@ -472,7 +487,8 @@ def step2() -> str:
         sub = f"{found} of {len(CV_SECTIONS)} sections found in your CV. <b>Each value is backed by a quote from it.</b>"
         distinct = {q for _, field in [*CV_SECTIONS, LANGUAGES] for q in section_quotes(profile, field)}
         quotes = quote_count(len(distinct))
-    cards = [cv_card(profile, title, field) for title, field in CV_SECTIONS] + work_auth_cards() + [languages_card(profile)]
+    # The two cards the user fills in share the last row.
+    cards = [cv_card(profile, title, field) for title, field in CV_SECTIONS] + [languages_card(profile)] + work_auth_cards()
     # Always offered: without a CV the editor still takes the mandatory declaration.
     body = swap(
         body, re.escape('<div class="w-h1">Here’s what we found</div>'),
@@ -582,9 +598,10 @@ def read_work_auth() -> tuple[list[str], list[str]]:
     return authorized, [c["code"] for c in store.markets() if c["code"] not in authorized]
 
 
-def open_editor(tab: str | None = None) -> None:
+def open_editor(tab: str | None = None, only: bool = False) -> None:
     """Start a draft of the CV sections, the languages and the work
-    authorization answers, and open the editor on `tab` (or its first tab).
+    authorization answers, and open the editor on `tab` (or its first tab);
+    with `only`, on that section alone, from a card's own edit button.
     The editor changes the draft only; the profile changes on "Save changes",
     so Cancel or closing loses nothing."""
     profile = store.candidate()
@@ -594,6 +611,7 @@ def open_editor(tab: str | None = None) -> None:
         if profile else {}
     )
     S["ed_tab"] = tab
+    S["ed_only"] = only and tab is not None
     S["ed_open"] = S.get("ed_open", 0) + 1
     S["ed_rev"] = S.get("ed_rev", 0) + 1
     S["ed-skill-new"] = ""
@@ -697,18 +715,23 @@ def add_skill() -> None:
 def save_editor() -> None:
     """Save everything, or nothing: the work authorization answers are
     mandatory, so an incomplete tab keeps the editor open with the reason."""
+    # A section edited alone saves that section only: a CV section never
+    # needs the work authorization answered, and that answer never saves the CV.
+    alone = S["ed_tab"] if S.get("ed_only") else None
+    cv = bool(S["ed_draft"]) and alone != WORK_TAB
     try:
-        if S["ed_draft"]:
+        if cv:
             sync_draft()
             languages = read_languages()
-        authorized, sponsorship = read_work_auth()
-        store.set_work_auth(authorized, sponsorship)
+        if alone in (None, WORK_TAB):
+            authorized, sponsorship = read_work_auth()
+            store.set_work_auth(authorized, sponsorship)
+            S["ob_uk"] = store.uk_from_work_auth()  # step 6 starts from the declared answer
     except ValueError as exc:
         S["ed_error"] = str(exc)
         return
     S.pop("ed_error", None)
-    S["ob_uk"] = store.uk_from_work_auth()  # step 6 starts from the declared answer
-    if S["ed_draft"]:
+    if cv:
         take_skill()  # one typed but not yet added with Enter
         store.save_edits({**S["ed_draft"], store.LANGUAGES: languages})
     S.pop("ed_draft")
@@ -763,61 +786,83 @@ def languages_tab(rows: list) -> None:
               disabled=len(rows) >= len(levels))
 
 
-@st.dialog("Edit your profile", width="large")
-def edit_profile() -> None:
+def cv_tab(title: str, field: str, icon: str | None, add: str | None, draft: dict) -> None:
+    """One CV section of the editor: skill chips, or one row per entry."""
+    if icon is None:  # skills
+        with st.container(key="ed-chips", horizontal=True, gap="small"):
+            for i, skill in enumerate(draft["skills"]):
+                st.button(skill, icon=":material/close:", key=f"ed-chip-{S['ed_rev']}-{i}",
+                          on_click=remove_skill, args=(i,), help="Remove")
+        st.text_input("Add a skill", key="ed-skill-new", placeholder="Add a skill and press Enter",
+                      label_visibility="collapsed", on_change=add_skill, icon=":material/add:")
+        return
+    if not draft[field]:
+        st.markdown(f'<div class="ed-none">No {title.lower()} yet.</div>', unsafe_allow_html=True)
+    labels = EDIT_PARTS[field]
+    for i, value in enumerate(draft[field]):
+        parts = store.split_entry(value)
+        with st.container(key=f"ed-row-{field}-{i}"):
+            with st.container(horizontal=True, vertical_alignment="bottom"):
+                st.text_input(labels[0], value=parts[0], key=entry_key(field, i, 0), icon=icon,
+                              placeholder=f"e.g. {EDIT_EXAMPLES[field][0]}")
+                st.button("", icon=":material/delete:", key=f"ed-del-{field}-{S['ed_rev']}-{i}",
+                          type="tertiary", on_click=remove_entry, args=(field, i), help="Remove")
+            with st.container(horizontal=True):
+                for n in (1, 2):
+                    st.text_input(labels[n], value=parts[n], key=entry_key(field, i, n),
+                                  placeholder=f"e.g. {EDIT_EXAMPLES[field][n]}")
+    st.button(add, icon=":material/add:", key=f"ed-add-{field}", on_click=add_entry, args=(field,))
+
+
+def editor_section(name: str, draft: dict) -> None:
+    """The editor's section `name`, as a tab or on its own."""
+    if name == WORK_TAB:
+        work_auth_tab()
+    elif name == LANGUAGES[0]:
+        languages_tab(draft[store.LANGUAGES])
+    else:
+        cv_tab(*next(t for t in EDIT_TABS if t[0] == name), draft)
+
+
+def editor() -> None:
     """Change what was read from the CV: edit, add or remove entries.
 
     Values the CV does not say are saved as the user's own statements, apart
-    from the CV quotes (store.apply_edits)."""
+    from the CV quotes (store.apply_edits). Opened from a card's own edit
+    button, it holds that card's section alone."""
     if "ed_draft" not in S:  # saved or cancelled: close
         st.rerun()
     draft = S["ed_draft"]
+    alone = S["ed_tab"] if S.get("ed_only") else None
     sub = (
         "Review what we read from your CV. What you change is saved as your own statement, not as read from your CV."
-        if draft else "Tell us where you can work. Your answers are saved as your own statement."
+        if draft and alone != WORK_TAB else "Tell us where you can work. Your answers are saved as your own statement."
     )
     st.markdown(f'<div class="ed-sub">{sub}</div>', unsafe_allow_html=True)
-    cv_tabs = EDIT_TABS if draft else []
-    names = [t for t, *_ in cv_tabs] + ([LANGUAGES[0]] if draft else []) + [WORK_TAB]
-    tab = S.get("ed_tab") or (None if store.work_auth_complete() else WORK_TAB)
-    # Keyed by opening, so each opening starts on the tab asked for.
-    shown = st.tabs(names, key=f"ed-tabs-{S['ed_open']}", default=tab if tab in names else None)
-    with shown[-1]:
-        work_auth_tab()
-    if draft:
-        with shown[len(cv_tabs)]:
-            languages_tab(draft[store.LANGUAGES])
-    for tab, (title, field, icon, add) in zip(shown, cv_tabs):
-        with tab:
-            if icon is None:  # skills
-                with st.container(key="ed-chips", horizontal=True, gap="small"):
-                    for i, skill in enumerate(draft["skills"]):
-                        st.button(skill, icon=":material/close:", key=f"ed-chip-{S['ed_rev']}-{i}",
-                                  on_click=remove_skill, args=(i,), help="Remove")
-                st.text_input("Add a skill", key="ed-skill-new", placeholder="Add a skill and press Enter",
-                              label_visibility="collapsed", on_change=add_skill, icon=":material/add:")
-                continue
-            if not draft[field]:
-                st.markdown(f'<div class="ed-none">No {title.lower()} yet.</div>', unsafe_allow_html=True)
-            labels = EDIT_PARTS[field]
-            for i, value in enumerate(draft[field]):
-                parts = store.split_entry(value)
-                with st.container(key=f"ed-row-{field}-{i}"):
-                    with st.container(horizontal=True, vertical_alignment="bottom"):
-                        st.text_input(labels[0], value=parts[0], key=entry_key(field, i, 0), icon=icon,
-                                      placeholder=f"e.g. {EDIT_EXAMPLES[field][0]}")
-                        st.button("", icon=":material/delete:", key=f"ed-del-{field}-{S['ed_rev']}-{i}",
-                                  type="tertiary", on_click=remove_entry, args=(field, i), help="Remove")
-                    with st.container(horizontal=True):
-                        for n in (1, 2):
-                            st.text_input(labels[n], value=parts[n], key=entry_key(field, i, n),
-                                          placeholder=f"e.g. {EDIT_EXAMPLES[field][n]}")
-            st.button(add, icon=":material/add:", key=f"ed-add-{field}", on_click=add_entry, args=(field,))
+    if alone:
+        editor_section(alone, draft)
+    else:
+        names = ([t for t, *_ in EDIT_TABS] + [LANGUAGES[0]] if draft else []) + [WORK_TAB]
+        tab = S.get("ed_tab") or (None if store.work_auth_complete() else WORK_TAB)
+        # Keyed by opening, so each opening starts on the tab asked for.
+        shown = st.tabs(names, key=f"ed-tabs-{S['ed_open']}", default=tab if tab in names else None)
+        for name, pane in zip(names, shown):
+            with pane:
+                editor_section(name, draft)
     if S.get("ed_error"):
         st.error(S["ed_error"], icon=":material/error:")
     with st.container(key="ed-foot", horizontal=True, horizontal_alignment="right", vertical_alignment="center"):
         st.button("Cancel", key="ed-cancel", type="tertiary", on_click=cancel_editor)
         st.button("Save changes", key="ed-save", type="primary", on_click=save_editor)
+
+
+#: The whole profile editor (the "Edit profile" chip, the required cards' calls
+#: to action), and one editor per section, titled after it (each card's own
+#: edit button). Only one opens at a time.
+edit_profile = st.dialog("Edit your profile", width="large")(editor)
+EDIT_SECTION = {
+    tab: st.dialog(f"Edit {tab.lower()}", width="large")(editor) for tab in dict.fromkeys(SECTION_TAB.values())
+}
 
 
 #: Fine-tune weight bar shades, strongest first: (fill, ink). Mockup blues,
@@ -1103,11 +1148,7 @@ def step3b() -> str:
     body = swap(body, r'<div class="hist">.*?</div>', f'<div class="hist">{hist}</div>')
     lab = '<div class="w-lab">Emerging direction<span>Updates each swipe</span></div>'
     body = swap(body, re.escape(lab) + r".*?</div></div>", lab + direction_box(*explore.direction(stories, verdicts)) + "</div>")
-    # Likes only suggest preferences; they count once confirmed in Fine-tune (D-045).
-    body = swap(
-        body, re.escape("This is for you, not employers. It adjusts your Preference fit only — you review it before it’s used."),
-        "Just for you. Your likes suggest role types and industries: you confirm them next.",
-    )
+    body = swap(body, r'<div class="w-tip">.*?</div></div>\n', "")
     tune = ' data-go="3a" style="cursor:pointer"' if done else ' class="off"'
     return swap(
         body, re.escape('<span class="segm"><span data-go="3a" style="cursor:pointer">1 · Describe</span><span class="on">2 · Explore</span></span>'),
@@ -1411,7 +1452,11 @@ with st.container(key="otop"):
 
 with st.container(key="obody"):
     if notice := S.pop("ob_notice", None):  # once, on the press that was refused
-        html(f'<div class="ob-notice" role="alert"><i></i><span>{notice}</span></div>')
+        S["ob_notice_n"] = S.get("ob_notice_n", 0) + 1
+        html(
+            f'<div class="ob-notice f{S["ob_notice_n"] % 2}" role="alert">{WARNING}'
+            f'<span><b>You can’t continue yet</b><span>{notice}</span></span></div>'
+        )
     if step == "1":
         # The screen is a placeholder so the file card itself can show the CV being read.
         screen = st.empty()
@@ -1449,16 +1494,20 @@ with st.container(key="obody"):
         st.markdown(f"<style>.stApp .st-key-oo-edit{{left:auto!important;right:{right}px}}</style>", unsafe_allow_html=True)
         opened = overlay("edit", (0, y, w, h), "Edit profile", on_click=open_editor)
         if store.work_auth() is None:
-            mid = CTA_2["wa"][0]
-            st.markdown(f"<style>.stApp .st-key-oo-wa{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
+            mid = CTA_2["sp"][0]
+            st.markdown(f"<style>.stApp .st-key-oo-sp{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
             for name, label in zip(CTA_2, REQUIRED_CTA.values()):
                 opened |= overlay(name, CTA_2[name], label, on_click=open_editor, args=(WORK_TAB,))
-            # The "Edit profile" text inside each card: the same editor, on the same tab.
-            mid = LINK_2["wa-link"][0]
-            st.markdown(f"<style>.stApp .st-key-oo-wa-link{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
-            for name, title in zip(LINK_2, REQUIRED_CTA):
-                opened |= overlay(name, LINK_2[name], f"Edit profile · {title}", on_click=open_editor, args=(WORK_TAB,))
-        if opened:
+        # Each opened card's own edit button (ui/js/expand.js) presses one of
+        # these: the card's section, alone in the editor.
+        alone = None
+        with st.container(key="xp-edits"):
+            for title, tab in SECTION_TAB.items():
+                if st.button(f"Edit {title}", key=edit_key(title), on_click=open_editor, args=(tab, True)):
+                    alone = tab
+        if alone:
+            EDIT_SECTION[alone]()
+        elif opened:
             edit_profile()
     elif step == "3a":
         if S["ob_prefs"] is None:  # reached without Explore, e.g. "Adjust preferences"
