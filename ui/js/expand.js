@@ -11,6 +11,9 @@
  *    a pencil that presses the hidden native button named there, which opens
  *    the editor on that section alone. The native buttons laid over a card
  *    (Edit profile, + Add …) sit above it and keep their clicks.
+ *  - Updated ranking's roles open the same way. Their header is carried in
+ *    .xp-full (.xp-head), their width in data-xp-width, and their "Start
+ *    application" (data-apply) presses the hidden native button named there.
  *  - The page's stage is zoomed (--aa-k, ui/theme.py); the copy is zoomed the
  *    same way, so it reads at the card's own size.
  *  - With reduced motion the panel only fades in and out.
@@ -117,6 +120,8 @@
     const body = document.createElement('div');
     body.className = 'xp-body';
     body.innerHTML = card.querySelector('.xp-full').innerHTML;
+    body.querySelectorAll('.xp-head').forEach(n => n.remove());  // already cloned as the header
+    const apply = body.querySelector('[data-apply]');
     inner.append(head, body);
     const src = card.querySelector('.p-src');
     if (src) inner.appendChild(src.cloneNode(true));
@@ -130,12 +135,12 @@
 
     // Measure the back at the open width to know how tall the panel gets.
     const vw = window.innerWidth / k, vh = window.innerHeight / k;
-    const w = Math.min(WIDTH, vw - MARGIN);
+    const w = Math.min(+card.dataset.xpWidth || WIDTH, vw - MARGIN);
     inner.style.width = w + 'px';
     const h = Math.min(inner.scrollHeight, vh - MARGIN * 2);
     const b1 = { left: (vw - w) / 2, top: (vh - h) / 2, width: w, height: h };
     Object.assign(fly.style, px(b0));
-    return { card, veil, fly, rot, front, back, inner, shut, edit, b0, b1 };
+    return { card, veil, fly, rot, front, back, inner, shut, edit, apply, b0, b1 };
   }
 
   // The shadow deepens as the card leaves the page. It sits on the faces, so it turns with them.
@@ -156,6 +161,11 @@
     o.shut.addEventListener('click', hide);
     if (o.edit) o.edit.addEventListener('click', () => {
       const native = document.querySelector('.st-key-' + o.edit.dataset.key + ' button');
+      hide();
+      if (native) native.click();
+    });
+    if (o.apply) o.apply.addEventListener('click', () => {
+      const native = document.querySelector('.st-key-' + o.apply.dataset.apply + ' button');
       hide();
       if (native) native.click();
     });
@@ -246,10 +256,10 @@
   document.addEventListener('keydown', e => {
     if (open) {
       if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); hide(); }
-      // Keep focus inside the panel: its edit and close buttons are the only stops.
+      // Keep focus inside the panel: its edit, close and apply buttons are the only stops.
       else if (e.key === 'Tab') {
         e.preventDefault();
-        const stops = [open.edit, open.shut].filter(Boolean);
+        const stops = [open.edit, open.shut, open.apply].filter(Boolean);
         const at = stops.indexOf(document.activeElement);
         stops[(at + (e.shiftKey ? stops.length - 1 : 1)) % stops.length].focus({ preventScroll: true });
       }

@@ -24,7 +24,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from core import clock, explore, ranking, store
+from core import clock, explore, jd_match, ranking, store
 from oi.intelligence.eligibility.catalogue import LANGUAGE_CONSTRAINT_ID, LanguageLevel
 from oi.intelligence.extraction import extract_candidate
 from oi.io.pdf import PdfExtractionError, extract_pdf_text
@@ -32,7 +32,7 @@ from oi.providers.kimi import KimiClient
 from oi.providers.model_client import ExtractionError
 from ui import onboarding_markup as M
 from ui import guide, parts, tabs
-from ui.html import CK12, CK_WHITE, NEXT, PREV, WN12, esc, html, squash
+from ui.html import CK12, CK_WHITE, NEXT, PREV, WN12, XR, esc, html, squash
 from ui.palette import orange
 from ui.theme import page_css
 
@@ -76,7 +76,6 @@ FILT_6 = [(33, 107, 56, 26), (91, 107, 157, 26), (249, 107, 75, 26)]
 CV_STATUS = (428, 458, 664)
 #: The ✕ in the file card's top right corner, which removes the CV read.
 CV_REMOVE = (1058, 468, 24, 24)
-BTN_6 = [(1336, 194, 135, 34), (1405, 324, 66, 34), (1405, 454, 66, 34), (1405, 583, 66, 34), (1405, 713, 66, 34)]
 #: Step 2's panel has a fixed width and is centred on the stage, so its
 #: controls are placed from the stage's middle: (dx, y, w, h).
 #: The "Edit profile" chip beside the title.
@@ -1340,9 +1339,63 @@ def ring(score: int) -> str:
     )
 
 
+#: How a job description line is marked, by status (core/jd_match.py).
+JD_MARK = {jd_match.MET: CK12, jd_match.GAP: XR, jd_match.VERIFY: WN12}
+#: The label under a line that needs attention; a covered line needs none.
+JD_STATUS = {jd_match.GAP: "Not in your CV", jd_match.VERIFY: "To verify"}
+
+
+def cv_items() -> list[str] | None:
+    """The skills and experience read from the CV, or None before one is."""
+    profile = store.candidate()
+    return [f.value for f in [*profile.skills, *profile.experience]] if profile else None
+
+
+def apply_key(i: int) -> str:
+    """The hidden button that starts an application from the opened role i."""
+    return f"ap{i}"
+
+
+def jd_panel(v, i: int, cv: list[str] | None) -> str:
+    """What an opened role shows (ui/js/expand.js): its job description, each
+    requirement against the CV with advice on the ones not covered, and the
+    button that starts the application."""
+    unchecked = [lim.name.removesuffix(" level") for lim in v.limitations]
+    lines = jd_match.lines(v.role.raw, v.criteria, d.profile, cv, unchecked)
+    todo = sum(ln.status != jd_match.MET for ln in lines)
+    desc = v.get("description") or {}
+    badge = '<span class="w-b ok"><i></i>Eligible</span>' if v.standing == "eligible" else '<span class="w-b am"><i></i>To verify</span>'
+    head = (
+        f'<div class="p-h xp-head"><span class="w-logo" style="background:{v.bg};width:40px;height:40px">{v.mono}</span>'
+        f'<div class="jd-ti"><b>{esc(v.title)}</b><small>{esc(v.company)} · {esc(v.city)} · {esc(v.mode)}</small></div>{badge}</div>'
+    )
+    tally = (
+        f'<div class="jd-tally gap">{WN12}<span><b>{todo} {"point" if todo == 1 else "points"} to cover</b>'
+        " · each one says how</span></div>" if todo else
+        f'<div class="jd-tally ok">{CK12}<span><b>Your CV covers every requirement</b></span></div>'
+    )
+    about = f'<div class="jd-sec"><h4>About the role</h4><p>{esc(desc["summary"])}</p></div>' if desc else ""
+    tasks = (
+        '<div class="jd-sec"><h4>What you’ll do</h4><ul class="jd-do">'
+        + "".join(f"<li>{esc(t)}</li>" for t in desc["responsibilities"]) + "</ul></div>"
+    ) if desc else ""
+    reqs = "".join(
+        f'<li class="{ln.status}">{JD_MARK[ln.status]}<div><span>{esc(ln.text)}</span>'
+        + (f'<em>{JD_STATUS[ln.status]}</em>' if ln.status in JD_STATUS else "")
+        + (f'<div class="xp-q">{esc(ln.advice)}</div>' if ln.advice else "") + "</div></li>"
+        for ln in lines
+    )
+    return (
+        f'{head}<div class="jd">{tally}{about}{tasks}'
+        f'<div class="jd-sec"><h4>Requirements</h4><ul class="jd-req">{reqs}</ul></div>'
+        f'<div class="jd-act"><button type="button" class="btn p" data-apply="{apply_key(i)}">Start application</button></div></div>'
+    )
+
+
 def step6() -> str:
     ans = store.answers()
     top = store.ranked(ans, AS_OF)[:5]
+    cv = cv_items()
     moves = store.movement(BEFORE, ans, as_of=AS_OF)
     c, c0 = store.counts(), store.counts(None)
     items = []
@@ -1358,7 +1411,8 @@ def step6() -> str:
         first_ok = next((t for k, t in v.card_checks if k == "ok"), v.highlight)
         show = S["ob_filter"] == 0 or (S["ob_filter"] == 1 and urgent) or (S["ob_filter"] == 2 and mv == "New")
         items.append(
-            f'<div class="it{" top" if i == 0 else ""}" style="{"" if show else "display:none"}">'
+            f'<div class="it xp{" top" if i == 0 else ""}" data-xp-width="720" role="button" tabindex="0" '
+            f'aria-haspopup="dialog" aria-label="Open {esc(v.title)}, {esc(v.company)}" style="{"" if show else "display:none"}">'
             f'<div class="it-rk">{i + 1}<small style="color:{"var(--green)" if up else "var(--t3)"}">{mv}</small></div>'
             f'<div class="it-sc">{ring(v.shown)}<b>{v.shown}</b></div>'
             f'<div class="it-main"><span class="w-logo" style="background:{v.bg};width:40px;height:40px">{v.mono}</span>'
@@ -1369,7 +1423,7 @@ def step6() -> str:
             f'<div class="k{" u" if urgent else ""}">{"Closes in %d days" % n if urgent else "Closes " + esc(v.closes_label)}</div>'
             f'<small>{"Apply this week" if urgent else "%d days left" % n}</small></div></div>'
             f'<div class="fs"><span class="d" style="background:#C7C7CC"></span><div>Demo data<small>No source date</small></div></div>'
-            f'<div class="btn">{"Start application" if i == 0 else "Open"}</div></div>'
+            f'<div class="btn">Open</div><div class="xp-full">{jd_panel(v, i, cv)}</div></div>'
         )
     closing = sum(clock.days_until(v.closes) <= 9 for v in top)
     new = sum(moves.get(v.id) == "New" for v in top)
@@ -1571,15 +1625,17 @@ with st.container(key="obody"):
         html(f'<section class="w-sec">{step6()}</section>')
         for i, box in enumerate(FILT_6):
             overlay(f"flt{i}", box, ["All", "Closing this week", "New"][i], on_click=S.__setitem__, args=("ob_filter", i))
-        top = store.ranked(store.answers(), AS_OF)[:5]
-        if S["ob_filter"] == 0:
-            for i, v in enumerate(top):
-                if overlay(f"it{i}", BTN_6[i], f"Open {v.company}"):
+        # Pressing a role opens its job description in full: it flips over as it grows.
+        with st.container(key="aa-js-expand"):
+            st.html(f"<script>{EXPAND_JS}</script>", unsafe_allow_javascript=True)
+        # The opened role's "Start application" (ui/js/expand.js) presses one of these.
+        with st.container(key="xp-apply"):
+            for i, v in enumerate(store.ranked(store.answers(), AS_OF)[:5]):
+                if st.button(f"Start application · {v.company}", key=apply_key(i)):
+                    store.save_application(v.id)
+                    S["flash"] = f"Application started · {v.company}"
                     finish()
-                    if i == 0:
-                        store.save_application(v.id)
-                        tabs.go("applications", id=v.id)
-                    tabs.go("role", id=v.id)
+                    tabs.go("applications", id=v.id)
 
 total = len(STEP_NAMES)
 if step == "3b" and not explored():

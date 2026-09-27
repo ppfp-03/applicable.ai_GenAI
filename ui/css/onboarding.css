@@ -736,3 +736,36 @@
 
 /* Step 1: the consent note under "Choose file" (uploading gives the consent). */
 .u-consent{max-width:440px;margin-top:14px;font-size:11.5px;line-height:16px;color:var(--t3);text-align:center}
+
+/* Updated ranking: a role opens in full on its job description (ui/js/expand.js, views/onboarding.py jd_panel).
+   Each requirement is checked against the CV: covered, not in the CV (with how to cover it), or to verify. */
+.it.xp{cursor:pointer;transition:opacity .25s,transform .35s cubic-bezier(.32,.72,0,1),box-shadow .35s}
+.it.xp:not(.xp-copy):hover{transform:translateY(-2px);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 10px 26px rgba(28,40,64,.09)}
+.it.xp:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.it.xp.xp-away{visibility:hidden}
+.st-key-xp-apply{display:none!important}
+.xp-head .w-logo{flex:none;border-radius:10px;font-size:15px}
+.jd-ti{min-width:0}
+.jd-ti b{display:block}
+.jd-ti small{display:block;font-size:12.5px;color:var(--t2);margin-top:2px}
+.jd{margin-top:16px;display:flex;flex-direction:column;gap:18px}
+.jd-tally{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;font-size:13.5px}
+.jd-tally.gap{color:var(--amber);background:var(--amberBg)}
+.jd-tally.ok{color:var(--green);background:var(--greenBg)}
+.jd-sec h4{margin:0 0 8px;font-size:12px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:var(--t3)}
+.jd-sec p{margin:0;font-size:14px;line-height:1.55;color:var(--t1)}
+.jd-do{margin:0;padding-left:18px;font-size:14px;line-height:1.55;color:var(--t1)}
+.jd-do li + li{margin-top:3px}
+.jd-req{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.jd-req li{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:12px;font-size:14px;line-height:1.45;color:var(--t1)}
+.jd-req li svg{flex:none;margin-top:4px}
+.jd-req li > div{flex:1;min-width:0}
+.jd-req em{display:block;font-style:normal;font-size:11.5px;font-weight:600;margin-top:1px;color:var(--t3)}
+.jd-req li.gap{background:var(--redBg);box-shadow:inset 3px 0 0 var(--red)}
+.jd-req li.gap em{color:var(--red)}
+.jd-req li.verify{background:var(--amberBg);box-shadow:inset 3px 0 0 var(--amber)}
+.jd-req li.verify em{color:var(--amber)}
+.jd-req .xp-q{color:var(--t1);border-left-color:rgba(0,0,0,.12)}
+.jd-act{display:flex;justify-content:flex-end;padding-top:4px}
+.jd-act .btn{height:40px;padding:0 22px;font-size:14px;cursor:pointer}
+.jd-act .btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
