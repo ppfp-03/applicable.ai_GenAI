@@ -59,3 +59,14 @@
 .st-key-gl-met{flex:none}
 [class*="st-key-hit-at-"] div:has(> .at),[class*="st-key-hit-at-"] div:has(.at){height:100%}
 .st-key-foot > *,.st-key-foot .stPopover,.st-key-foot .stPopover > div,.st-key-foot .stPopover button{flex:1;width:100%!important}
+
+/* Priority score breakdown (parts.factor_rows): one grid row per factor, as on
+   Matches. The note wraps under its name; points and weight stay on the right. */
+.kci{display:grid;grid-template-columns:10px minmax(0,1fr) auto;column-gap:10px;row-gap:2px;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(0,0,0,.05)}
+.kci:last-child{border:0}
+.kci .sw{width:10px;height:10px;border-radius:3px}
+.kci .nm{font-size:13px;font-weight:600;min-width:0}
+.kci .kw{grid-column:2;font-size:11.5px;line-height:1.4;color:var(--t2);min-width:0;white-space:normal;overflow-wrap:anywhere}
+.kci .pt{grid-row:1/3;grid-column:3;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.kci .pt b{font-size:14px;font-weight:650;display:block}
+.kci .pt span{font-size:10.5px;color:var(--t3)}
