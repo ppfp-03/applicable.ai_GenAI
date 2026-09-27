@@ -8,7 +8,9 @@ module only translates, and decides nothing:
   degree, graduation month, field, CEFR languages, student status and months
   of experience become `eligibility_answers`; the user's answers become
   `declarations.work_authorizations`. Citizenship is not copied over: it is
-  not a declaration, and it never implies work authorisation;
+  not a declaration, and it never implies work authorisation. Only GB is
+  passed on today: from the UK answer, or else from the step 2 declaration
+  (see `declarations`), each fact true, false or null as declared;
 - a demo role becomes a JobRecord whose demo `requirements` are listed
   explicitly as canonical requirements (classification + modality +
   constraint), plus the typed JobParameterSet the rules compare against;
@@ -89,6 +91,15 @@ _RECEIPT = {
 _UK_DECLARATIONS = {
     "yes": (True, False),
     "no": (False, True),
+}
+
+#: The answers key holding the work authorization declaration (store.work_auth).
+DECLARATION = "work_auth"
+#: The declaration's country lists, per contract fact: the countries where the
+#: fact is true, then those where it is false. A country in neither is unknown.
+DECLARATION_LISTS = {
+    "authorized_to_work": ("authorized", "not_authorized"),
+    "requires_sponsorship": ("sponsorship", "no_sponsorship"),
 }
 
 #: The explicit sponsorship values a demo role may carry.
@@ -176,14 +187,47 @@ def in_progress_policy(graduation: Optional[str], start: Optional[str]) -> str:
 # ───────────────────────── Candidate side ─────────────────────────
 
 
+#: (authorized_to_work, requires_sponsorship), each None where unknown.
+Facts = tuple[Optional[bool], Optional[bool]]
+
+
+def declared(declaration: Optional[Mapping[str, Any]], country: str) -> Facts:
+    """One country's facts in a work authorization declaration (see
+    DECLARATION_LISTS). No declaration, or no list naming it, is unknown."""
+    lists = declaration or {}
+
+    def fact(true: str, false: str) -> Optional[bool]:
+        return True if country in lists.get(true, ()) else False if country in lists.get(false, ()) else None
+
+    authorized, sponsorship = (fact(*DECLARATION_LISTS[f]) for f in DECLARATION_LISTS)
+    return authorized, sponsorship
+
+
+def uk_declaration(uk: Optional[str], gb: Facts) -> Facts:
+    """GB's facts under the UK answer `uk`, given what the declaration says of GB.
+
+    "Yes" and "No" settle both facts. "Not sure" and no answer settle nothing
+    and invent nothing: they keep a declaration that is itself unsettled
+    (neither authorized nor needing sponsorship, e.g. "None of these":
+    false/null; D-050), and clear one that gave "Yes" or "No", the answer
+    being changed.
+    """
+    if uk in _UK_DECLARATIONS:
+        return _UK_DECLARATIONS[uk]
+    return gb if True not in gb else (None, None)
+
+
 def declarations(answers: Mapping[str, Any]) -> tuple[tuple[str, Optional[bool], Optional[bool]], ...]:
     """The work-authorisation declarations the user's answers make.
+
+    Only GB: from the UK answer ("uk_work") and the declaration held under
+    DECLARATION. Answers without a declaration go by the UK answer alone.
 
     Returns:
         (country_code, authorized_to_work, requires_sponsorship) per country.
     """
-    uk = _UK_DECLARATIONS.get(answers.get("uk_work"))
-    return (("GB", *uk),) if uk else ()
+    gb = uk_declaration(answers.get("uk_work"), declared(answers.get(DECLARATION), "GB"))
+    return (("GB", *gb),) if gb != (None, None) else ()
 
 
 def _candidate_key(profile: Mapping[str, Any], answers: Mapping[str, Any]) -> str:

@@ -3,7 +3,8 @@
 Pins FR-02 / FR-04 for work authorisation: citizenship alone never makes a
 role MET, a missing declaration is UNKNOWN ("to verify"), an explicit
 declaration is respected, only an explicit "sponsorship not offered" conflicts
-(unstated sponsorship is UNKNOWN), and the production
+(unstated sponsorship is UNKNOWN), the step 2 declaration reaches the engine
+with its facts true, false or null as declared (D-050), and the production
 path (core.store) no longer runs the legacy core/rules.py permission rule.
 """
 
@@ -115,6 +116,112 @@ def test_sponsorship_is_explicit_three_state_never_a_boolean():
 def test_a_uk_answer_says_nothing_about_other_countries():
     for uk in ("yes", "no"):
         assert outcome("nestella-strategy", uk).status is RuleStatus.UNKNOWN
+
+
+# ───────────────────────── D-050: the step 2 declaration ─────────────────────────
+
+EU = list(store.eu_codes())
+ALL = [c["code"] for c in store.markets()]
+#: The step 2 answers as the store keeps them (store.work_auth).
+CHOSE_EU = {"authorized": EU, "no_sponsorship": EU}
+NONE_OF_THESE = {"not_authorized": ALL}
+GB_PATHS = {
+    leaf: f"declarations.work_authorizations.GB.{leaf}"
+    for leaf in ("authorized_to_work", "requires_sponsorship")
+}
+
+
+def after_step2(declaration, uk="unsure"):
+    """The answers after step 2 (store.set_work_auth leaves the UK "unsure"
+    unless the UK was chosen)."""
+    return {"uk_work": uk, store.WORK_AUTH: declaration}
+
+
+def test_a_country_left_out_stays_undeclared_and_unknown():
+    ans = after_step2(CHOSE_EU)
+    assert eligibility.candidate(D.profile, ans).declarations.work_authorizations == []
+    got = eligibility.work_auth(role("replai-pa"), ans)
+    assert got.status is RuleStatus.UNKNOWN
+    assert got.missing_field_paths == list(GB_PATHS.values())
+    assert store.view(D.role("replai-pa"), ans).standing == "verify"
+
+
+def test_none_of_these_reaches_the_engine_as_not_authorized_sponsorship_unknown():
+    ans = after_step2(NONE_OF_THESE)
+    [gb] = eligibility.candidate(D.profile, ans).declarations.work_authorizations
+    assert (gb.country_code, gb.authorized_to_work, gb.requires_sponsorship) == ("GB", False, None)
+    for role_id in ("replai-pa", "bolton-strategy"):  # does not sponsor / sponsors
+        got = eligibility.work_auth(role(role_id), ans)
+        assert got.status is RuleStatus.UNKNOWN, role_id
+        assert got.missing_field_paths == [GB_PATHS["requires_sponsorship"]], role_id
+        assert store.view(D.role(role_id), ans).standing == "verify", role_id
+
+
+def test_a_uk_answer_in_a_preview_overrides_the_declaration():
+    # What step 6 and the question page preview is what saving then does.
+    for uk, status in (("yes", RuleStatus.MET), ("no", RuleStatus.CONFLICT)):
+        assert eligibility.work_auth(role("replai-pa"), after_step2(NONE_OF_THESE, uk)).status is status
+    assert eligibility.declarations(after_step2(NONE_OF_THESE, None)) == (("GB", False, None),)
+    assert eligibility.declarations(after_step2(CHOSE_EU, None)) == ()
+    # "Not sure" retracts a UK answer's own declaration rather than keep it.
+    assert eligibility.declarations(after_step2({"authorized": ["GB"], "no_sponsorship": ["GB"]})) == ()
+
+
+def test_later_uk_answers_recompute_after_none_of_these(fresh_session):
+    r = D.role("replai-pa")
+    store.set_work_auth(NONE_OF_THESE)
+    assert store.uk() == "unsure"
+    got = eligibility.work_auth(r.raw, store.answers())
+    assert got.status is RuleStatus.UNKNOWN
+    assert got.missing_field_paths == [GB_PATHS["requires_sponsorship"]]
+    store.set_uk("unsure")  # invents nothing, keeps the declaration
+    assert eligibility.declarations(store.answers()) == (("GB", False, None),)
+    store.set_uk("yes")
+    assert eligibility.declarations(store.answers()) == (("GB", True, False),)
+    assert store.view(r).standing == "eligible"
+    store.set_uk("no")
+    assert eligibility.declarations(store.answers()) == (("GB", False, True),)
+    assert store.view(r).standing == "excluded"
+
+
+def test_preserved_facts_reach_the_engine_losslessly(fresh_session):
+    r = D.role("replai-pa")  # London, does not sponsor
+    store.answer_work_question(EU)
+    store.set_uk("no")  # a later clarification
+    store.answer_work_question(EU)  # step 2 saved again, GB still left out
+    [gb] = eligibility.candidate(D.profile, store.answers()).declarations.work_authorizations
+    assert (gb.country_code, gb.authorized_to_work, gb.requires_sponsorship) == ("GB", False, True)
+    assert eligibility.work_auth(r.raw, store.answers()).status is RuleStatus.CONFLICT
+
+    store.answer_work_question(None)  # "None of these" keeps the declared need
+    assert eligibility.declarations(store.answers()) == (("GB", False, True),)
+    assert store.view(r).standing == "excluded"
+
+    store.set_uk("unsure")  # changing the "No" withdraws it: nothing invented
+    assert eligibility.declarations(store.answers()) == ()
+
+    store.answer_work_question(None)  # no need declared any more: false/null
+    [gb] = eligibility.candidate(D.profile, store.answers()).declarations.work_authorizations
+    assert (gb.authorized_to_work, gb.requires_sponsorship) == (False, None)
+    got = eligibility.work_auth(r.raw, store.answers())
+    assert got.status is RuleStatus.UNKNOWN
+    assert got.missing_field_paths == [GB_PATHS["requires_sponsorship"]]
+
+
+def test_choosing_the_uk_in_step_2_is_met(fresh_session):
+    store.set_work_auth({"authorized": ["GB"], "no_sponsorship": ["GB"]})
+    assert store.uk() == "yes"
+    assert eligibility.declarations(store.answers()) == (("GB", True, False),)
+    assert store.view(D.role("replai-pa")).standing == "eligible"
+
+
+def test_the_declaration_never_turns_citizenship_into_authorisation(fresh_session):
+    assert D.profile["citizenship"] == "IT"
+    store.set_work_auth(NONE_OF_THESE)
+    decl = eligibility.candidate(D.profile, store.answers()).declarations
+    assert decl.additional_citizenships == []
+    assert [w.country_code for w in decl.work_authorizations] == ["GB"]
+    assert eligibility.work_auth(role("mediobanco-growth"), store.answers()).status is RuleStatus.UNKNOWN
 
 
 # ───────────────────────── Reaching the UI ─────────────────────────

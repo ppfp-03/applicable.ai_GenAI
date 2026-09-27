@@ -262,7 +262,13 @@ def log_out() -> None:
 
 
 def answers() -> dict:
-    """The user's current answers to our questions."""
+    """The user's current answers to our questions, the work authorization
+    declaration included (under WORK_AUTH), as eligibility reads them."""
+    return {**_answers(), WORK_AUTH: work_auth()}
+
+
+def _answers() -> dict:
+    """The answers as stored, without the declaration kept beside them."""
     return st.session_state.get(ANSWERS, {"uk_work": "yes"})
 
 
@@ -275,34 +281,44 @@ def set_uk(choice: Optional[str]) -> None:
     """Record the UK answer. Everything downstream recomputes from it.
 
     A saved work authorization declaration follows the answer, so the two
-    never disagree: "yes" means authorized in the UK, "no" means sponsorship
-    needed there, anything else declares neither.
+    never disagree: "yes" means authorized in the UK and no sponsorship
+    needed, "no" not authorized and sponsorship needed. "Not sure" and no
+    answer settle nothing: they keep a "None of these" declaration (not
+    authorized, sponsorship unknown) and clear any other (eligibility.
+    uk_declaration). No sponsorship answer is ever invented.
     """
-    st.session_state[ANSWERS] = {**answers(), "uk_work": choice}
+    st.session_state[ANSWERS] = {**_answers(), "uk_work": choice}
     decl = work_auth()
     if decl is not None:
-        authorized = [c for c in decl["authorized"] if c != "GB"] + (["GB"] if choice == "yes" else [])
-        sponsorship = [c for c in decl["sponsorship"] if c != "GB"] + (["GB"] if choice == "no" else [])
-        _store_work_auth(authorized, sponsorship)
+        gb = eligibility.uk_declaration(choice, eligibility.declared(decl, "GB"))
+        _store_work_auth(_with_country(decl, "GB", gb))
 
 
 def set_answer(key: str, value: Any) -> None:
     """Record any other answer (e.g. the Fudan letter was uploaded)."""
-    st.session_state[ANSWERS] = {**answers(), key: value}
+    st.session_state[ANSWERS] = {**_answers(), key: value}
 
 
 # ───────────────────────── Work authorization and sponsorship ─────────────────────────
 #
-# Declared once in onboarding, for every country the platform covers. A
-# country the user selects is a "yes"; one they leave out is an explicit
-# "no". Nothing is inferred from citizenship. Only ISO country codes are
-# stored: "EU" is a shortcut in the form, never a declared country.
+# Declared in onboarding with one question, "Where can you work without
+# employer sponsorship?" (D-050). Each platform country has two independent
+# facts, as in the contract's WorkAuthorizationDeclaration: authorized_to_work
+# and requires_sponsorship, each true, false or unknown. A country the user
+# selects is authorized and needs no sponsorship. "None of these" makes every
+# platform country not authorized and leaves sponsorship as it was. A country
+# left out keeps what it held, unknown if nothing (answer_work_question).
+# Nothing is inferred from citizenship, nor one fact from the other. Only ISO country codes are stored: "EU" is a shortcut in the form,
+# never a declared country.
 #
-# Only the UK part is used today, through the UK answer; the other countries
-# are kept for later and change no eligibility or ranking.
+# Only the UK part is used today (eligibility.declarations); the other
+# countries are kept for later and change no eligibility or ranking.
 
 _MARKETS_PATH = Path(__file__).resolve().parent.parent / "config" / "markets.json"
-WORK_AUTH = "work_auth"
+#: The session key of the declaration, and the answers key eligibility reads it under.
+WORK_AUTH = eligibility.DECLARATION
+#: The declaration's four country lists, true then false for each fact.
+WORK_AUTH_LISTS = tuple(k for pair in eligibility.DECLARATION_LISTS.values() for k in pair)
 
 
 @lru_cache(maxsize=1)
@@ -321,55 +337,113 @@ def country_name(code: str) -> str:
 
 
 def work_auth() -> Optional[dict]:
-    """The declaration, as {"authorized": [...], "sponsorship": [...]} country
-    codes in market order, or None until the user has made one."""
+    """The declaration, or None until the user has made one.
+
+    Four lists of country codes, in market order (WORK_AUTH_LISTS):
+    "authorized" / "not_authorized" hold authorized_to_work true / false,
+    "sponsorship" / "no_sponsorship" requires_sponsorship true / false. A
+    country in neither list of a pair is unknown for that fact; a missing
+    list is empty.
+    """
     return st.session_state.get(WORK_AUTH)
 
 
 def work_auth_complete() -> bool:
-    """Whether the mandatory onboarding declaration has been made."""
+    """Whether the mandatory onboarding question has been answered. Sponsorship
+    may still be unknown everywhere (D-050)."""
     return work_auth() is not None
 
 
-def set_work_auth(authorized: list[str], sponsorship: list[str]) -> None:
-    """Record where the user may work and where they would need sponsorship.
+def set_work_auth(declaration: dict[str, list[str]]) -> None:
+    """Record the declaration (see work_auth); lists left out are empty.
 
-    Either list may be empty ("none of these"). The UK part also answers the
-    UK question, so step 6 and every screen start from it.
+    The UK part also answers the UK question, so step 6 and every screen
+    start from it.
 
     Raises:
-        ValueError: On a country the platform does not cover, or one that is
-            both authorized and in need of sponsorship.
+        ValueError: On a list or a country the platform does not know, a
+            country both true and false for one fact, or one both authorized
+            and in need of sponsorship.
     """
+    lists = {k: set(declaration.get(k, ())) for k in WORK_AUTH_LISTS}
+    extra = sorted(set(declaration) - set(WORK_AUTH_LISTS))
+    if extra:
+        raise ValueError(f"Not a declaration list: {', '.join(extra)}.")
     order = [c["code"] for c in markets()]
-    unknown = sorted((set(authorized) | set(sponsorship)) - set(order))
+    unknown = sorted(set().union(*lists.values()) - set(order))
     if unknown:
         raise ValueError(f"Not a platform country: {', '.join(unknown)}.")
-    both = [c for c in order if c in authorized and c in sponsorship]
-    if both:
+    for true, false in eligibility.DECLARATION_LISTS.values():
+        if both := [c for c in order if c in lists[true] and c in lists[false]]:
+            raise ValueError(f"Declared both ways: {', '.join(country_name(c) for c in both)}.")
+    if both := [c for c in order if c in lists["authorized"] and c in lists["sponsorship"]]:
         names = ", ".join(country_name(c) for c in both)
         raise ValueError(f"You can’t need sponsorship where you can already work: {names}.")
-    _store_work_auth(authorized, sponsorship)
-    st.session_state[ANSWERS] = {**answers(), "uk_work": uk_from_work_auth()}
+    _store_work_auth(lists)
+    st.session_state[ANSWERS] = {**_answers(), "uk_work": uk_from_work_auth()}
 
 
-def _store_work_auth(authorized: list[str], sponsorship: list[str]) -> None:
+def answer_work_question(countries: Optional[list[str]]) -> None:
+    """Record an answer to step 2's question, "Where can you work without
+    employer sponsorship?": the countries chosen, or None for "None of these".
+
+    Only what the answer declares changes (D-050):
+    - a country chosen can work there and needs no sponsorship (true/false),
+      replacing whatever it held;
+    - "None of these": no platform country is authorized (false). It does
+      not answer sponsorship: a declared need (true) stays, and "not needed"
+      (false), which contradicts it, becomes unknown;
+    - a country left out keeps its facts, a sponsorship answer given later
+      included. One the previous answer chose (authorized, shown selected)
+      and the user unselected is withdrawn: both facts become unknown.
+
+    Raises:
+        ValueError: On a country the platform does not cover.
+    """
     order = [c["code"] for c in markets()]
-    st.session_state[WORK_AUTH] = {
-        "authorized": [c for c in order if c in authorized],
-        "sponsorship": [c for c in order if c in sponsorship],
-    }
+    if unknown := sorted(set(countries or ()) - set(order)):
+        raise ValueError(f"Not a platform country: {', '.join(unknown)}.")
+    before = work_auth()
+    after = {k: [] for k in WORK_AUTH_LISTS}
+    for country in order:
+        authorized, sponsorship = eligibility.declared(before, country)
+        if countries is None:
+            facts = (False, True if sponsorship else None)
+        elif country in countries:
+            facts = (True, False)
+        elif authorized:
+            facts = (None, None)
+        else:
+            facts = (authorized, sponsorship)
+        after = _with_country(after, country, facts)
+    set_work_auth(after)
+
+
+def _store_work_auth(declaration: dict) -> None:
+    order = [c["code"] for c in markets()]
+    st.session_state[WORK_AUTH] = {k: [c for c in order if c in declaration.get(k, ())] for k in WORK_AUTH_LISTS}
+
+
+def _with_country(declaration: dict, country: str, facts: eligibility.Facts) -> dict:
+    """The declaration with `country`'s two facts replaced by `facts`."""
+    out = {k: [c for c in declaration.get(k, ()) if c != country] for k in WORK_AUTH_LISTS}
+    for value, (true, false) in zip(facts, eligibility.DECLARATION_LISTS.values()):
+        if value is not None:
+            out[true if value else false].append(country)
+    return out
 
 
 def uk_from_work_auth() -> Optional[str]:
     """The UK answer the declaration gives: "yes" if authorized, "no" if
-    sponsorship is needed, "unsure" if neither; None before a declaration."""
+    sponsorship is needed, "unsure" otherwise, "None of these" included (it
+    leaves sponsorship unknown); None before a declaration."""
     decl = work_auth()
     if decl is None:
         return None
-    if "GB" in decl["authorized"]:
+    authorized, sponsorship = eligibility.declared(decl, "GB")
+    if authorized:
         return "yes"
-    return "no" if "GB" in decl["sponsorship"] else "unsure"
+    return "no" if sponsorship else "unsure"
 
 
 def preferences() -> Optional[list[dict]]:

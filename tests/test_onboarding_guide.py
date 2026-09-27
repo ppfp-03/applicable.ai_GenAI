@@ -68,7 +68,7 @@ def test_a_gate_still_speaks_before_the_guidance_line() -> None:
     at = AppTest.from_file(ONBOARDING, default_timeout=30)
     at.session_state["ob_step"] = "2"
     at.run()
-    assert "Add your work authorization and sponsorship in Edit profile to continue." in page(at)
+    assert "Add your work authorization in Edit profile to continue." in page(at)
     assert guide.GUIDE["2"].line not in page(at)
 
 
