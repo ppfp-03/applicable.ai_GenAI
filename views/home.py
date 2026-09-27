@@ -10,6 +10,9 @@ until the user runs it, the card offers to; afterwards it lists the synthetic
 postings it added, and every card showing one says so. The Hong Kong question
 belongs to the post-event scenario, so it is shown only once the event has run.
 
+Each widget opens into a full view (the ⤢ button, `ui/home_expand.py`):
+the timeline into a calendar, the others into their complete lists.
+
 Motion lives in `ui/js/home.js`: the carousel and the top matches can be
 dragged, and every move animates before the native button commits it.
 """
@@ -22,7 +25,7 @@ from pathlib import Path
 import streamlit as st
 
 from core import clock, store
-from ui import home_guide, parts, shell, tabs
+from ui import home_expand, home_guide, parts, shell, tabs
 from ui.html import CK, NEXT, PREV, WN, esc, html, logo, md_icon
 from ui.theme import page_css
 
@@ -101,6 +104,8 @@ with shell.header(
     st.button(md_icon(PREV, "Previous"), key="ib-prev", on_click=go, args=(cur - 1,))
     st.button(md_icon(NEXT, "Next"), key="ib-next", on_click=go, args=(cur + 1,))
     st.button("?", key="ib-help", help="What is this page for?", on_click=home_guide.reopen)
+    if st.button("", icon=":material/open_in_full:", key="ib-x-car", help="See every card"):
+        home_expand.week_cards(week, cur, go)
 
 
 # ───────────────────────── Carousel ─────────────────────────
@@ -310,6 +315,8 @@ with st.container(key="gl-tl"):
                     st.rerun()
                 st.toast(e["toast"])
     st.markdown(f"<style>{''.join(css)}</style>", unsafe_allow_html=True)
+    if st.button("", icon=":material/open_in_full:", key="ib-x-tl", help="Open the calendar"):
+        home_expand.calendar(go)
 
 
 # ───────────────────────── Top matches and wallet ─────────────────────────
@@ -347,12 +354,7 @@ def bring_forward(w: int, order: list) -> None:
     st.session_state[MOVES] = st.session_state.get(MOVES, 0) + 1
 
 
-STAGE = {
-    "saved": ("#8E8E93", "Saved", "background:#F2F2F5;color:#6E6E73"),
-    "applied": ("#48484A", "Applied", "background:#F2F2F5;color:#3A3A3C"),
-    "progress": ("#0071E3", "In progress", "background:var(--blueBg);color:var(--blue)"),
-    "interview": ("#AEAEB2", "Interview", "background:var(--greenBg);color:var(--green)"),
-}
+STAGE = home_expand.STAGE
 
 with st.container(key="bt"):
     with st.container(key="gl-top"):
@@ -363,6 +365,8 @@ with st.container(key="bt"):
             )
             with st.container(key="marr"):
                 # The strip scrolls in the browser; these only nudge it.
+                if st.button("", icon=":material/open_in_full:", key="ib-x-top", help="See every match"):
+                    home_expand.matches(tops, mcard)
                 st.button(md_icon(PREV, "Previous"), key="ib-mprev")
                 st.button(md_icon(NEXT, "Next"), key="ib-mnext")
         # A horizontal scroller: the cards and their click targets scroll together.
@@ -379,7 +383,10 @@ with st.container(key="bt"):
         sc = store.stage_counts()
         with st.container(key="sh-apps"):
             html(f'<div class="sh"><div><b>Applications</b><span>{sum(sc.values())} total</span></div></div>')
-            st.page_link(tabs.page("applications"), label="See all")
+            with st.container(key="apps-r"):
+                if st.button("", icon=":material/open_in_full:", key="ib-x-apps", help="Open the board"):
+                    home_expand.applications_board()
+                st.page_link(tabs.page("applications"), label="See all")
         html(
             '<div class="wsum2">'
             f'<span><i style="background:#C7C7CC"></i>Saved <b>{sc["saved"]}</b></span>'

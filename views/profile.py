@@ -107,11 +107,12 @@ with st.container(key="pf-main"):
             for i, s in enumerate(sections):
                 sel = i == cur
                 locked = not consent and i != CONSENT_AT
+                ev = "<b>Your form</b> · given" if i == CONSENT_AT and consent else s["ev"]
                 hit(
                     f"sec-{i}",
                     f'<div class="row tile{" sel" if sel else ""}{" lk" if locked else ""}"><span class="ico">{glyph(s["icon"], "#0071E3" if sel else None)}</span>'
                     f'<div class="nm">{esc(s["name"])}</div><div style="min-width:0"><div class="v1">{esc(s["v1"])}</div>'
-                    f'<div class="v2">{esc(s["v2"])}</div></div><div class="ev">{s["ev"]}</div>'
+                    f'<div class="v2">{esc(s["v2"])}</div></div><div class="ev">{ev}</div>'
                     f'<div class="stc">{chip(status[s["id"]])}</div></div>',
                     f"Show {s['name']}",
                     on_click=st.toast if locked else st.session_state.__setitem__,

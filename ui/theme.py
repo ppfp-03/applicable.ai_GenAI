@@ -170,3 +170,9 @@ def inject() -> None:
 def page_css(name: str) -> None:
     """Link one screen's stylesheet. Call at the top of that screen."""
     _link(name, tabs.running())
+
+
+def dialog_css(name: str) -> None:
+    """Link a stylesheet for an `st.dialog`. Dialogs open outside the tab
+    containers, so their rules are never confined to a tab."""
+    _link(name)

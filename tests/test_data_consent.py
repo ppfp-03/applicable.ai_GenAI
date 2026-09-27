@@ -120,6 +120,7 @@ def test_giving_the_consent_in_the_profile_opens_the_other_sections() -> None:
     assert at.session_state[store.SECTIONS][store.CONSENT_SECTION] == "ok"
     assert at.session_state[store.VALUES][store.CONSENT_SECTION][store.CONSENT_LABEL] == "Given"
     assert PROFILE_GATE not in page(at)
+    assert "<b>Your form</b> · given" in page(at)
 
     at.button(key="ov-sec-0").click().run()
     assert at.session_state["profile_cur"] == 0
