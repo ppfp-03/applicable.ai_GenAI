@@ -1,67 +1,92 @@
 /* Home's full views (ui/home_expand.py). Dialogs open outside the tab
  * containers, so every rule starts from the dialog itself. */
 
+/* Streamlit pulls every markdown block up by 1rem; the app cancels that on the
+ * page (base.css) but dialogs sit outside it. Without this, drawn text
+ * collapses to no height and the next button lands on top of it. */
+[data-testid="stDialog"] [data-testid="stMarkdownContainer"]{margin-bottom:0!important}
+
 [data-testid="stDialog"] .hx-sub{font-size:13px;color:var(--t2);margin:-4px 0 6px}
 [data-testid="stDialog"] .hx-sub b{color:var(--t1);font-weight:620}
 [data-testid="stDialog"] .hx-none{font-size:12.5px;color:var(--t3);padding:6px 2px}
-/* Flex columns in the dialog would shrink drawn markup to nothing. */
-[data-testid="stDialog"] [class*="st-key-hx-"] > [data-testid="stElementContainer"],[data-testid="stDialog"] [class*="st-key-hx-"]{flex-shrink:0}
-/* Month/Week and the sort: the chosen option reads as chosen. */
-[data-testid="stDialog"] [data-testid="stButtonGroup"] button[data-variant="segmented_control"]{font-family:inherit;height:32px;min-height:32px;font-size:12.5px;font-weight:600}
-[data-testid="stDialog"] [data-testid="stButtonGroup"] button[data-variant="segmented_control"][aria-checked="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
-[data-testid="stDialog"] [data-testid="stButtonGroup"] button[data-variant="segmented_control"][aria-checked="true"] p{color:#fff}
 
-/* Calendar: bar */
-[data-testid="stDialog"] .st-key-hx-calbar{display:flex!important;flex-direction:row!important;align-items:center;gap:8px!important;flex-wrap:nowrap!important;margin-bottom:4px}
-[data-testid="stDialog"] .st-key-hx-calbar [data-testid="stElementContainer"]{width:auto!important}
-[data-testid="stDialog"] .st-key-hx-calbar [data-testid="stElementContainer"]:has(.hx-title){flex:1}
-[data-testid="stDialog"] .st-key-hx-prev button,[data-testid="stDialog"] .st-key-hx-next button{width:32px;height:32px;min-height:32px;padding:0}
-[data-testid="stDialog"] .st-key-hx-today button{height:32px;min-height:32px;font-size:12.5px}
-[data-testid="stDialog"] .hx-title{font-size:20px;font-weight:680;letter-spacing:-0.02em;margin-left:6px}
+/* Segmented controls, as on macOS: a grey track, the chosen option a raised white chip. */
+[data-testid="stDialog"] :has(> button[data-variant="segmented_control"]){background:rgba(118,118,128,.12);border-radius:9px;padding:2px;gap:0!important}
+[data-testid="stDialog"] button[data-variant="segmented_control"]{font-family:inherit;height:28px;min-height:28px;padding:0 14px;font-size:12.5px;font-weight:560;border:0!important;border-radius:7px!important;background:transparent;color:var(--t1);box-shadow:none}
+[data-testid="stDialog"] button[data-variant="segmented_control"] p{font-size:12.5px;font-weight:560;color:var(--t1)}
+[data-testid="stDialog"] button[data-variant="segmented_control"]:hover{background:rgba(0,0,0,.04);color:var(--t1)}
+[data-testid="stDialog"] button[data-variant="segmented_control"][aria-checked="true"],[data-testid="stDialog"] button[data-variant="segmented_control"][aria-checked="true"]:hover{background:#fff;color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+[data-testid="stDialog"] button[data-variant="segmented_control"][aria-checked="true"] p{color:var(--t1);font-weight:620}
 
-/* Calendar: grid */
-[data-testid="stDialog"] .hx-wd{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-[data-testid="stDialog"] .hx-wd span{padding:0 8px}
-[data-testid="stDialog"] [class*="st-key-hx-grid-"]{position:relative}
-[data-testid="stDialog"] .hx-g{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:86px;gap:6px}
-[data-testid="stDialog"] .hx-g.w{grid-auto-rows:340px}
-[data-testid="stDialog"] .hx-c{border-radius:12px;padding:6px 7px;background:rgba(255,255,255,.75);box-shadow:0 0 0 .5px rgba(0,0,0,.07);display:flex;flex-direction:column;gap:3px;overflow:hidden;min-width:0;transition:box-shadow .15s}
-[data-testid="stDialog"] .hx-c.o{background:rgba(0,0,0,.02);box-shadow:none}
-[data-testid="stDialog"] .hx-c.o .hx-dn b{color:var(--t3)}
-[data-testid="stDialog"] .hx-c.p .hx-dn b{color:var(--t2)}
-[data-testid="stDialog"] .hx-c.t .hx-dn b{background:var(--blue);color:#fff;border-radius:999px;padding:1px 7px}
-[data-testid="stDialog"] .hx-c.s{box-shadow:0 0 0 2px var(--blue)}
-[data-testid="stDialog"] .hx-dn{font-size:11px;color:var(--t3);font-weight:560;margin-bottom:2px}
-[data-testid="stDialog"] .hx-dn b{font-size:13px;color:var(--t1);font-weight:650}
-[data-testid="stDialog"] .hx-pl{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;border-radius:6px;padding:2px 5px;background:rgba(0,0,0,.04);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-[data-testid="stDialog"] .hx-g.w .hx-pl{white-space:normal;padding:5px 7px}
-[data-testid="stDialog"] .hx-pl span{overflow:hidden;text-overflow:ellipsis}
-[data-testid="stDialog"] .hx-pl i{width:6px;height:6px;border-radius:50%;flex:none;display:block}
-[data-testid="stDialog"] .hx-pl.p{opacity:.55}
-[data-testid="stDialog"] .hx-more{font-size:10.5px;color:var(--t3);font-weight:600;padding-left:5px}
-/* Click targets over the drawn grid, same geometry. */
-[data-testid="stDialog"] [class*="st-key-hx-cells-"]{position:absolute!important;inset:0;display:grid!important;grid-template-columns:repeat(7,1fr);grid-auto-rows:86px;gap:6px!important;z-index:2}
-[data-testid="stDialog"] .st-key-hx-cells-w{grid-auto-rows:340px}
-[data-testid="stDialog"] [class*="st-key-hx-cells-"] [data-testid="stElementContainer"]{width:auto!important;height:100%}
+/* Calendar: title, ‹ Today › and the view switch on one line. */
+[data-testid="stDialog"] .st-key-hx-calbar{display:flex!important;flex-direction:row!important;align-items:center;gap:14px!important;flex-wrap:nowrap!important;margin:-6px 0 10px}
+[data-testid="stDialog"] .st-key-hx-calbar > [data-testid="stElementContainer"],[data-testid="stDialog"] .st-key-hx-calbar > div{width:auto!important}
+[data-testid="stDialog"] .st-key-hx-calbar > [data-testid="stElementContainer"]:has(.hx-title){flex:1;min-width:0}
+[data-testid="stDialog"] .hx-title{font-size:26px;font-weight:400;letter-spacing:-0.025em;color:var(--t2);white-space:nowrap}
+[data-testid="stDialog"] .hx-title b{font-weight:700;color:var(--t1)}
+[data-testid="stDialog"] .st-key-hx-nav{display:flex!important;flex-direction:row!important;align-items:center;gap:0!important;flex-wrap:nowrap!important;background:rgba(118,118,128,.12);border-radius:9px;padding:2px;width:auto!important}
+[data-testid="stDialog"] .st-key-hx-nav [data-testid="stElementContainer"]{width:auto!important}
+[data-testid="stDialog"] .st-key-hx-nav button{height:28px;min-height:28px;padding:0 10px;border:0;border-radius:7px;background:transparent;box-shadow:none;color:var(--t1);font-size:12.5px;font-weight:560}
+[data-testid="stDialog"] .st-key-hx-nav button p{font-size:12.5px;font-weight:560}
+[data-testid="stDialog"] .st-key-hx-nav button:hover{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+[data-testid="stDialog"] .st-key-hx-prev button,[data-testid="stDialog"] .st-key-hx-next button{width:30px;padding:0}
+
+/* Calendar: the grid. Hairlines, no boxes; weekends a shade darker. */
+[data-testid="stDialog"] .hx-wd{display:grid;grid-template-columns:repeat(7,1fr);font-size:11px;color:var(--t3);font-weight:560;padding-bottom:6px}
+[data-testid="stDialog"] .hx-wd span{text-align:right;padding-right:8px}
+[data-testid="stDialog"] [class*="st-key-hx-grid-"]{position:relative;gap:0!important}
+[data-testid="stDialog"] .hx-g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:98px;border-top:1px solid rgba(0,0,0,.09);border-left:1px solid rgba(0,0,0,.09);border-radius:0;background:#fff}
+[data-testid="stDialog"] .hx-g.w{grid-auto-rows:380px}
+[data-testid="stDialog"] .hx-c{box-sizing:border-box;border-right:1px solid rgba(0,0,0,.09);border-bottom:1px solid rgba(0,0,0,.09);padding:5px 5px 4px;display:flex;flex-direction:column;gap:2px;overflow:hidden;min-width:0}
+[data-testid="stDialog"] .hx-c.we{background:rgba(0,0,0,.018)}
+[data-testid="stDialog"] .hx-c.s{background:rgba(0,113,227,.05)}
+[data-testid="stDialog"] .hx-h{display:flex;justify-content:flex-end;align-items:center;gap:4px;height:24px;flex:none;margin-bottom:2px}
+[data-testid="stDialog"] .hx-n{min-width:24px;height:24px;padding:0 6px;box-sizing:border-box;border-radius:12px;display:grid;place-items:center;font-size:13px;font-weight:560;color:var(--t1);font-variant-numeric:tabular-nums}
+[data-testid="stDialog"] .hx-c.o .hx-n{color:var(--t3)}
+[data-testid="stDialog"] .hx-n.s{background:var(--t1);color:#fff}
+[data-testid="stDialog"] .hx-n.t{background:var(--blue);color:#fff;font-weight:650}
+[data-testid="stDialog"] .hx-ev{flex:none;border-radius:4px;padding:2px 6px;font-size:11px;font-weight:560;line-height:15px;background:color-mix(in srgb,var(--c) 16%,transparent);color:color-mix(in srgb,var(--c) 62%,#000);box-shadow:inset 3px 0 0 var(--c);padding-left:8px;min-width:0}
+[data-testid="stDialog"] .hx-ev span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-testid="stDialog"] .hx-ev.p{opacity:.5}
+[data-testid="stDialog"] .hx-g.w .hx-ev{padding:6px 8px 6px 10px;font-size:12px;line-height:16px}
+[data-testid="stDialog"] .hx-g.w .hx-ev span{white-space:normal}
+[data-testid="stDialog"] .hx-ev small{display:block;font-size:11px;font-weight:450;margin-top:3px;opacity:.85}
+[data-testid="stDialog"] .hx-g.w .hx-c{gap:4px;padding:8px 6px}
+[data-testid="stDialog"] .hx-g.w .hx-h{flex-direction:column;justify-content:flex-start;align-items:center;height:auto;gap:2px;margin-bottom:8px}
+[data-testid="stDialog"] .hx-wdn{font-size:11px;color:var(--t3);font-weight:560}
+[data-testid="stDialog"] .hx-g.w .hx-n{font-size:18px;height:32px;min-width:32px;border-radius:16px;font-weight:600}
+[data-testid="stDialog"] .hx-free{font-size:11px;color:var(--t3);text-align:center;margin-top:4px}
+[data-testid="stDialog"] .hx-more{font-size:10.5px;color:var(--t3);font-weight:600;padding-left:6px}
+/* Click targets over the drawn grid, same geometry, invisible until hovered. */
+[data-testid="stDialog"] [class*="st-key-hx-cells-"]{position:absolute!important;left:0;right:0;bottom:0;top:0;display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:98px;gap:0!important;z-index:2;padding:1px 0 0 1px}
+[data-testid="stDialog"] .st-key-hx-cells-w{grid-auto-rows:380px}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] [data-testid="stElementContainer"]{width:auto!important;height:100%;min-width:0}
 [data-testid="stDialog"] [class*="st-key-hx-cells-"] .stButton,[data-testid="stDialog"] [class*="st-key-hx-cells-"] button{width:100%;height:100%}
-[data-testid="stDialog"] [class*="st-key-hx-cells-"] button{padding:0;min-height:0;border-radius:12px;border:0;box-shadow:none;background:transparent;color:transparent}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] button{padding:0;min-height:0;border-radius:0;border:0;box-shadow:none;background:transparent;color:transparent}
 [data-testid="stDialog"] [class*="st-key-hx-cells-"] button p{color:transparent}
-[data-testid="stDialog"] [class*="st-key-hx-cells-"] button:hover{background:rgba(0,113,227,.06)}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] button:hover{background:rgba(0,0,0,.035)}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] button:focus-visible{box-shadow:inset 0 0 0 2px var(--blue)}
 
-/* Calendar: agenda */
-[data-testid="stDialog"] .hx-ah{display:flex;justify-content:space-between;align-items:baseline;font-size:16px;font-weight:660;letter-spacing:-0.01em}
-[data-testid="stDialog"] .hx-ah span{font-size:12px;color:var(--blue);font-weight:620}
-[data-testid="stDialog"] [class*="st-key-hx-ev-"]{background:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 0 0 .5px rgba(0,0,0,.07);gap:8px!important}
-[data-testid="stDialog"] [class*="st-key-hx-ev-"] button{height:30px;min-height:30px;font-size:12.5px}
-[data-testid="stDialog"] .hx-er{display:flex;gap:10px;align-items:flex-start;font-size:13px}
-[data-testid="stDialog"] .hx-er i{width:9px;height:9px;border-radius:50%;flex:none;margin-top:5px;display:block}
-[data-testid="stDialog"] .hx-er b{font-weight:620}
+/* Calendar: the inspector beside the grid. */
+[data-testid="stDialog"] .st-key-hx-side{background:rgba(118,118,128,.07);border-radius:14px;padding:16px!important;gap:10px!important}
+[data-testid="stDialog"] .hx-ak{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:620;color:var(--blue);text-transform:uppercase;letter-spacing:.04em}
+[data-testid="stDialog"] .hx-rel{font-size:11px;font-weight:620;letter-spacing:0;text-transform:none;background:var(--blue);color:#fff;border-radius:999px;padding:2px 8px}
+[data-testid="stDialog"] .hx-ah{font-size:24px;font-weight:700;letter-spacing:-0.025em;margin-top:2px}
+[data-testid="stDialog"] .hx-empty{font-size:13px;color:var(--t3);padding:14px 0 4px}
+[data-testid="stDialog"] [class*="st-key-hx-ev-"]{background:#fff;border-radius:10px;padding:10px 12px!important;box-shadow:0 0 0 .5px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);gap:6px!important}
+[data-testid="stDialog"] .hx-er{border-left:3px solid var(--c);padding-left:10px}
 [data-testid="stDialog"] .hx-er.p{opacity:.6}
-[data-testid="stDialog"] .hx-ed{font-size:12px;color:var(--t2);margin-top:2px}
-[data-testid="stDialog"] .hx-nh{font-size:11px;color:var(--t3);font-weight:620;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px}
-[data-testid="stDialog"] .hx-nx{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:5px 0;border-top:1px solid rgba(0,0,0,.05)}
-[data-testid="stDialog"] .hx-nx span{width:74px;flex:none;color:var(--t3);font-size:11.5px;font-weight:560}
-[data-testid="stDialog"] .hx-nx i{width:7px;height:7px;border-radius:50%;flex:none;display:block}
+[data-testid="stDialog"] .hx-et{font-size:13.5px;font-weight:620;line-height:1.3}
+[data-testid="stDialog"] .hx-ed{font-size:12px;color:var(--t2);margin-top:2px;line-height:1.35}
+[data-testid="stDialog"] [class*="st-key-hx-eva-"]{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;gap:14px!important;padding-left:13px}
+[data-testid="stDialog"] [class*="st-key-hx-eva-"] [data-testid="stElementContainer"]{width:auto!important}
+[data-testid="stDialog"] [class*="st-key-hx-eva-"] button{font-size:12.5px;font-weight:600;color:var(--blue);height:auto;min-height:0;padding:0}
+[data-testid="stDialog"] [class*="st-key-hx-eva-"] button p{font-size:12.5px;font-weight:600;color:var(--blue)}
+[data-testid="stDialog"] [class*="st-key-hx-eva-"] button:hover p{text-decoration:underline}
+[data-testid="stDialog"] .hx-nh{font-size:11px;color:var(--t3);font-weight:620;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px}
+[data-testid="stDialog"] .hx-ld{font-size:11.5px;color:var(--t2);font-weight:620;margin-top:8px;padding-bottom:4px;border-bottom:1px solid rgba(0,0,0,.07)}
+[data-testid="stDialog"] .hx-li{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:5px 0 1px}
+[data-testid="stDialog"] .hx-li i{width:8px;height:8px;border-radius:50%;flex:none;display:block;background:var(--c)}
 
 /* This week */
 [data-testid="stDialog"] [class*="st-key-hx-wk-"]{display:flex!important;flex-direction:row!important;align-items:center;gap:14px!important;flex-wrap:nowrap!important;background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 0 0 .5px rgba(0,0,0,.07)}
