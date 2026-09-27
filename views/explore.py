@@ -60,9 +60,39 @@ def keep(v) -> bool:
 
 
 shown = [v for v in allv if keep(v)]
+
+# Three rows of five cards a page, so the grid never runs past the side panel.
+PER = 15
+PG = "x_page"
+pages = max(1, -(-len(shown) // PER))
+if st.session_state.get("_x_view") != (f, q):
+    st.session_state["_x_view"] = (f, q)
+    st.session_state[PG] = 0
+st.session_state[PG] = min(st.session_state.get(PG, 0), pages - 1)
+page = shown[st.session_state[PG] * PER:(st.session_state[PG] + 1) * PER]
+
 SEL = "x_sel"
-if shown and st.session_state.get(SEL) not in [v.id for v in shown]:
-    st.session_state[SEL] = shown[0].id
+if page and st.session_state.get(SEL) not in [v.id for v in page]:
+    st.session_state[SEL] = page[0].id
+
+
+def go_page(n: int) -> None:
+    """Turn to page n and preview its first role."""
+    st.session_state[PG] = n
+    st.session_state[SEL] = shown[n * PER].id
+
+
+def page_nums(cur: int, n: int) -> list[int | None]:
+    """Google-style run: first, last and the pages around the current one; None is a gap."""
+    if n <= 7:
+        return list(range(n))
+    keep_ = sorted({0, n - 1, cur - 1, cur, cur + 1} & set(range(n)))
+    out: list[int | None] = []
+    for i in keep_:
+        if out and i - out[-1] > 1:
+            out.append(i - 1 if i - out[-1] == 2 else None)
+        out.append(i)
+    return out
 
 
 def card(v) -> str:
@@ -85,15 +115,29 @@ def card(v) -> str:
 
 with st.container(key="ex-main"):
     with st.container(key="gl-grid"):
+        cur = st.session_state[PG]
+        span = f"{cur * PER + 1}–{cur * PER + len(page)} of {len(shown)}" if pages > 1 else f"{len(shown)} shown"
         html(
-            f'<div class="sh"><div><b>{f if f != "All" else "All roles"}</b><span>{len(shown)} shown · '
+            f'<div class="sh"><div><b>{f if f != "All" else "All roles"}</b><span>{span} · '
             "excluded roles stay visible, with the rule that removed them</span></div></div>"
         )
         with st.container(key="grid"):
-            for v in shown:
+            for v in page:
                 hit(f"x-{v.id}", card(v), f"Preview {v.company}", on_click=st.session_state.__setitem__, args=(SEL, v.id))
         if not shown:
             html('<div style="font-size:13px;color:var(--t2);margin-top:14px">No roles match. Try another filter.</div>')
+        if pages > 1:
+            with st.container(key="x-pager", horizontal=True, gap="small"):
+                st.button("‹", key="x-pg-prev", help="Previous page", disabled=cur == 0,
+                          on_click=go_page, args=(cur - 1,))
+                for n in page_nums(cur, pages):
+                    if n is None:
+                        html('<span class="gap">…</span>')
+                    else:
+                        st.button(str(n + 1), key=f"x-pg-{n}", type="primary" if n == cur else "secondary",
+                                  on_click=go_page, args=(n,))
+                st.button("›", key="x-pg-next", help="Next page", disabled=cur == pages - 1,
+                          on_click=go_page, args=(cur + 1,))
 
     with st.container(key="pan-x"):
         if shown:

@@ -32,7 +32,7 @@ from oi.providers.kimi import KimiClient
 from oi.providers.model_client import ExtractionError
 from ui import onboarding_markup as M
 from ui import guide, parts, tabs
-from ui.html import CK12, CK_WHITE, NEXT, PREV, WN12, XR, esc, html, squash
+from ui.html import CK12, CK_WHITE, MARK_SVG, NEXT, PREV, WN12, XR, esc, html, squash
 from ui.palette import orange
 from ui.theme import page_css
 
@@ -93,7 +93,7 @@ S.setdefault("ob_step", "1")
 S.setdefault("ob_prefs", None)  # the Fine-tune rows being edited (see pref_rows)
 S.setdefault("ob_swipes", [])  # one verdict per story seen, in story order: "r" | "l" | "u"
 S.setdefault("ob_tick", 0)
-S.setdefault("ob_uk", "yes")
+S.setdefault("ob_uk", "unsure")  # the answer picked in step 5, for the country in ob_ask
 S.setdefault("ob_filter", 0)
 S.setdefault("ob_file", None)  # (name, size in bytes) of the CV read
 S.setdefault("ob_cv", None)
@@ -138,15 +138,42 @@ def blocked(k: str) -> bool:
     return refusal(k) is not None
 
 
-def uk_declared() -> bool:
-    """Whether step 2 settled the UK: authorized there, or needing sponsorship.
-    Step 5 then has nothing to ask and is skipped."""
-    return store.work_auth_complete() and store.uk() in ("yes", "no")
+def to_ask() -> str | None:
+    """The country step 5 asks about: the work question the shortlist (step 4)
+    still waits on, or else the one already answered there, so it can be changed."""
+    shortlist = store.ranked(store.answers(), d.profile["onboarded"])[:5]
+    return store.pending_work_question(shortlist) or S.get("ob_asked")
+
+
+def settled() -> bool:
+    """Whether step 2's declaration leaves nothing to ask: step 5 is skipped."""
+    return store.work_auth_complete() and to_ask() is None
 
 
 def resolve_step(k: str) -> str:
-    """The step `k` leads to: step 5 is skipped once the UK is known."""
-    return "6" if k == "5" and uk_declared() else k
+    """The step `k` leads to: step 5 is skipped when there is nothing to ask."""
+    return "6" if k == "5" and settled() else k
+
+
+def place(country: str) -> str:
+    """A country as the question names it: "the UK", else its name."""
+    return "the UK" if country == "GB" else store.country_name(country)
+
+
+def field_label(country: str) -> str:
+    """A country as its profile field names it: "UK", else its name."""
+    return "UK" if country == "GB" else store.country_name(country)
+
+
+def said(country: str) -> str | None:
+    """The answer the declaration gives for `country`: "yes", "no", "unsure", or None."""
+    return store.work_answer(country) or ("unsure" if store.work_auth() is not None else None)
+
+
+def open_question() -> None:
+    """Step 5 opens on the question to ask, with the answer the profile holds now."""
+    S["ob_ask"] = country = to_ask() or "GB"
+    S["ob_uk"] = said(country) or "unsure"
 
 
 qs = st.query_params.get("step")
@@ -154,6 +181,8 @@ if qs in KEYS and S.get("_ob_qs") != qs:
     S["_ob_qs"] = qs
     why = refusal(qs)
     S["ob_step"] = resolve_step(qs) if why is None else "2" if why == NEEDS_WORK_AUTH else "1"
+    if S["ob_step"] == "5":
+        open_question()
 
 step = S["ob_step"]
 idx = KEYS.index(step)
@@ -175,6 +204,8 @@ def go(k: str) -> None:
     S["ob_step"] = k = resolve_step(k)
     if k == "4":
         S["ob_tick"] = 0
+    if k == "5":
+        open_question()
 
 
 def explored() -> bool:
@@ -754,6 +785,7 @@ def save_editor() -> None:
             languages = read_languages()
         if alone in (None, WORK_TAB):
             store.answer_work_question(read_work_auth())
+            S["ob_uk"] = store.uk() or "unsure"  # step 5 opens on it (see open_question)
     except ValueError as exc:
         S["ed_error"] = str(exc)
         return
@@ -1291,22 +1323,34 @@ def preview_rows(ans: dict) -> str:
     return "".join(rows)
 
 
-def step5() -> str:
+def step5(country: str) -> str:
+    """The one work question still open, for `country` (see to_ask)."""
     body = M.S_5
     choice = S["ob_uk"]
     ks = ["yes", "no", "unsure"]
     opts = re.findall(r'<div class="o6[^"]*">', body)
     for k, o in zip(ks, opts):
         body = body.replace(o, f'<div class="o6{" on" if k == choice else ""}" data-k="{k}">', 1)
-    before, after = store.counts(None), store.counts(choice)
-    # The UK roles and what each answer does, counted as the question screen counts them.
-    uk = store.uk_roles()
-    more = f" and {len(uk) - 3} more" if len(uk) > 3 else ""
-    yes, no = store.counts("yes"), store.counts("no")
-    body = swap(body, "<b>14 roles in London</b>", f"<b>{len(uk)} roles in the UK</b>")
+    # The country's roles and what each answer does, by the same rules saving runs.
+    before = store.tally(store.answers())
+    after, yes, no = (store.tally(store.answers_with(country, k)) for k in (choice, "yes", "no"))
+    roles = store.country_roles(country)
+    more = f" and {len(roles) - 3} more" if len(roles) > 3 else ""
+    where = esc(place(country))
+    body = swap(body, re.escape("Can you work in the UK without"), f"Can you work in {where} without")
+    body = swap(body, re.escape("Yes, I can work in the UK"), f"Yes, I can work in {where}")
+    if country != "GB":
+        body = swap(body, re.escape("UK/Irish citizen, settled status or a valid work visa"),
+                    "Citizenship, permanent residence or a valid work visa")
+    body = swap(body, re.escape("Work authorization · UK"), f"Work authorization · {esc(field_label(country))}")
+    body = swap(body, "<b>14 roles in London</b>", f"<b>{len(roles)} role{'s' if len(roles) != 1 else ''} in {where}</b>")
+    logos = "".join(
+        f'<span class="w-logo" style="background:{v.bg};width:26px;height:26px">{v.mono}</span>' for v in roles[:4]
+    )
+    body = re.sub(r'(<div class="c6-lg">).*?(<span class="m">)', rf"\g<1>{logos}\g<2>", body, count=1, flags=re.S)
     body = swap(
         body, re.escape("Replai, Bolton Consulting Group, Lazarde &amp; Co. and 11 more"),
-        esc(", ".join(v.company for v in uk[:3])) + more,
+        esc(", ".join(v.company for v in roles[:3])) + more,
     )
     body = swap(body, re.escape(">+11 roles<"), f">+{yes['eligible'] - before['eligible']} roles<")
     body = swap(body, re.escape(">4 roles stay<"), f">{no['eligible'] - before['eligible']} roles stay<")
@@ -1327,7 +1371,7 @@ def step5() -> str:
     )
     body = re.sub(
         r'<div class="mini">.*?</div></div></div>\s*<div style="flex:1">',
-        f'<div class="mini">{preview_rows({**BEFORE, "uk_work": choice})}</div></div>\n<div style="flex:1">',
+        f'<div class="mini">{preview_rows(store.answers_with(country, choice))}</div></div>\n<div style="flex:1">',
         body, count=1, flags=re.S,
     )
     return body
@@ -1341,8 +1385,19 @@ def ring(score: int) -> str:
     )
 
 
+#: Filled alert glyphs, after SF Symbols xmark.circle.fill and
+#: exclamationmark.triangle.fill, for the lines that need attention.
+JD_GAP = (
+    '<svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#C4302B"/>'
+    '<path d="M7 7l6 6M13 7l-6 6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>'
+)
+JD_VERIFY = (
+    '<svg width="18" height="18" viewBox="0 0 20 20"><path d="M8.27 2.99a2 2 0 0 1 3.46 0l6.93 12a2 2 0 0 1'
+    '-1.73 3H3.07a2 2 0 0 1-1.73-3z" fill="#B25E09"/><path d="M10 7.4v4.2" stroke="#fff" stroke-width="1.8" '
+    'stroke-linecap="round"/><circle cx="10" cy="14.6" r="1.05" fill="#fff"/></svg>'
+)
 #: How a job description line is marked, by status (core/jd_match.py).
-JD_MARK = {jd_match.MET: CK12, jd_match.GAP: XR, jd_match.VERIFY: WN12}
+JD_MARK = {jd_match.MET: CK12, jd_match.GAP: JD_GAP, jd_match.VERIFY: JD_VERIFY}
 #: The label under a line that needs attention; a covered line needs none.
 JD_STATUS = {jd_match.GAP: "Not in your CV", jd_match.VERIFY: "To verify"}
 
@@ -1441,24 +1496,13 @@ def step6() -> str:
     sub = (
         f"Your answer unlocked {gained} roles. " if gained > 0 else "Your shortlist is ready. "
     ) + f"<b>Start with {esc(lead.company)} — it closes in {lead_n} days.</b>"
-    uk = store.uk()
-    chip = {"yes": '<span class="w-b ok">Yes</span>', "no": '<span class="w-b am">No · needs sponsorship</span>',
-            "unsure": '<span class="w-b ne">Not sure</span>', None: '<span class="w-b ne">Unknown</span>'}[uk]
     delta = f"<small>+{gained}</small>" if gained > 0 else ""
-    uk_line = (
-        f"Work authorization · UK {chip}<span style=\"color:var(--t3);margin-left:8px\">Declared by you</span>"
-        if uk_declared() else
-        'Work authorization · UK <span style="color:var(--t3);text-decoration:line-through">Unknown</span> → '
-        f'{chip}<span style="color:var(--t3);margin-left:8px">Recalculated {d.updated}</span>'
-    )
     return (
         f'<div class="f7"><div class="f7-top"><div><div class="w-h1">Your priorities</div><div class="w-sub">{sub}</div></div>'
         f'<div class="s5-sum"><div class="s5-k"><div class="l">Eligible</div><div class="v">{c["eligible"]}{delta}</div></div>'
         f'<div class="s5-k"><div class="l">To verify</div><div class="v" style="color:var(--amber)">{c["verify"]}</div></div>'
         f'<div class="s5-k"><div class="l">Excluded</div><div class="v" style="color:var(--t3)">{c["excluded"]}</div></div></div></div>'
-        f'<div class="f7-flt">{seg}<div class="chg2"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M10.5 2.5l3 3L6 13H3v-3z" '
-        'stroke="#6E6E73" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>'
-        f'{uk_line}</div></div>'
+        f'<div class="f7-flt">{seg}</div>'
         f'<div class="f7-list">{"".join(items)}</div></div>'
     )
 
@@ -1474,8 +1518,7 @@ html(
 
 with st.container(key="otop"):
     html(
-        '<div class="w-brand"><div class="mark"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 11 7 3l4 8M4.6 8h4.8" '
-        'stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><b>Applicable.ai</b></div>'
+        f'<div class="w-brand"><div class="mark">{MARK_SVG}</div><b>Applicable.ai</b></div>'
     )
     pills = []
     for n, name in enumerate(STEP_NAMES, start=1):
@@ -1620,7 +1663,7 @@ with st.container(key="obody"):
         with st.container(key="aa-js-shortlist"):
             st.html(f"<script>{SHORTLIST_JS}</script>", unsafe_allow_javascript=True)
     elif step == "5":
-        html(f'<section class="w-sec">{step5()}</section>')
+        html(f'<section class="w-sec">{step5(S.get("ob_ask") or to_ask() or "GB")}</section>')
         for i, k in enumerate(["yes", "no", "unsure"]):
             overlay(f"o6{k}", OPTS_5[i], k, on_click=S.__setitem__, args=("ob_uk", k), shortcut=str(i + 1))
     elif step == "6":
@@ -1650,8 +1693,8 @@ if step == "3a" and not unweighted and not store.consent_given():
 gated = step == "2" and not store.work_auth_complete()
 if gated:
     info = f"<b>Step 2 of {total}</b> · {NEEDS_WORK_AUTH}"
-if step == "4" and uk_declared():
-    info, cta = f"<b>Step 4 of {total}</b> · Your UK work authorization is already declared", "View shortlist"
+if step == "4" and settled():
+    info, cta = f"<b>Step 4 of {total}</b> · Your work authorization is already declared", "View shortlist"
 
 
 def flag_missing() -> None:
@@ -1666,7 +1709,7 @@ with st.container(key="ofoot"):
     if idx > 0:
         if st.button("Back", key="back"):
             back = KEYS[idx - 1]
-            go("4" if back == "5" and uk_declared() else back)  # step 5 is skipped both ways
+            go("4" if back == "5" and settled() else back)  # step 5 is skipped both ways
             st.rerun()
     waiting = (step == "4" and S["ob_tick"] < 5) or (step == "3b" and not explored()) or unweighted
     # With a required card still empty, pressing it says what is missing.
@@ -1676,8 +1719,10 @@ with st.container(key="ofoot"):
         if step == "3a":
             store.set_preferences(S["ob_prefs"])
         if step == "5":
-            store.set_uk(S["ob_uk"])
-            st.toast(f"Answer saved · Work authorization · UK = {store.UK_LABELS[S['ob_uk']]}")
+            country = S.get("ob_ask") or to_ask() or "GB"
+            store.set_work_answer(country, S["ob_uk"])
+            S["ob_asked"] = country
+            st.toast(f"Answer saved · Work authorization · {field_label(country)} = {store.UK_LABELS[S['ob_uk']]}")
         if step == "6":
             v = store.ranked(store.answers(), AS_OF)[0]
             store.save_application(v.id)

@@ -757,15 +757,18 @@
 .jd-do{margin:0;padding-left:18px;font-size:14px;line-height:1.55;color:var(--t1)}
 .jd-do li + li{margin-top:3px}
 .jd-req{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
-.jd-req li{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:12px;font-size:14px;line-height:1.45;color:var(--t1)}
-.jd-req li svg{flex:none;margin-top:4px}
+.jd-req li{display:flex;align-items:flex-start;gap:12px;padding:9px 14px;border-radius:14px;font-size:14px;line-height:1.45;color:var(--t1)}
+.jd-req li svg{flex:none;margin:4px 3px 0}
 .jd-req li > div{flex:1;min-width:0}
-.jd-req em{display:block;font-style:normal;font-size:11.5px;font-weight:600;margin-top:1px;color:var(--t3)}
-.jd-req li.gap{background:var(--redBg);box-shadow:inset 3px 0 0 var(--red)}
+.jd-req li.gap,.jd-req li.verify{padding:12px 14px}
+.jd-req li.gap svg,.jd-req li.verify svg{margin:1px 0 0}
+.jd-req li.gap span,.jd-req li.verify span{font-weight:500}
+.jd-req em{display:block;font-style:normal;font-size:12px;font-weight:600;margin-top:1px;color:var(--t3)}
+.jd-req li.gap{background:var(--redBg)}
 .jd-req li.gap em{color:var(--red)}
-.jd-req li.verify{background:var(--amberBg);box-shadow:inset 3px 0 0 var(--amber)}
+.jd-req li.verify{background:var(--amberBg)}
 .jd-req li.verify em{color:var(--amber)}
-.jd-req .xp-q{color:var(--t1);border-left-color:rgba(0,0,0,.12)}
+.jd-req .xp-q{font-size:13px;color:var(--t2);margin-top:4px;padding-left:0;border-left:0}
 .jd-act{display:flex;justify-content:flex-end;padding-top:4px}
 .jd-act .btn{height:40px;padding:0 22px;font-size:14px;cursor:pointer}
 .jd-act .btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}

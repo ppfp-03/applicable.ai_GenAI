@@ -31,3 +31,14 @@
 .st-key-ex-foot{display:flex!important;flex-direction:row!important;gap:8px!important;flex-wrap:nowrap!important}
 .st-key-ex-foot > *{flex:1!important;width:auto!important}
 .st-key-ex-foot button{width:100%}
+/* Pager — Google-style numbers under the grid, three rows a page. */
+.st-key-grid{grid-template-rows:repeat(3,198px)}
+.st-key-grid .mc{height:198px}
+.st-key-grid .mc .t,.st-key-grid .mc .why{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.st-key-grid .mc .m{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-key-grid .mc .t{margin-top:10px}
+.st-key-grid .mc .why{margin-top:8px;padding-top:8px;flex-shrink:0}
+.st-key-x-pager{justify-content:center;align-items:center;padding-top:8px}
+.st-key-x-pager > div{width:auto!important;flex:0 0 auto!important}
+.st-key-x-pager button{width:36px;min-width:36px;padding:0;font-variant-numeric:tabular-nums}
+.st-key-x-pager .gap{display:inline-flex;align-items:center;justify-content:center;width:24px;height:36px;font-size:13px;color:var(--t3)}

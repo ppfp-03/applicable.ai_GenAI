@@ -127,10 +127,10 @@ def month(ym: str) -> str:
     return f"{MONTHS[int(m) - 1]} {year}"
 
 
-def cefr_asks() -> dict[str, str]:
-    """Languages the posting asks at a CEFR level (the ones a fixed rule checks)."""
+def checked_asks() -> dict[str, str]:
+    """Languages the posting asks at a level a fixed rule checks (CEFR, fluent, native)."""
     return {lang: lvl for lang, lvl in role.requirements.get("languages", {}).items()
-            if lvl in ("A1", "A2", "B1", "B2", "C1", "C2")}
+            if store.checked_language(lang, lvl)}
 
 
 def they_ask(c) -> str:
@@ -155,7 +155,7 @@ def they_ask(c) -> str:
             return "No field requirement"
         return "Degree in " + ", ".join(fields) + (" or a related field" if req.get("related_ok") else "")
     if c.id == "language":
-        asks = cefr_asks()
+        asks = checked_asks()
         return " · ".join(f"{lang} {lvl}" for lang, lvl in asks.items()) or "No language level to check"
     n = req.get("experience_min", 0)
     return f"At least {n} internship{'s' if n != 1 else ''}" if n else "No experience requirement"
@@ -184,7 +184,7 @@ def you_have(c) -> tuple[str, str]:
     if c.id == "language":
         certs = store.answers().get("languages") or {}
         have = {**p.get("languages", {}), **certs}
-        asks = cefr_asks() or have
+        asks = checked_asks() or have
         src = "YOU" if any(lang in certs for lang in asks) else "CV"
         return " · ".join(f"{lang} {have.get(lang, 'not stated')}" for lang in asks), src
     return f"{p.get('experience_months', 0)} months · {p.get('internships', 0)} internships", "CV"
@@ -234,9 +234,12 @@ def action(c) -> None:
             work_question()
     elif c.id == "language":
         with st.popover("Add certificate", type="primary", key="cert"):
-            lang = next(iter(cefr_asks()), "English")
+            have = {**d.profile.get("languages", {}), **(store.answers().get("languages") or {})}
+            asks = checked_asks()
+            lang = next((x for x in asks if x not in have), next(iter(asks), "English"))
             up = st.file_uploader(f"{lang} certificate (PDF)", type=["pdf", "png", "jpg"], key="cert-file")
-            level = st.selectbox("Level on the certificate", ["B2", "C1", "C2"], index=1)
+            # "fluent" and "native" too: a posting asking French fluent is not met by a CEFR level (D-046).
+            level = st.selectbox("Level on the certificate", ["B2", "C1", "C2", "fluent", "native"], index=1)
             if st.button("Check again with this certificate", type="primary", disabled=up is None):
                 store.set_answer("languages", {**(store.answers().get("languages") or {}), lang: level})
                 st.session_state["flash"] = f"Certificate added · {lang} = {level} · checked again"

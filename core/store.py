@@ -723,6 +723,11 @@ def available() -> list[RoleDef]:
 # ───────────────────────── Derived views ─────────────────────────
 
 
+def checked_language(name: str, level: str) -> bool:
+    """Whether a fixed rule checks this language requirement (CEFR, fluent, native)."""
+    return eligibility.canonical_language(name, level) is not None
+
+
 def view(role: RoleDef, ans: Optional[dict] = None) -> RoleView:
     """Check and score one role under `ans` (default: the current answers)."""
     d = data()
@@ -812,6 +817,11 @@ def counts(choice: Any = "current", as_of: Optional[str] = None) -> dict[str, in
         as_of: As in `views`.
     """
     ans = answers() if choice == "current" else {**answers(), "uk_work": choice}
+    return tally(ans, as_of)
+
+
+def tally(ans: dict, as_of: Optional[str] = None) -> dict[str, int]:
+    """Eligible / to verify / excluded among the roles available under `ans`."""
     out = {"eligible": 0, "verify": 0, "excluded": 0}
     for v in views(ans, as_of):
         out[v.standing] += 1
@@ -820,7 +830,37 @@ def counts(choice: Any = "current", as_of: Optional[str] = None) -> dict[str, in
 
 def uk_roles() -> list[RoleView]:
     """The available roles in the UK, the ones the UK question can settle."""
-    return [v for v in views() if v.country == "GB"]
+    return country_roles("GB")
+
+
+def country_roles(country: str, as_of: Optional[str] = None) -> list[RoleView]:
+    """The available roles in `country`, the ones its work question can settle."""
+    return [v for v in views(as_of=as_of) if v.country == country]
+
+
+def answers_with(country: str, choice: Optional[str]) -> dict:
+    """The answers as they would be after answering "Can you work in
+    <country> without visa sponsorship?" with `choice` (set_work_answer).
+    Nothing is saved: previews run the same rules on it."""
+    facts = eligibility.answer_declaration(choice, eligibility.declared(declaration(), country))
+    out = {**answers(), WORK_AUTH: _with_country(declaration(), country, facts)}
+    if country == "GB":
+        out["uk_work"] = eligibility.work_answer(facts)
+    return out
+
+
+def pending_work_question(roles: list[RoleView]) -> Optional[str]:
+    """The country whose "Can you work in <country> without visa sponsorship?"
+    still decides the most of `roles` (ranked): their permission check is
+    open and the declaration does not settle the country. Ties go to the
+    country of the higher ranked role. None when no such question is left."""
+    decl = declaration()
+    n: dict[str, int] = {}
+    for v in roles:
+        if v.criterion("permission").status == "check" and \
+                eligibility.work_answer(eligibility.declared(decl, v.country)) == "unsure":
+            n[v.country] = n.get(v.country, 0) + 1
+    return max(n, key=n.get) if n else None  # dicts keep rank order: the first maximum wins
 
 
 def movement(before: dict, after: dict, n: int = 5, as_of: Optional[str] = None) -> dict[str, str]:
