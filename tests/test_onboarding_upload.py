@@ -91,6 +91,21 @@ def test_the_file_card_shows_the_cv_read_not_the_demo_file(model) -> None:
         assert demo not in page
 
 
+def test_the_x_removes_the_cv_so_another_can_be_uploaded(model) -> None:
+    at = upload(build_text_pdf("Skills: Python"))
+
+    at.button(key="oo-cvx").click().run()
+
+    page = "".join(m.value for m in at.markdown)
+    assert "cv.pdf" not in page and "Read · 100%" not in page
+    assert not [b for b in at.button if b.key == "oo-cvx"]
+    at.file_uploader(key="ob-cv-1").set_value(("other.pdf", build_text_pdf("Skills: SQL"), "application/pdf"))
+    at.run()
+    assert not at.exception
+    assert "other.pdf" in "".join(m.value for m in at.markdown)
+    assert model.calls == ["Skills: Python", "Skills: SQL"]
+
+
 def test_a_pdf_without_text_fails_clearly_without_ocr_or_extraction(model, ocr_used) -> None:
     at = upload(build_pdf(b""))
 

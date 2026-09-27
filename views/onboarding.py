@@ -72,6 +72,8 @@ OPTS_6 = [(230, 375, 600, 68), (230, 453, 600, 68), (230, 531, 600, 68)]
 FILT_7 = [(33, 107, 56, 26), (91, 107, 157, 26), (249, 107, 75, 26)]
 #: Where a CV reading error sits: in the file card's place, below the drop zone.
 CV_STATUS = (428, 458, 664)
+#: The ✕ in the file card's top right corner, which removes the CV read.
+CV_REMOVE = (1058, 468, 24, 24)
 BTN_7 = [(1336, 194, 135, 34), (1405, 324, 66, 34), (1405, 454, 66, 34), (1405, 583, 66, 34), (1405, 713, 66, 34)]
 #: The "Edit profile" chip beside the step 2 title, as (right, y, w, h): its
 #: panel stretches with the window, the fixed-width CV panel to its right does not.
@@ -83,6 +85,7 @@ CTA_2 = {"wa": (-216, 531, 176, 28), "sp": (47, 742, 138, 28)}
 #: The inline "Edit profile" link in the same two cards, placed like CTA_2
 #: (Work authorization from the stage's middle, Sponsorship from its left edge).
 LINK_2 = {"wa-link": (-99, 430, 70, 20), "sp-link": (211, 640, 70, 20)}
+LINK_CLASS = {"Work authorization": "wa-link", "Sponsorship": "sp-link"}
 
 IMPORTANCE = ["Must have", "Important", "Nice to have", "Don’t mind"]
 
@@ -97,6 +100,7 @@ S.setdefault("ob_uk", "yes")
 S.setdefault("ob_filter", 0)
 S.setdefault("ob_file", None)  # (name, size in bytes) of the CV read
 S.setdefault("ob_cv", None)
+S.setdefault("ob_cv_n", 0)  # bumped to give the uploader a new key, emptying it
 S.setdefault("ob_taught", False)  # the Explore practice card was swiped
 
 #: The work authorization question must be answered in step 2 before any
@@ -235,6 +239,19 @@ def overlay(name: str, box, label: str, on_click=None, args=None, shortcut=None)
 # ───────────────────────── Step markup ─────────────────────────
 
 
+REMOVE_X = (
+    '<span class="u-x"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" '
+    'stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>'
+)
+
+
+def remove_cv() -> None:
+    """Forget the CV shown in the file card and empty the uploader, so another can be uploaded."""
+    S["ob_file"] = None
+    S["ob_cv"] = None
+    S["ob_cv_n"] += 1
+
+
 def step1(reading: tuple[str, int] | None = None) -> str:
     """The upload screen. Its file card shows the CV being read (`reading`) or the one read."""
     body = M.S_1
@@ -245,10 +262,10 @@ def step1(reading: tuple[str, int] | None = None) -> str:
         status, bar = ("Reading your CV…", '<div class="u-pb run"><i></i></div>') if reading else (
             "Read · 100%", '<div class="u-pb"><i style="width:100%"></i></div>')
         card = (
-            '<div class="w-card u-file"><span class="u-pdf">PDF</span><div style="flex:1">'
+            f'<div class="w-card u-file{"" if reading else " rm"}"><span class="u-pdf">PDF</span><div style="flex:1">'
             f'<div style="display:flex;justify-content:space-between"><span class="u-fn">{esc(name)}</span>'
             f'<span class="u-fm">{status}</span></div><div class="u-fm">{max(1, round(size / 1024))} KB</div>{bar}'
-            '</div></div>'
+            f'</div>{"" if reading else REMOVE_X}</div>'
         )
     body = body.replace("Choose file</div>", f"Choose file</div>{CONSENT_NOTE}", 1)
     body = body.replace("<!-- CV_FILE_CARD -->", card)
@@ -1505,7 +1522,11 @@ with st.container(key="obody"):
 
         draw()
         with st.container(key="oup"):
-            up = st.file_uploader("Drop your CV here", type=["pdf"], key="ob-cv", label_visibility="collapsed")
+            n = S["ob_cv_n"]
+            key = f"ob-cv-{n}" if n else "ob-cv"
+            up = st.file_uploader("Drop your CV here", type=["pdf"], key=key, label_visibility="collapsed")
+        if S["ob_file"]:
+            overlay("cvx", CV_REMOVE, "Remove CV", on_click=remove_cv)
         x, y, w = CV_STATUS
         st.markdown(
             f"<style>.stApp .st-key-ocv{{position:absolute!important;z-index:7;left:{x}px;top:{y}px;width:{w}px!important}}</style>",

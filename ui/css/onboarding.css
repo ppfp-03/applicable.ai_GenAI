@@ -481,6 +481,8 @@
 .u-drop{border:1.5px dashed #C7C7CC;border-radius:22px;background:rgba(0,0,0,.02);height:230px;margin-top:26px}
 .u-doc{border:0;border-radius:16px;background:var(--blueBg)}
 .u-file{border-radius:18px}
+.u-file.rm{position:relative;padding-right:48px}
+.u-x{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:var(--t2);background:rgba(0,0,0,.05)}
 .u-pdf{border-radius:9px;background:rgba(0,0,0,.05)}
 .u-pb{background:rgba(0,0,0,.06)}
 .u-t{padding:16px 18px}
