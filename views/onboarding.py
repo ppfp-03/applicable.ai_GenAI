@@ -74,6 +74,9 @@ EDIT_2 = (509, 27, 122, 32)
 #: right column, measured from the stage's middle as its column stretches with
 #: the window; Sponsorship, in the left column, from the stage's left edge.
 CTA_2 = {"wa": (-216, 531, 176, 28), "sp": (47, 742, 138, 28)}
+#: The inline "Edit profile" link in the same two cards, placed like CTA_2
+#: (Work authorization from the stage's middle, Sponsorship from its left edge).
+LINK_2 = {"wa-link": (-99, 430, 70, 20), "sp-link": (164, 640, 70, 20)}
 
 IMPORTANCE = ["Must have", "Important", "Nice to have", "Don’t mind"]
 
@@ -247,6 +250,8 @@ REQUIRED = '<span class="w-b am"><i></i>Required</span>'
 MISSING = '<span class="w-b rd"><i></i>Required</span>'
 #: Each required card's call to action, by card title: it opens the editor.
 REQUIRED_CTA = {"Work authorization": "+ Add work authorization", "Sponsorship": "+ Add sponsorship"}
+#: The inline "Edit profile" link in each required card, by card title: its overlay key.
+LINK_CLASS = {"Work authorization": "wa-link", "Sponsorship": "sp-link"}
 #: Hover text of a value the user edited, which no CV quote backs.
 EDITED = "Edited by you"
 PENCIL = (
@@ -359,7 +364,7 @@ def work_auth_cards() -> list[str]:
         return [
             profile_card(
                 t, badge,
-                '<div class="p-v">Required · add it in Edit profile</div>'
+                f'<div class="p-v">Required · add it in <span class="p-link {LINK_CLASS[t]}">Edit profile</span></div>'
                 f'<div class="p-act"><span class="w-chip add p-cta">{cta}</span></div>',
                 cls=cls,
             )
@@ -1362,6 +1367,11 @@ with st.container(key="obody"):
             st.markdown(f"<style>.stApp .st-key-oo-wa{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
             for name, label in zip(CTA_2, REQUIRED_CTA.values()):
                 opened |= overlay(name, CTA_2[name], label, on_click=open_editor, args=(WORK_TAB,))
+            # The "Edit profile" text inside each card: the same editor, on the same tab.
+            mid = LINK_2["wa-link"][0]
+            st.markdown(f"<style>.stApp .st-key-oo-wa-link{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
+            for name, title in zip(LINK_2, REQUIRED_CTA):
+                opened |= overlay(name, LINK_2[name], f"Edit profile · {title}", on_click=open_editor, args=(WORK_TAB,))
         if opened:
             edit_profile()
     elif step == "3a":
