@@ -654,3 +654,8 @@
 .a4-fr .t{font-size:15px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
 .a4-fr .s{font-size:13px;color:var(--t2);margin-top:2px}
 .a4-fr .n{font-size:24px;font-weight:700;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
+/* 2 · The inline "Edit profile" in each required card: a secondary text link.
+   Its invisible overlay button takes the pointer, so hover is read from it. */
+.p-link{font-weight:600;color:var(--t1);text-decoration:underline;text-decoration-color:rgba(0,0,0,.28);text-underline-offset:2px;cursor:pointer}
+.stApp:has(.st-key-oo-wa-link button:hover) .p-link.wa-link,
+.stApp:has(.st-key-oo-sp-link button:hover) .p-link.sp-link{text-decoration-color:currentColor;color:#000}

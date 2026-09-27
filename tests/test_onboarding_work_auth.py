@@ -69,7 +69,7 @@ def test_the_platform_countries_come_from_config() -> None:
 def test_without_a_declaration_step_2_cannot_be_confirmed() -> None:
     at = at_step2()
     shown = page(at)
-    assert shown.count("Required · add it in Edit profile") == 2
+    assert shown.count('Required · add it in <span class="p-link') == 2
     assert "Add your work authorization and sponsorship in Edit profile to continue." in shown
     at.button(key="next").click().run()
     assert not at.exception
@@ -100,10 +100,49 @@ def test_the_calls_to_action_open_the_work_authorization_tab_even_with_a_cv() ->
         assert at.session_state["ed_tab"] == "Work authorization"
 
 
+#: Every way into the profile editor from step 2: the top chip, each card's
+#: call to action, and the "Edit profile" link inside each required card.
+ENTRY_POINTS = ("oo-edit", "oo-wa", "oo-sp", "oo-wa-link", "oo-sp-link")
+
+
+def test_every_entry_point_opens_the_same_editor_on_work_authorization() -> None:
+    for key in ENTRY_POINTS:
+        at = at_step2()
+        at.button(key=key).click().run()
+        assert not at.exception, key
+        assert [t.label for t in at.tabs] == ["Work authorization"], key
+        assert {b.key for b in at.get("button_group")} == {"ed-wa-auth", "ed-wa-sp"}, key
+        assert at.button(key="ed-save") and at.button(key="ed-cancel"), key
+
+
+def test_saving_is_the_same_whichever_entry_point_opened_the_editor() -> None:
+    results = {}
+    for key in ENTRY_POINTS:
+        at = at_step2()
+        at.button(key=key).click().run()
+        answer(at, ["EU", "GB"], ["CN", "SG"])
+        results[key] = (declared(at), at.session_state[store.ANSWERS]["uk_work"], at.session_state["ob_uk"])
+    assert len({repr(r) for r in results.values()}) == 1, results
+    assert results["oo-edit"] == ({"authorized": [*EU, "GB"], "sponsorship": ["CN", "SG"]}, "yes", "yes")
+
+
+def test_each_required_card_links_its_edit_profile_text_to_the_editor() -> None:
+    shown = page(at_step2())
+    assert shown.count('Required · add it in <span class="p-link') == 2
+    assert '<span class="p-link wa-link">Edit profile</span>' in shown
+    assert '<span class="p-link sp-link">Edit profile</span>' in shown
+    for key in ("oo-wa-link", "oo-sp-link"):
+        at = at_step2(cv=True)
+        at.button(key=key).click().run()
+        assert not at.exception
+        assert at.session_state["ed_tab"] == "Work authorization"
+
+
 def test_once_declared_the_required_calls_to_action_are_gone() -> None:
     at = at_step2(declared={"authorized": EU, "sponsorship": []})
     assert "+ Add work authorization" not in page(at)
-    assert not [b for b in at.button if b.key in ("oo-wa", "oo-sp")]
+    assert 'class="p-link' not in page(at)
+    assert not [b for b in at.button if b.key in ("oo-wa", "oo-sp", "oo-wa-link", "oo-sp-link")]
 
 
 def test_the_step_pills_cannot_skip_past_step_2() -> None:
