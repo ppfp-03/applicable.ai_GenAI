@@ -59,11 +59,15 @@ LANGUAGE_CODE = re.compile(r"^[a-z]{2}$")
 
 
 def _level_pattern(level: LanguageLevel) -> re.Pattern[str]:
-    """How a CV writes `level`: "C1", "HSK 4", "N2", "fluent", "native"."""
+    """How a CV writes `level`: "C1", "HSK 4", "N2", "fluent", "native".
+
+    Native is also written "native speaker", "mother tongue", "madrelingua"
+    or "first language" (D-049); "bilingual" is not native.
+    """
     if level.scale == "HSK":
         body = rf"HSK\s*-?\s*(?:level\s*)?{level.level}"
     elif level == LanguageLevel("SELF", "native"):
-        body = r"(?<!non-)(?<!non )native"
+        body = r"(?:(?<!non-)(?<!non )native|mother\s+tongue|madrelingua|first\s+language)"
     else:
         body = re.escape(level.level)
     return re.compile(rf"\b{body}\b", re.IGNORECASE)
