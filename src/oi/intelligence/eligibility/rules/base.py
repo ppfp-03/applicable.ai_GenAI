@@ -18,10 +18,12 @@ from oi.intelligence.eligibility.parameters import JobParameters
 
 @dataclass(frozen=True)
 class RuleContext:
-    """Everything one rule may look at for one requirement.
+    """Everything one rule may look at for one requirement at one location.
 
     `requirement` is None for job-location rules. `parameters` is None when
-    no usable entry exists in the parameter layer.
+    no usable entry exists in the parameter layer. `country_code` is the
+    alternative job location being evaluated, or None when the job's country
+    could not be resolved; `location_evidence_ids` cite that location.
     """
 
     candidate: CandidateProfile
@@ -29,6 +31,8 @@ class RuleContext:
     spec: ConstraintSpec
     requirement: RequirementFact | None = None
     parameters: JobParameters | None = None
+    country_code: str | None = None
+    location_evidence_ids: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

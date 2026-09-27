@@ -134,6 +134,47 @@ def job_countries(job: JobRecord) -> JobCountries:
     return JobCountries(codes, has_unresolved, evidence)
 
 
+@dataclass(frozen=True)
+class JobLocationContext:
+    """One alternative location of a job, as the rules see it.
+
+    Locations sharing a country are one alternative: every rule gives them the
+    same answer. Locations without a country form one "unresolved" alternative,
+    for which no country is invented.
+    """
+
+    key: str
+    country_code: str | None
+    evidence_ids: tuple[str, ...]
+
+
+def job_location_contexts(job: JobRecord, unresolved_key: str) -> list[JobLocationContext]:
+    """Alternative locations in country order, the unresolved one last.
+
+    A job with no locations at all is a single unresolved alternative.
+    """
+
+    by_country: dict[str | None, list[str]] = {}
+    for location in job.locations:
+        by_country.setdefault(location.country_code, []).extend(location.evidence_ids)
+
+    contexts = [
+        JobLocationContext(
+            code, code, tuple(resolvable_job_evidence(job, by_country[code]))
+        )
+        for code in sorted(code for code in by_country if code is not None)
+    ]
+    if None in by_country or not contexts:
+        contexts.append(
+            JobLocationContext(
+                unresolved_key,
+                None,
+                tuple(resolvable_job_evidence(job, by_country.get(None, []))),
+            )
+        )
+    return contexts
+
+
 def hard_requirements(job: JobRecord) -> list[RequirementFact]:
     """The job's hard-constraint requirements, in requirement_id order."""
 
@@ -162,6 +203,54 @@ def resolvable_job_evidence(job: JobRecord, evidence_ids: Iterable[str]) -> list
         if evidence_id in registry and evidence_id not in seen:
             seen.append(evidence_id)
     return seen
+
+
+def unresolved_evidence_warnings(job: JobRecord) -> list[EligibilityWarning]:
+    """One warning per job-side evidence ID the engine reads but cannot resolve.
+
+    resolvable_job_evidence keeps such IDs out of every outcome, since nothing
+    may be cited that a reader cannot open; this reports each one, so a
+    provenance failure is visible rather than silently dropped. It covers the
+    references the engine reads: hard-constraint requirements and locations.
+    Checked once per job, so evaluating several locations never repeats it.
+    """
+
+    registry = {reference.evidence_id for reference in job.evidence}
+    warnings: list[EligibilityWarning] = []
+
+    for requirement in hard_requirements(job):
+        for evidence_id in dict.fromkeys(requirement.evidence_ids):
+            if evidence_id not in registry:
+                warnings.append(
+                    EligibilityWarning(
+                        code=WarningCode.UNRESOLVED_EVIDENCE,
+                        message=(
+                            f"Evidence '{evidence_id}' of requirement "
+                            f"'{requirement.requirement_id}' does not resolve in the "
+                            "job's evidence; it was not cited."
+                        ),
+                        constraint_id=requirement.constraint_id,
+                        requirement_id=requirement.requirement_id,
+                        evidence_id=evidence_id,
+                    )
+                )
+
+    for index, location in enumerate(job.locations):
+        label = location.country_code or "unresolved"
+        for evidence_id in dict.fromkeys(location.evidence_ids):
+            if evidence_id not in registry:
+                warnings.append(
+                    EligibilityWarning(
+                        code=WarningCode.UNRESOLVED_EVIDENCE,
+                        message=(
+                            f"Evidence '{evidence_id}' of location {index} ({label}) "
+                            "does not resolve in the job's evidence; it was not cited."
+                        ),
+                        evidence_id=evidence_id,
+                    )
+                )
+
+    return warnings
 
 
 # ──────────────────────────── Parameter layer ─────────────────────────────
