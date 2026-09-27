@@ -313,6 +313,47 @@ def test_the_demo_persona_keeps_its_uk_answer_when_a_role_page_answer_starts_the
     assert rows(store.answers()) == {"GB": (True, False), "SG": (False, True)}
 
 
+def test_the_synthetic_catalogue_reads_the_same_declaration(fresh_session):
+    # One declaration, one CandidateProfile: curated demo roles and the OI-50
+    # synthetic catalogue (core/synthetic.py) both read it through store.answers().
+    from datetime import datetime, timezone
+
+    from core import synthetic
+
+    now = datetime(2026, 9, 24, tzinfo=timezone.utc)
+    job = "synthetic:SYN-JOB-018"  # China, states a work-authorization requirement
+
+    def cn_paths_missing():
+        result = synthetic.run(D.profile, store.answers(), now).ranked.eligibility[job]
+        synth = next(o for o in result.outcomes if o.rule_id == eligibility.WORK_AUTH)
+        demo = eligibility.work_auth(role(CN_ROLE), store.answers())
+        return synth.missing_field_paths, demo.missing_field_paths
+
+    cn = "declarations.work_authorizations.CN."
+    before = eligibility.candidate_key(D.profile, store.answers())
+    assert cn_paths_missing() == ([cn + "authorized_to_work", cn + "requires_sponsorship"],) * 2
+
+    store.answer_work_question(None)  # "None of these": CN false/null
+    assert declarations_of(store.answers())["CN"] == (False, None)
+    assert cn_paths_missing() == ([cn + "requires_sponsorship"],) * 2
+
+    store.set_work_answer("CN", "no")  # role page: CN false/true
+    key = eligibility.candidate_key(D.profile, store.answers())
+    assert key != before
+    assert declarations_of(store.answers())["CN"] == (False, True)
+    result = synthetic.run(D.profile, store.answers(), now).ranked.eligibility[job]
+    synth = next(o for o in result.outcomes if o.rule_id == eligibility.WORK_AUTH)
+    assert synth.missing_field_paths == []  # the need is known; only the employer's policy decides
+    live = synthetic.current().ranked.eligibility[job]  # the screens' own call
+    assert next(o for o in live.outcomes if o.rule_id == eligibility.WORK_AUTH).missing_field_paths == []
+
+    store.set_work_answer("SG", "yes")  # another country leaves CN's profile facts as they were
+    assert declarations_of(store.answers())["CN"] == (False, True)
+    assert eligibility.candidate_key(D.profile, store.answers()) != key  # SG changed the profile
+    assert eligibility.candidate_key(D.profile, store.answers()) == \
+        eligibility.candidate_key(D.profile, dict(store.answers()))  # same declaration, same key
+
+
 def test_legacy_direct_mappings_still_work():
     # Adapter-only compatibility for mappings without a declaration.
     assert rows({"uk_work": "yes"}) == {"GB": (True, False)}
