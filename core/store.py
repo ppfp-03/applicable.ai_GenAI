@@ -297,6 +297,23 @@ def set_uk(choice: Optional[str]) -> None:
         _store_work_auth(authorized, sponsorship)
 
 
+def work_answer(country: str) -> Optional[str]:
+    """The answer to "Can you work in <country> without visa sponsorship?":
+    "yes", "no", "unsure" or None. The UK's is the UK answer."""
+    if country == "GB":
+        return uk()
+    return (answers().get("work") or {}).get(country)
+
+
+def set_work_answer(country: str, choice: Optional[str]) -> None:
+    """Record that answer; the eligibility checks recompute from it."""
+    if country == "GB":
+        set_uk(choice)
+        return
+    work = {**(answers().get("work") or {}), country: choice}
+    st.session_state[ANSWERS] = {**answers(), "work": work}
+
+
 def set_answer(key: str, value: Any) -> None:
     """Record any other answer (e.g. the Fudan letter was uploaded)."""
     st.session_state[ANSWERS] = {**answers(), key: value}

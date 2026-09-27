@@ -81,12 +81,12 @@ def title(view: str, picked: date, first: date) -> tuple[str, str]:
     if view == "Month":
         return first.strftime("%B"), str(first.year)
     if view == "Day":
-        return picked.strftime("%A %-d %B"), str(picked.year)
+        return f"{picked:%A} {picked.day} {picked:%B}", str(picked.year)
     days = view_days(view, picked)
     a, b = days[0], days[-1]
     if a.month == b.month:
         return f"{a.day} – {b.day} {b.strftime('%B')}", str(b.year)
-    return f"{a.strftime('%-d %b')} – {b.strftime('%-d %b')}", str(b.year)
+    return f"{a.day} {a:%b} – {b.day} {b:%b}", str(b.year)
 
 
 def hours(events: list[CalEvent], now: datetime | None = None) -> tuple[int, int]:

@@ -83,9 +83,9 @@ _RECEIPT = {
     "produced_at": _AT,
 }
 
-#: What each UK answer declares, as (authorized_to_work, requires_sponsorship).
-#: The question reads "Can you work in the UK without visa sponsorship?"; "Not
-#: sure" and no answer declare nothing.
+#: What each work answer declares, as (authorized_to_work, requires_sponsorship).
+#: The question reads "Can you work in <country> without visa sponsorship?";
+#: "Not sure" and no answer declare nothing. Used for the UK and every other country.
 _UK_DECLARATIONS = {
     "yes": (True, False),
     "no": (False, True),
@@ -182,8 +182,17 @@ def declarations(answers: Mapping[str, Any]) -> tuple[tuple[str, Optional[bool],
     Returns:
         (country_code, authorized_to_work, requires_sponsorship) per country.
     """
-    uk = _UK_DECLARATIONS.get(answers.get("uk_work"))
-    return (("GB", *uk),) if uk else ()
+    # The UK has its own question ("uk_work"); every other country is answered
+    # the same way from the role page (answers["work"][country]). "Not sure"
+    # declares nothing, so the rule keeps asking.
+    by_country = {c: a for c, a in (answers.get("work") or {}).items() if c != "GB"}
+    by_country["GB"] = answers.get("uk_work")
+    out = []
+    for country in sorted(by_country):
+        decl = _UK_DECLARATIONS.get(by_country[country])
+        if decl:
+            out.append((country, *decl))
+    return tuple(out)
 
 
 def _candidate_key(profile: Mapping[str, Any], answers: Mapping[str, Any]) -> str:
@@ -202,6 +211,12 @@ def _candidate_key(profile: Mapping[str, Any], answers: Mapping[str, Any]) -> st
 def candidate(profile: Mapping[str, Any], answers: Mapping[str, Any]) -> CandidateProfile:
     """The demo profile and the user's answers as one CandidateProfile."""
     return _candidate(_candidate_key(profile, answers))
+
+
+def candidate_key(profile: Mapping[str, Any], answers: Mapping[str, Any]) -> str:
+    """A deterministic key for `candidate(profile, answers)`: equal keys build
+    equal profiles, so callers can cache anything derived from the candidate."""
+    return _candidate_key(profile, answers)
 
 
 @lru_cache(maxsize=64)

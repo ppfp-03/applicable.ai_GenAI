@@ -134,14 +134,33 @@ body:has(.st-key-hx-calbar) .st-key-gl-tl{transform:perspective(1400px) rotateX(
 .st-key-sh-apps .stPageLink a{padding:5px 14px;border-radius:999px;background:rgba(255,255,255,.85);box-shadow:inset 0 0 0 1.5px var(--blue);transition:background .15s}
 .st-key-sh-apps .stPageLink a:hover{background:var(--blueBg)}
 .st-key-sh-apps .stPageLink a p,.st-key-sh-apps .stPageLink a span{font-size:12.5px;color:var(--blue);font-weight:620}
-.st-key-af{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:6px!important;margin-top:8px}
-.st-key-af > div{width:auto!important}
+.st-key-af{position:relative;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:6px!important;margin-top:8px}
+.st-key-af > div{width:auto!important;position:relative;z-index:1}
+.st-key-af [data-testid="stElementContainer"]:has(.af-mark){display:none!important}
+/* The liquid-glass lens under the lit chip (ui/js/apps_filter.js). */
+.af-lens{display:block;position:absolute;left:0;top:0;height:28px;width:0;z-index:0;pointer-events:none;will-change:transform,width}
+.af-lens i{position:absolute;inset:0;border-radius:999px;display:block;background:linear-gradient(180deg,rgba(255,255,255,.92) 0%,rgba(255,255,255,.62) 55%,rgba(255,255,255,.78) 100%);backdrop-filter:blur(10px) saturate(190%) brightness(1.06);-webkit-backdrop-filter:blur(10px) saturate(190%) brightness(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.98),inset 0 -1px 1.5px rgba(0,0,0,.07),inset 0 0 6px rgba(255,255,255,.5),0 0 0 1.5px var(--ring,#0071E3),0 4px 14px rgba(28,40,64,.12);transition:box-shadow .3s}
+.af-lens.flow i{animation:af-flow .52s cubic-bezier(.3,1.35,.5,1)}
+@keyframes af-flow{0%{transform:scale(1,1)}35%{transform:scale(1.14,.86)}70%{transform:scale(.97,1.04)}100%{transform:scale(1,1)}}
+.st-key-af.has-lens [class*="st-key-af-"] button,.st-key-af.has-lens [class*="st-key-af-"] button:hover{background:transparent!important}
 [class*="st-key-af-"] button{height:28px;min-height:28px;padding:0 11px;font-size:12px;font-weight:560;background:transparent;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.1);color:var(--t2);gap:6px}
 [class*="st-key-af-"] button:hover{background:rgba(255,255,255,.7);color:var(--t1)}
 [class*="st-key-af-"] button::before{content:"";width:8px;height:8px;border-radius:50%;flex:none}
 [class*="st-key-af-"] button strong{color:var(--t1);font-weight:680}
-.st-key-al{flex:1;min-height:0;overflow-y:auto;margin-top:10px;display:flex;flex-direction:column;gap:6px!important;padding:2px 2px 4px}
-.st-key-al > div{flex:none}
+[class*="st-key-al-"]{flex:1;min-height:0;overflow-y:auto;margin-top:10px;display:flex;flex-direction:column;gap:6px!important;padding:2px 2px 4px}
+[class*="st-key-al-"] > div{flex:none}
+/* A new filter's rows drop in one after another. */
+[class*="st-key-al-"] > div{animation:al-drop .42s cubic-bezier(.2,.8,.2,1) both}
+[class*="st-key-al-"] > div:nth-child(1){animation-delay:0ms}
+[class*="st-key-al-"] > div:nth-child(2){animation-delay:70ms}
+[class*="st-key-al-"] > div:nth-child(3){animation-delay:140ms}
+[class*="st-key-al-"] > div:nth-child(4){animation-delay:210ms}
+[class*="st-key-al-"] > div:nth-child(5){animation-delay:280ms}
+[class*="st-key-al-"] > div:nth-child(6){animation-delay:350ms}
+[class*="st-key-al-"] > div:nth-child(7){animation-delay:420ms}
+[class*="st-key-al-"] > div:nth-child(8){animation-delay:490ms}
+@keyframes al-drop{from{opacity:0;transform:translateY(-10px) scaleY(.96);transform-origin:top}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){[class*="st-key-al-"] > div,.af-lens.flow i{animation:none}.af-lens{transition:none!important}}
 [class*="st-key-ai-"]{background:rgba(255,255,255,.85);border-radius:14px;box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 1px 3px rgba(28,40,64,.05);gap:0!important}
 .ar{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer}
 .ar .lg{width:30px;height:30px;border-radius:9px;font-size:12px;flex:none}

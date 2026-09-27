@@ -37,6 +37,7 @@ APPS_FILTER = "home_apps_filter"  # the stage whose applications the card lists
 APPS_OPEN = "home_apps_open"      # the application expanded in that list, if any
 st.session_state.setdefault(CARD, 2)
 MOTION_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "home.js").read_text(encoding="utf-8")
+FILTER_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "apps_filter.js").read_text(encoding="utf-8")
 
 SIM = d.simulated_event["label"]
 
@@ -237,7 +238,7 @@ with st.container(key="car"):
                 if st.button("View application", key="uc-view"):
                     tabs.go("applications", id=item["role"])
             elif kind == "interview":
-                if st.button("Open prep", type="primary", key="uc-prep"):
+                if st.button("View application", type="primary", key="uc-prep"):
                     tabs.go("applications", id=item["role"])
                 if st.button("Copy join link", key="uc-join"):
                     st.toast("Join link copied")
@@ -430,23 +431,30 @@ with st.container(key="bt"):
             st.session_state[APPS_FILTER] = "progress" if sc["progress"] else next(
                 (k for k, _, _ in PIPELINE if sc[k]), "saved")
         cur = st.session_state[APPS_FILTER]
+        # The lit chip is ringed in its stage colour (Saved's dot is too pale
+        # for a ring, so it takes a darker grey).
+        ring = {"saved": "#8E8E93"}.get(cur) or dict((k, c) for k, _, c in PIPELINE)[cur]
         with st.container(key="af"):
+            # Tells ui/js/apps_filter.js which chip is lit: its liquid-glass lens
+            # slides there, and stays put between reruns instead of redrawing.
+            html(f'<i class="af-mark" data-cur="{cur}" data-ring="{ring}"></i>')
             for k, name, _ in PIPELINE:
                 st.button(f"{name} **{sc[k]}**", key=f"af-{k}", on_click=pick_stage, args=(k,))
         # Scoped as tightly as home.css (which the theme prefixes with the tab),
         # so these per-run rules win over its chip defaults.
         chip = ".stApp .st-key-gl-apps .st-key-af-{} button"
         css = [f"{chip.format(k)}::before{{background:{c}}}" for k, _, c in PIPELINE]
-        # The lit chip: white, ringed in its stage colour (Saved's dot is too
-        # pale for a ring, so it takes a darker grey), the others dimmed.
-        ring = {"saved": "#8E8E93"}.get(cur) or dict((k, c) for k, _, c in PIPELINE)[cur]
         css.append(f".stApp .st-key-gl-apps [class*='st-key-af-'] button{{opacity:.72}}"
-                   f"{chip.format(cur)},{chip.format(cur)}:hover{{opacity:1!important;background:#fff!important;"
-                   f"color:var(--t1)!important;font-weight:680!important;"
-                   f"box-shadow:0 0 0 1.5px {ring},0 2px 8px rgba(28,40,64,.10)!important}}")
+                   f"{chip.format(cur)},{chip.format(cur)}:hover{{opacity:1!important;"
+                   f"color:var(--t1)!important;font-weight:680!important}}"
+                   # Without the script (no lens), the lit chip draws its own ring.
+                   f".stApp .st-key-gl-apps .st-key-af:not(.has-lens) .st-key-af-{cur} button"
+                   f"{{background:#fff!important;box-shadow:0 0 0 1.5px {ring},0 2px 8px rgba(28,40,64,.10)!important}}")
         st.markdown(f"<style>{''.join(css)}</style>", unsafe_allow_html=True)
 
-        with st.container(key="al"):
+        # Keyed by stage: a new filter draws new rows, so they drop in one after
+        # another (home.css), while expanding a row keeps the others still.
+        with st.container(key=f"al-{cur}"):
             rows = [a for a in store.applications() if a["stage"] == cur]
             if not rows:
                 name = dict((k, n) for k, n, _ in PIPELINE)[cur]
@@ -493,6 +501,9 @@ with st.container(key="aa-js-clock"):
 </script>""",
         unsafe_allow_javascript=True,
     )
+
+with st.container(key="aa-js-apps-filter"):
+    st.html(f"<script>{FILTER_JS}</script>", unsafe_allow_javascript=True)
 
 with st.container(key="aa-js-motion"):
     st.html(f"<script>{MOTION_JS}</script>", unsafe_allow_javascript=True)

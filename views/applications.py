@@ -157,11 +157,10 @@ with st.container(key="ap-main"):
         with st.container(key="end-a"):
             pass
         with st.container(key="ap-foot"):
-            if st.button("Open role", key="ap-open"):
+            # You are already on the application, so the one action here is the
+            # posting itself: its checks and requirements.
+            if st.button("Open role", type="primary", key="ap-open"):
                 tabs.go("role", id=r.id)
-            first, _ = a["actions"]
-            if st.button(first, type="primary", key="act"):
-                st.toast(f"{first} · {r.company}")
 
 with st.container(key="aa-js-apps"):
     st.html(f"<script>{DRAG_JS}</script>", unsafe_allow_javascript=True)
