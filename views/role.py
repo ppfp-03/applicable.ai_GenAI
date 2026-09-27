@@ -16,8 +16,9 @@ from __future__ import annotations
 
 import streamlit as st
 
-from core import clock, store
+from core import clock, store, synthetic
 from ui import parts, shell, tabs
+from ui import synthetic as synthetic_ui
 from ui.html import check_icon, esc, hit, html, logo
 from ui.theme import page_css
 
@@ -25,6 +26,11 @@ d = store.data()
 page_css("role")
 
 role_id = st.query_params.get("id") or st.session_state.get("role_id") or "deutsch-shanghai"
+# An OI-50 synthetic job has its own canonical page; it is not a demo role.
+if synthetic.is_synthetic(role_id) and any(j.job_id == role_id for j in synthetic.jobs()):
+    st.session_state["role_id"] = role_id
+    synthetic_ui.role_page(role_id)
+    st.stop()
 try:
     role = d.role(role_id)
 except KeyError:

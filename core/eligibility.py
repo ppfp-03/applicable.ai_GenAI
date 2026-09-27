@@ -213,6 +213,12 @@ def candidate(profile: Mapping[str, Any], answers: Mapping[str, Any]) -> Candida
     return _candidate(_candidate_key(profile, answers))
 
 
+def candidate_key(profile: Mapping[str, Any], answers: Mapping[str, Any]) -> str:
+    """A deterministic key for `candidate(profile, answers)`: equal keys build
+    equal profiles, so callers can cache anything derived from the candidate."""
+    return _candidate_key(profile, answers)
+
+
 @lru_cache(maxsize=64)
 def _candidate(key: str) -> CandidateProfile:
     facts = json.loads(key)
