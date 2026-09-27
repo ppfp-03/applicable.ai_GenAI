@@ -19,7 +19,10 @@
 [data-testid="stDialog"] button[data-variant="segmented_control"][aria-checked="true"] p{color:var(--t1);font-weight:620}
 
 /* Calendar: title, ‹ Today › and the view switch on one line. */
-[data-testid="stDialog"] .st-key-hx-calbar{display:flex!important;flex-direction:row!important;align-items:center;gap:14px!important;flex-wrap:nowrap!important;margin:-6px 0 10px}
+/* The month title takes the dialog title's place, as in Calendar.app; the
+ * bar leaves room for the dialog's close button. */
+[data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-calbar) h2 [data-testid="stMarkdownContainer"]{visibility:hidden}
+[data-testid="stDialog"] .st-key-hx-calbar{display:flex!important;flex-direction:row!important;align-items:center;gap:14px!important;flex-wrap:nowrap!important;margin:-62px 60px 14px 0;position:relative;z-index:1;width:auto!important}
 [data-testid="stDialog"] .st-key-hx-calbar > [data-testid="stElementContainer"],[data-testid="stDialog"] .st-key-hx-calbar > div{width:auto!important}
 [data-testid="stDialog"] .st-key-hx-calbar > [data-testid="stElementContainer"]:has(.hx-title){flex:1;min-width:0}
 [data-testid="stDialog"] .hx-title{font-size:26px;font-weight:400;letter-spacing:-0.025em;color:var(--t2);white-space:nowrap}
