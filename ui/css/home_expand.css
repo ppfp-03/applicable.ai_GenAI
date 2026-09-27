@@ -1,0 +1,105 @@
+/* Home's full views (ui/home_expand.py). Dialogs open outside the tab
+ * containers, so every rule starts from the dialog itself. */
+
+[data-testid="stDialog"] .hx-sub{font-size:13px;color:var(--t2);margin:-4px 0 6px}
+[data-testid="stDialog"] .hx-sub b{color:var(--t1);font-weight:620}
+[data-testid="stDialog"] .hx-none{font-size:12.5px;color:var(--t3);padding:6px 2px}
+
+/* Calendar: bar */
+[data-testid="stDialog"] .st-key-hx-calbar{display:flex!important;flex-direction:row!important;align-items:center;gap:8px!important;flex-wrap:nowrap!important;margin-bottom:4px}
+[data-testid="stDialog"] .st-key-hx-calbar [data-testid="stElementContainer"]{width:auto!important}
+[data-testid="stDialog"] .st-key-hx-calbar [data-testid="stElementContainer"]:has(.hx-title){flex:1}
+[data-testid="stDialog"] .st-key-hx-prev button,[data-testid="stDialog"] .st-key-hx-next button{width:32px;height:32px;min-height:32px;padding:0}
+[data-testid="stDialog"] .st-key-hx-today button{height:32px;min-height:32px;font-size:12.5px}
+[data-testid="stDialog"] .hx-title{font-size:20px;font-weight:680;letter-spacing:-0.02em;margin-left:6px}
+
+/* Calendar: grid */
+[data-testid="stDialog"] .hx-wd{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+[data-testid="stDialog"] .hx-wd span{padding:0 8px}
+[data-testid="stDialog"] [class*="st-key-hx-grid-"]{position:relative}
+[data-testid="stDialog"] .hx-g{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:86px;gap:6px}
+[data-testid="stDialog"] .hx-g.w{grid-auto-rows:340px}
+[data-testid="stDialog"] .hx-c{border-radius:12px;padding:6px 7px;background:rgba(255,255,255,.75);box-shadow:0 0 0 .5px rgba(0,0,0,.07);display:flex;flex-direction:column;gap:3px;overflow:hidden;min-width:0;transition:box-shadow .15s}
+[data-testid="stDialog"] .hx-c.o{background:rgba(0,0,0,.02);box-shadow:none}
+[data-testid="stDialog"] .hx-c.o .hx-dn b{color:var(--t3)}
+[data-testid="stDialog"] .hx-c.p .hx-dn b{color:var(--t2)}
+[data-testid="stDialog"] .hx-c.t .hx-dn b{background:var(--blue);color:#fff;border-radius:999px;padding:1px 7px}
+[data-testid="stDialog"] .hx-c.s{box-shadow:0 0 0 2px var(--blue)}
+[data-testid="stDialog"] .hx-dn{font-size:11px;color:var(--t3);font-weight:560;margin-bottom:2px}
+[data-testid="stDialog"] .hx-dn b{font-size:13px;color:var(--t1);font-weight:650}
+[data-testid="stDialog"] .hx-pl{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;border-radius:6px;padding:2px 5px;background:rgba(0,0,0,.04);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-testid="stDialog"] .hx-g.w .hx-pl{white-space:normal;padding:5px 7px}
+[data-testid="stDialog"] .hx-pl i{width:6px;height:6px;border-radius:50%;flex:none;display:block}
+[data-testid="stDialog"] .hx-pl.p{opacity:.55}
+[data-testid="stDialog"] .hx-more{font-size:10.5px;color:var(--t3);font-weight:600;padding-left:5px}
+/* Click targets over the drawn grid, same geometry. */
+[data-testid="stDialog"] [class*="st-key-hx-cells-"]{position:absolute!important;inset:0;display:grid!important;grid-template-columns:repeat(7,1fr);grid-auto-rows:86px;gap:6px!important;z-index:2}
+[data-testid="stDialog"] .st-key-hx-cells-w{grid-auto-rows:340px}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] [data-testid="stElementContainer"]{width:auto!important;height:100%}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] .stButton,[data-testid="stDialog"] [class*="st-key-hx-cells-"] button{width:100%;height:100%}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] button{padding:0;min-height:0;border-radius:12px;border:0;box-shadow:none;background:transparent;color:transparent}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] button p{color:transparent}
+[data-testid="stDialog"] [class*="st-key-hx-cells-"] button:hover{background:rgba(0,113,227,.06)}
+
+/* Calendar: agenda */
+[data-testid="stDialog"] .hx-ah{display:flex;justify-content:space-between;align-items:baseline;font-size:16px;font-weight:660;letter-spacing:-0.01em}
+[data-testid="stDialog"] .hx-ah span{font-size:12px;color:var(--blue);font-weight:620}
+[data-testid="stDialog"] [class*="st-key-hx-ev-"]{background:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 0 0 .5px rgba(0,0,0,.07);gap:8px!important}
+[data-testid="stDialog"] [class*="st-key-hx-ev-"] button{height:30px;min-height:30px;font-size:12.5px}
+[data-testid="stDialog"] .hx-er{display:flex;gap:10px;align-items:flex-start;font-size:13px}
+[data-testid="stDialog"] .hx-er i{width:9px;height:9px;border-radius:50%;flex:none;margin-top:5px;display:block}
+[data-testid="stDialog"] .hx-er b{font-weight:620}
+[data-testid="stDialog"] .hx-er.p{opacity:.6}
+[data-testid="stDialog"] .hx-ed{font-size:12px;color:var(--t2);margin-top:2px}
+[data-testid="stDialog"] .hx-nh{font-size:11px;color:var(--t3);font-weight:620;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px}
+[data-testid="stDialog"] .hx-nx{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:5px 0;border-top:1px solid rgba(0,0,0,.05)}
+[data-testid="stDialog"] .hx-nx span{width:74px;flex:none;color:var(--t3);font-size:11.5px;font-weight:560}
+[data-testid="stDialog"] .hx-nx i{width:7px;height:7px;border-radius:50%;flex:none;display:block}
+
+/* This week */
+[data-testid="stDialog"] [class*="st-key-hx-wk-"]{display:flex!important;flex-direction:row!important;align-items:center;gap:14px!important;flex-wrap:nowrap!important;background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 0 0 .5px rgba(0,0,0,.07)}
+[data-testid="stDialog"] [class*="st-key-hx-wk-"] [data-testid="stElementContainer"]{width:auto!important}
+[data-testid="stDialog"] [class*="st-key-hx-wk-"] [data-testid="stElementContainer"]:first-child{flex:1;min-width:0}
+[data-testid="stDialog"] [class*="st-key-hx-wk-"] button{height:32px;min-height:32px;font-size:12.5px;white-space:nowrap}
+[data-testid="stDialog"] .hx-wr{display:flex;gap:14px;align-items:flex-start}
+[data-testid="stDialog"] .hx-wb{min-width:0}
+[data-testid="stDialog"] .hx-wk{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:620}
+[data-testid="stDialog"] .hx-wk i{width:7px;height:7px;border-radius:50%;display:block}
+[data-testid="stDialog"] .hx-wt{font-size:16px;font-weight:660;letter-spacing:-0.015em;margin-top:3px}
+[data-testid="stDialog"] .hx-ws{font-size:12.5px;color:var(--t2);margin-top:2px}
+[data-testid="stDialog"] .hx-wn{font-size:12px;color:var(--t2);margin-top:6px}
+[data-testid="stDialog"] .hx-wn b{color:var(--t1);font-weight:600}
+
+/* Top matches: the Home card, in a wrapping grid. */
+[data-testid="stDialog"] .st-key-hx-mbar{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;flex-wrap:nowrap!important}
+[data-testid="stDialog"] .st-key-hx-mbar [data-testid="stElementContainer"]{width:auto!important}
+[data-testid="stDialog"] .st-key-hx-mg{position:relative}
+[data-testid="stDialog"] .hx-mt,[data-testid="stDialog"] .st-key-hx-mcells{display:grid!important;grid-template-columns:repeat(auto-fill,196px);grid-auto-rows:232px;gap:12px!important;justify-content:start}
+[data-testid="stDialog"] .st-key-hx-mcells{position:absolute!important;inset:0;z-index:2}
+[data-testid="stDialog"] .st-key-hx-mcells [data-testid="stElementContainer"]{width:196px!important}
+[data-testid="stDialog"] .st-key-hx-mcells button{width:196px;height:232px;padding:0;border-radius:18px;border:0;box-shadow:none;background:transparent;color:transparent}
+[data-testid="stDialog"] .st-key-hx-mcells button p{color:transparent}
+[data-testid="stDialog"] .st-key-hx-mcells button:hover{background:rgba(0,113,227,.05)}
+[data-testid="stDialog"] .mc{width:196px;height:232px;border-radius:18px;padding:14px;background:#fff;box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.05);display:flex;flex-direction:column;box-sizing:border-box;transition:box-shadow .15s}
+[data-testid="stDialog"] .mc .h{display:flex;justify-content:space-between;align-items:flex-start}
+[data-testid="stDialog"] .mc .sc{font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums}
+[data-testid="stDialog"] .mc .sc small{display:block;font-size:10.5px;color:var(--t3);font-weight:560;letter-spacing:0;text-align:right;margin-top:3px}
+[data-testid="stDialog"] .mc .t{font-size:13.5px;font-weight:620;margin-top:12px;letter-spacing:-0.01em}
+[data-testid="stDialog"] .mc .m{font-size:11.5px;color:var(--t2);margin-top:2px}
+[data-testid="stDialog"] .mc .b{height:4px;border-radius:2px;background:rgba(0,0,0,.06);margin-top:auto;overflow:hidden}
+[data-testid="stDialog"] .mc .b i{display:block;height:100%;background:var(--blue);border-radius:2px}
+[data-testid="stDialog"] .mc .f{display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:8px}
+[data-testid="stDialog"] .mc .f .u{color:var(--amber);font-weight:600}
+[data-testid="stDialog"] .mc .why{font-size:11.5px;color:#3A3A3C;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.06)}
+
+/* Applications board */
+[data-testid="stDialog"] .hx-bh{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:640;margin-bottom:4px}
+[data-testid="stDialog"] .hx-bh i{width:8px;height:8px;border-radius:50%;display:block}
+[data-testid="stDialog"] .hx-bh b{margin-left:auto;font-size:12px;color:var(--t3);font-weight:600}
+[data-testid="stDialog"] [class*="st-key-hx-ap-"]{background:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 4px 14px rgba(28,40,64,.04);gap:8px!important}
+[data-testid="stDialog"] [class*="st-key-hx-ap-"] button{width:100%;height:30px;min-height:30px;font-size:12px}
+[data-testid="stDialog"] .hx-ac .hd{display:flex;align-items:center;gap:10px}
+[data-testid="stDialog"] .hx-ac .t{font-size:13px;font-weight:640;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-testid="stDialog"] .hx-ac .m{font-size:11.5px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-testid="stDialog"] .hx-ac .tag{display:inline-block;margin-top:10px;font-size:11px;font-weight:620;border-radius:999px;padding:3px 9px}
+[data-testid="stDialog"] .hx-ac .n{font-size:12px;color:var(--t2);margin-top:8px}

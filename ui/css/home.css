@@ -11,6 +11,13 @@
 .st-key-ib-help{margin-left:6px}
 .st-key-ib-help button{width:34px;height:34px;min-height:34px;font-size:15px;font-weight:650;color:var(--t2)}
 .st-key-ib-help button:hover{color:var(--blue)}
+/* The ⤢ that opens each widget's full view (ui/home_expand.py). */
+.st-key-ib-x-car{margin-left:6px}
+.st-key-ib-x-car button{width:34px;height:34px;min-height:34px}
+.st-key-ib-x-top button,.st-key-ib-x-apps button{width:30px;height:30px;min-height:30px}
+[class*="st-key-ib-x-"] button{padding:0;color:var(--t2)}
+[class*="st-key-ib-x-"] button:hover{color:var(--blue)}
+[class*="st-key-ib-x-"] button [data-testid="stIconMaterial"]{font-size:17px}
 
 /* Carousel */
 .st-key-car{position:relative;height:318px;margin-top:16px;touch-action:pan-y;cursor:grab}
@@ -66,7 +73,9 @@ html.aa-car-moving .st-key-card-uc{opacity:0;pointer-events:none;transition:opac
 
 /* Timeline */
 .st-key-gl-tl{margin-top:18px;padding:14px 22px!important;position:relative}
-.tl-h{display:flex;justify-content:space-between;font-size:13px;font-weight:640}.tl-h span{font-weight:450;color:var(--t3);font-size:12px}
+.tl-h{display:flex;justify-content:space-between;font-size:13px;font-weight:640;padding-right:40px}
+.st-key-ib-x-tl{position:absolute!important;top:10px;right:16px;z-index:6;width:auto!important}
+.st-key-ib-x-tl button{width:28px;height:28px;min-height:28px}.tl-h span{font-weight:450;color:var(--t3);font-size:12px}
 .tl-g{position:relative;height:96px;margin-top:6px}
 .tl-d{position:absolute;bottom:0;font-size:11px;color:var(--t3);font-weight:560;transform:translateX(-50%);text-align:center;line-height:1.25}
 .tl-d b{display:block;font-size:13px;color:var(--t1);font-weight:640}
@@ -116,6 +125,8 @@ html.aa-car-moving .st-key-card-uc{opacity:0;pointer-events:none;transition:opac
 /* Applications wallet */
 .st-key-sh-apps{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;flex-wrap:nowrap!important}
 .st-key-sh-apps > div{width:auto!important}
+.st-key-apps-r{display:flex!important;flex-direction:row!important;align-items:center;gap:10px!important;width:auto!important;flex-wrap:nowrap!important}
+.st-key-apps-r [data-testid="stElementContainer"]{width:auto!important}
 .st-key-sh-apps .stPageLink a{padding:0;background:none;font-size:12px;color:var(--blue);font-weight:560}
 .st-key-sh-apps .stPageLink a p,.st-key-sh-apps .stPageLink a span{font-size:12px;color:var(--blue);font-weight:560}
 .wsum2{display:flex;gap:16px;margin-top:10px;font-size:12px;color:var(--t2)}.wsum2 span{display:flex;align-items:center;gap:6px}.wsum2 b{color:var(--t1);font-weight:650}.wsum2 i{width:8px;height:8px;border-radius:50%;display:block}
