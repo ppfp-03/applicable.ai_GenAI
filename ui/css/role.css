@@ -68,3 +68,17 @@
 .kci .pt{grid-row:1/3;grid-column:3;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .kci .pt b{font-size:14px;font-weight:650;display:block}
 .kci .pt span{font-size:10.5px;color:var(--t3)}
+
+/* OI-50 synthetic role page (ui/synthetic.py). */
+.st-key-sy-main{display:grid!important;grid-template-columns:1fr 420px;gap:20px!important;margin-top:18px}
+.st-key-sy-main > div{width:auto!important;min-width:0}
+.st-key-sy-col,.st-key-sy-pan{display:flex!important;flex-direction:column;gap:14px!important}
+.hero.sy-hero{height:auto;display:block}
+.sy-cks{padding:4px 0}
+.sy-ck{padding:12px 16px;border-bottom:1px solid rgba(0,0,0,.05)}.sy-ck:last-child{border:0}
+.sy-ckh{display:flex;align-items:center;justify-content:space-between;gap:10px}.sy-ckh b{font-size:13.5px;font-weight:620}
+.sy-ckr{font-size:12.5px;color:var(--t2);line-height:1.45;margin-top:4px;overflow-wrap:anywhere}
+.sy-reqs{padding:10px 16px;font-size:12.5px;line-height:1.55;color:#3A3A3C}.sy-reqs div{padding:3px 0;overflow-wrap:anywhere}
+.sy-none{font-size:12.5px;color:var(--t2);padding:14px 16px;line-height:1.5}
+.sy-gate{padding:12px 14px;font-size:12.5px;color:var(--t2)}
+.sy-ldp{font-size:12.5px;color:var(--t2);line-height:1.45;margin-top:-4px}.sy-ldp b{color:var(--t1);font-weight:620}

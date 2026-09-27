@@ -13,6 +13,7 @@ import streamlit as st
 
 from core import store
 from ui import parts, shell, tabs
+from ui import synthetic as synthetic_ui
 from ui.html import LOCK, esc, hit, html, logo
 from ui.theme import page_css
 
@@ -123,3 +124,7 @@ with st.container(key="mt-main"):
                 if not applied:
                     store.save_application(v.id)
                 tabs.go("applications", id=v.id)
+
+# The OI-50 synthetic catalogue: its own list under the curated one, checked by
+# the canonical engine and ranked by the production pipeline, never mixed in.
+synthetic_ui.matches_section()
