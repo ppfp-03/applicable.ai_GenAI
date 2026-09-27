@@ -144,6 +144,16 @@ def test_fluent_is_shown_as_the_cv_states_it() -> None:
     assert '<span class="w-chip" title="Spanish (fluent)">Spanish · fluent</span>' in page
 
 
+def test_a_native_language_in_other_words_is_shown_as_native() -> None:
+    # DEMO-05: "mother tongue" is native (D-049), not "level not stated".
+    line = "Italian - Mother tongue"
+    cv = make_cv(make_cv().text + line + "\n")
+    page = step2(extract_candidate(cv, FakeModelClient(fields=make_fields(languages=[lang("it", "Mother tongue", line)]))))
+
+    assert f'<span class="w-chip" title="{line}">Italian · native</span>' in page
+    assert "level not stated" not in page
+
+
 def test_a_language_without_a_readable_level_is_still_listed() -> None:
     page = step2(speaker(lang("de", "", "Italian (native)")))
 

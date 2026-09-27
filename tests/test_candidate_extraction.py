@@ -351,6 +351,60 @@ def test_language_answers_keep_cv_provenance() -> None:
     assert ref.field_path == "eligibility_answers.HC_LANGUAGE.level_zh"
 
 
+@pytest.mark.parametrize(
+    ("line", "level"),
+    [
+        ("Italian - Native", "Native"),
+        ("Italian - Native speaker", "Native speaker"),
+        ("Italian - Mother tongue", "Mother tongue"),
+        ("Italiano - Madrelingua", "Madrelingua"),
+        ("Italian - First language", "First language"),
+        ("ITALIAN - MOTHER TONGUE", "MOTHER TONGUE"),
+    ],
+)
+def test_native_wordings_read_as_native_with_cv_evidence(line: str, level: str) -> None:
+    # D-049: explicit native wording, in any case, is SELF:native.
+    profile = extract_languages(lang("it", level, line), text=CV_TEXT + line + "\n")
+
+    assert language_answers(profile) == [("level_it", "known", "SELF:native")]
+    (answer,) = profile.eligibility_answers["HC_LANGUAGE"]
+    assert answer.source_document_id == "cv-001"
+    assert answer.evidence_ids == ["ev-cv-001-language-001"]
+    (ref,) = [e for e in profile.provenance.evidence if e.evidence_id in answer.evidence_ids]
+    assert ref.quote == line
+    assert ref.field_path == "eligibility_answers.HC_LANGUAGE.level_it"
+
+
+@pytest.mark.parametrize(
+    ("line", "level"),
+    [
+        ("Italian - Bilingual", "Bilingual"),  # not native wording (D-049)
+        ("Italian - non-native", "non-native"),
+        ("Italian - non native", "non native"),
+    ],
+)
+def test_wordings_that_are_not_native_stay_unknown(line: str, level: str) -> None:
+    profile = extract_languages(lang("it", level, line), text=CV_TEXT + line + "\n")
+
+    assert language_answers(profile) == [("level_it", "unknown", None)]
+    (answer,) = profile.eligibility_answers["HC_LANGUAGE"]
+    assert answer.evidence_ids == ["ev-cv-001-language-001"]
+
+
+def test_native_wording_broken_across_pdf_lines_reads_as_native() -> None:
+    # The model joins the PDF's line break; the evidence keeps the CV's own span.
+    text = CV_TEXT + "Italian - Mother\ntongue\n"
+    profile = extract_languages(lang("it", "Mother tongue", "Italian - Mother tongue"), text=text)
+
+    assert language_answers(profile) == [("level_it", "known", "SELF:native")]
+    (answer,) = profile.eligibility_answers["HC_LANGUAGE"]
+    assert answer.source_document_id == "cv-001"
+    assert answer.evidence_ids == ["ev-cv-001-language-001"]
+    (ref,) = [e for e in profile.provenance.evidence if e.evidence_id in answer.evidence_ids]
+    assert ref.quote == "Italian - Mother\ntongue"
+    assert ref.field_path == "eligibility_answers.HC_LANGUAGE.level_it"
+
+
 def test_a_named_scale_wins_over_fluent_beside_it() -> None:
     text = CV_TEXT + "English: Fluent (C1)\n"
     profile = extract_languages(lang("en", "Fluent (C1)", "English: Fluent (C1)"), text=text)
@@ -363,7 +417,7 @@ def test_a_named_scale_wins_over_fluent_beside_it() -> None:
         ("", "German C1"),  # no level given
         ("C1", "English (Fluent)"),  # the quote does not state it
         ("Native", "English (Fluent)"),  # nor this
-        ("Mother tongue", "Italian (native)"),  # not a supported way to write it
+        ("Native", "Italian"),  # nor a quote naming only the language (D-049)
         ("Proficient", "German C1"),  # no approved mapping
         ("C1/C2", "German C1"),  # two levels
         ("IELTS 7.5", "German C1"),  # unsupported scale
