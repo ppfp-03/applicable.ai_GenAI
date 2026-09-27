@@ -69,7 +69,7 @@ CV_STATUS = (428, 458, 664)
 BTN_7 = [(1336, 194, 135, 34), (1405, 324, 66, 34), (1405, 454, 66, 34), (1405, 583, 66, 34), (1405, 713, 66, 34)]
 #: The "Edit profile" chip beside the step 2 title, as (right, y, w, h): its
 #: panel stretches with the window, the fixed-width CV panel to its right does not.
-EDIT_2 = (509, 29, 107, 27)
+EDIT_2 = (509, 27, 122, 32)
 #: The call to action on each empty required card: Work authorization, in the
 #: right column, measured from the stage's middle as its column stretches with
 #: the window; Sponsorship, in the left column, from the stage's left edge.
@@ -1035,6 +1035,10 @@ def funnel_row(label: str, small: str, width: float, n: int, color: str) -> str:
     )
 
 
+#: How many ranked roles the analysis screen previews.
+FIRST_RESULTS = 3
+
+
 def step4() -> str:
     """The analysis funnel, counted over the demo roles actually available.
 
@@ -1061,19 +1065,20 @@ def step4() -> str:
         .replace('<div class="n">', '<div class="n" style="color:var(--blue)">')
         + '\n</div></div>\n<div class="a4-r">'
     )
+    # A preview only: the first FIRST_RESULTS roles of the existing order, never padded.
     first = "".join(
-        f'<div style="display:flex;align-items:center;gap:12px{";margin-top:12px" if i else ""}">'
-        f'<span class="w-logo" style="background:{v.bg};width:34px;height:34px">{v.mono}</span>'
-        f'<div style="flex:1"><div style="font-size:13.5px;font-weight:600">{esc(v.title)}</div>'
-        f'<div style="font-size:12px;color:var(--t2)">{esc(v.company)} · {esc(v.city)}</div></div>'
-        f'<span style="font-size:22px;font-weight:700;letter-spacing:-0.03em">{v.shown}</span></div>'
-        for i, v in enumerate(store.ranked(BEFORE, AS_OF)[:2])
+        f'<div class="a4-fr">'
+        f'<span class="w-logo" style="background:{v.bg};width:36px;height:36px">{v.mono}</span>'
+        f'<div class="a4-fr-m"><div class="t">{esc(v.title)}</div>'
+        f'<div class="s">{esc(v.company)} · {esc(v.city)}</div></div>'
+        f'<span class="n">{v.shown}</span></div>'
+        for v in store.ranked(BEFORE, AS_OF)[:FIRST_RESULTS]
     )
     body = M.S_4
     body = swap(body, r'<div class="fun">.*?\n</div></div>\n<div class="a4-r">', fun)
     body = swap(
-        body, r'<div class="w-lab">First results<span>Updating</span></div>.*?</div>\n<div class="w-tip">',
-        f'<div class="w-lab">First results<span>Updating</span></div>{first}</div>\n<div class="w-tip">',
+        body, r'<div class="w-lab">First results<span>Updating</span></div>.*?</div>\n<div class="w-tip">.*?</div></div>\n',
+        f'<div class="w-lab">First results<span>Updating</span></div>{first}</div>\n',
     )
     body = swap(body, "from 312 postings", f"from {total} postings")
     body = swap(body, "78 roles · 23 conflicts removed", f"{total} roles · {c['excluded']} conflict{'s' if c['excluded'] != 1 else ''} removed")
