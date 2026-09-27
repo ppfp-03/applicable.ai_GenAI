@@ -40,10 +40,16 @@ def parameter_set(*entries: dict[str, Any]) -> JobParameterSet:
     )
 
 
-def test_committed_layer_loads_and_is_empty() -> None:
+def test_committed_layer_loads_and_holds_only_curated_oi50_entries() -> None:
+    # The committed layer carries the curated OI-50 synthetic catalogue
+    # parameters (tests/eligibility/test_oi50_parameters.py) and nothing else.
     layer = load_job_parameters()
     assert layer.layer_version == "0.1-temporary"
-    assert layer.entries == []
+    assert layer.entries
+    assert all(
+        entry.job_id.startswith("synthetic:SYN-JOB-") and entry.origin == "curated"
+        for entry in layer.entries
+    )
 
 
 @pytest.mark.parametrize(
