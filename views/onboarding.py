@@ -411,18 +411,23 @@ def work_auth_cards() -> list[str]:
     Sponsorship is never required, and unknown sponsorship shows as such."""
     decl = store.work_auth()
     if not store.work_auth_complete():
+        # A clarification answered before step 2 (e.g. on a role page) is
+        # shown as it is; step 2's question stays required all the same.
         missing = S.get("ob_missing", False)
         badges = {"Work authorization": (MISSING, " miss") if missing else (REQUIRED, ""),
                   "Sponsorship": (NOT_DECLARED, "")}
         state = {"Work authorization": "Required", "Sponsorship": "Not declared yet"}
+        so_far = authorization_value(decl) if decl is not None else "Not declared yet"
+        notes = {"Work authorization": f'<div class="p-m">Declared so far: {esc(so_far)}</div>'
+                 if so_far != "Not declared yet" else "", "Sponsorship": ""}
         return [
-            profile_card(
+            sponsorship_card(decl) if t == "Sponsorship" and decl is not None else profile_card(
                 t, badges[t][0],
                 f'<div class="p-v">{state[t]} · add it in <span class="p-link {LINK_CLASS[t]}">Edit profile</span></div>'
-                f'<div class="p-act"><span class="w-chip add p-cta">{cta}</span></div>',
+                f'{notes[t]}<div class="p-act"><span class="w-chip add p-cta">{cta}</span></div>',
                 cls=badges[t][1],
                 # Opened, the call to action would press nothing: it is left out.
-                full=f'<div class="p-v">{state[t]} · add it in Edit profile</div>',
+                full=f'<div class="p-v">{state[t]} · add it in Edit profile</div>{notes[t]}',
             )
             for t, cta in REQUIRED_CTA.items()
         ]
@@ -436,16 +441,19 @@ def declared_lists(decl: dict, true: str, false: str) -> tuple[list[str], list[s
     return yes, no, [c for c in codes if c not in yes and c not in no]
 
 
-def authorization_card(decl: dict) -> str:
+def authorization_value(decl: dict) -> str:
     """Where the user can work, as declared. "None of these" says so."""
     yes, no, unknown = declared_lists(decl, "authorized", "not_authorized")
     if yes:
-        value = country_list(yes)
-    elif not unknown:
-        value = "None of our countries"
-    else:
-        value = f"Not in {country_list(no)}" if no else "Not declared yet"
-    return profile_card("Work authorization", DECLARED, f'<div class="p-v">{esc(value)}</div>', "Declared by you")
+        return country_list(yes)
+    if not unknown:
+        return "None of our countries"
+    return f"Not in {country_list(no)}" if no else "Not declared yet"
+
+
+def authorization_card(decl: dict) -> str:
+    return profile_card("Work authorization", DECLARED, f'<div class="p-v">{esc(authorization_value(decl))}</div>',
+                        "Declared by you")
 
 
 def sponsorship_card(decl: dict) -> str:
@@ -1480,12 +1488,14 @@ with st.container(key="obody"):
         if not store.work_auth_complete():
             mid = CTA_2["wa"][0]
             st.markdown(f"<style>.stApp .st-key-oo-wa{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
-            for name, label in zip(CTA_2, REQUIRED_CTA.values()):
+            # A sponsorship card showing facts already declared has no call to action.
+            placeholders = 2 if store.work_auth() is None else 1
+            for name, label in list(zip(CTA_2, REQUIRED_CTA.values()))[:placeholders]:
                 opened |= overlay(name, CTA_2[name], label, on_click=open_editor, args=(WORK_TAB,))
             # The "Edit profile" text inside each card: the same editor, on the same tab.
             mid = LINK_2["wa-link"][0]
             st.markdown(f"<style>.stApp .st-key-oo-wa-link{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
-            for name, title in zip(LINK_2, REQUIRED_CTA):
+            for name, title in list(zip(LINK_2, REQUIRED_CTA))[:placeholders]:
                 opened |= overlay(name, LINK_2[name], f"Edit profile · {title}", on_click=open_editor, args=(WORK_TAB,))
         if opened:
             edit_profile()

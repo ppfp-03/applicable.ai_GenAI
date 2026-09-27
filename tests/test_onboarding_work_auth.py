@@ -10,6 +10,7 @@ question is answered, no later step opens; sponsorship may stay unknown.
 import json
 from pathlib import Path
 
+import pytest
 from streamlit.testing.v1 import AppTest
 
 from core import store
@@ -637,14 +638,32 @@ def test_resaving_keeps_the_single_question_and_step_2_opens() -> None:
     assert at.session_state["ob_step"] == "3b"
 
 
-def test_a_role_page_answer_is_prefilled_and_the_gate_still_asks() -> None:
+def before_step_2(declaration):
+    """Step 2 after a role-page answer, before its own question was answered."""
     at = AppTest.from_file(ONBOARDING, default_timeout=30)
     at.session_state["ob_step"] = "2"
     at.session_state[store.ANSWERS] = {"uk_work": None}
-    at.session_state[store.WORK_AUTH] = decl(not_authorized=["SG"], sponsorship=["SG"])
+    at.session_state[store.WORK_AUTH] = declaration
     at.session_state[store.WORK_QUESTION] = False  # as store.set_work_answer leaves it
     at.run()
-    assert "Add your work authorization in Edit profile to continue." in page(at)
+    assert not at.exception
+    return at
+
+
+def test_a_role_page_answer_is_prefilled_and_the_gate_still_asks() -> None:
+    at = before_step_2(decl(not_authorized=["SG"], sponsorship=["SG"]))
+    shown = page(at)
+    assert "Add your work authorization in Edit profile to continue." in shown
+    # Step 2 is still required, and what is already declared is shown as it is.
+    assert 'Required · add it in <span class="p-link wa-link">' in shown
+    assert "Declared so far: Not in Singapore" in shown
+    assert "Needed in Singapore" in shown
+    assert "Not declared yet · add it in" not in shown  # the need is declared: not hidden
+    assert not [b for b in at.button if b.key in ("oo-sp", "oo-sp-link")]
+    assert {b.key for b in at.button} >= {"oo-wa", "oo-wa-link"}
+    at.button(key="next").click().run()
+    assert at.session_state["ob_step"] == "2"
+    assert "p-s miss" in page(at)  # work authorization flagged as missing
     at.button(key="oo-st3").click().run()
     assert at.session_state["ob_step"] == "2"
     at = answer(editor(at), ["EU"])
@@ -653,6 +672,30 @@ def test_a_role_page_answer_is_prefilled_and_the_gate_still_asks() -> None:
     assert "Needed in Singapore · Not needed in EU" in page(at)
     at.button(key="next").click().run()
     assert at.session_state["ob_step"] == "3b"
+
+
+def test_a_partial_role_page_answer_before_step_2_invents_nothing() -> None:
+    at = before_step_2(decl(not_authorized=["SG"]))  # SG false/null
+    shown = page(at)
+    assert "Add your work authorization in Edit profile to continue." in shown
+    assert "Declared so far: Not in Singapore" in shown
+    assert '<div class="p-v">Not declared yet</div>' in shown  # sponsorship still unknown
+    assert "Needed in" not in shown and "Not needed" not in shown
+    at = answer(editor(at), ["EU"])
+    assert facts(declared(at), "SG") == (False, None)
+
+
+@pytest.mark.parametrize("gb", [decl(authorized=["GB"]), decl(not_authorized=["GB"]),
+                                decl(sponsorship=["GB"]), decl(no_sponsorship=["GB"])])
+def test_a_partial_uk_declaration_is_still_asked_in_step_6(gb) -> None:
+    saved = {k: gb[k] + chosen(*EU)[k] for k in gb}
+    at = at_step("5", saved=(saved, "unsure"))  # what store.uk_from_work_auth gives for it
+    assert "Your UK work authorization is already declared" not in page(at)
+    at.button(key="next").click().run()
+    assert at.session_state["ob_step"] == "6"
+    at.button(key="next").click().run()  # continue on the prefilled "Not sure"
+    assert not at.exception
+    assert facts(declared(at), "GB") == facts(gb, "GB")  # the partial fact is kept
 
 
 def test_changing_an_answer_clears_the_last_error() -> None:

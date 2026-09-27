@@ -282,7 +282,15 @@ def answers() -> dict:
     decl = work_auth()
     if decl is None:
         return {**_answers(), WORK_AUTH: None}
-    return {**_answers(), WORK_AUTH: decl, "uk_work": uk_from_work_auth()}
+    return {**_declared_answers(), WORK_AUTH: decl}
+
+
+def _declared_answers() -> dict:
+    """The stored answers once a declaration exists: the UK answer read from
+    it, and no legacy per-country "work" answers (a session from before the
+    declaration held them), so nothing stored can override it."""
+    stored = {k: v for k, v in _answers().items() if k != "work"}
+    return {**stored, "uk_work": uk_from_work_auth()}
 
 
 def _answers() -> dict:
@@ -333,7 +341,7 @@ def set_work_answer(country: str, choice: Optional[str]) -> None:
         # A clarification is not step 2's question: that stays to answer.
         st.session_state[WORK_QUESTION] = False
     _store_work_auth(decl)
-    st.session_state[ANSWERS] = {**_answers(), "uk_work": uk_from_work_auth()}
+    st.session_state[ANSWERS] = _declared_answers()
 
 
 def set_answer(key: str, value: Any) -> None:
@@ -437,7 +445,7 @@ def set_work_auth(declaration: dict[str, list[str]]) -> None:
         names = ", ".join(country_name(c) for c in both)
         raise ValueError(f"You can’t need sponsorship where you can already work: {names}.")
     _store_work_auth(lists)
-    st.session_state[ANSWERS] = {**_answers(), "uk_work": uk_from_work_auth()}
+    st.session_state[ANSWERS] = _declared_answers()
 
 
 def answer_work_question(countries: Optional[list[str]]) -> None:
@@ -492,16 +500,13 @@ def _with_country(declaration: dict, country: str, facts: eligibility.Facts) -> 
 
 
 def uk_from_work_auth() -> Optional[str]:
-    """The UK answer the declaration gives: "yes" if authorized, "no" if
-    sponsorship is needed, "unsure" otherwise, "None of these" included (it
-    leaves sponsorship unknown); None before a declaration."""
+    """The UK answer the declaration gives (eligibility.work_answer): "yes" or
+    "no" only for a complete answer, "unsure" for anything partial ("None of
+    these" included), so step 6 still asks; None before a declaration."""
     decl = work_auth()
     if decl is None:
         return None
-    authorized, sponsorship = eligibility.declared(decl, "GB")
-    if authorized:
-        return "yes"
-    return "no" if sponsorship else "unsure"
+    return eligibility.work_answer(eligibility.declared(decl, "GB"))
 
 
 def preferences() -> Optional[list[dict]]:

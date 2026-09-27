@@ -205,10 +205,12 @@ def declared(declaration: Optional[Mapping[str, Any]], country: str) -> Facts:
 
 def work_answer(facts: Facts) -> str:
     """The answer to "Can you work in <country> without visa sponsorship?"
-    that one country's facts give: "yes" if authorized, "no" if sponsorship
-    is needed, "unsure" otherwise ("None of these" included)."""
-    authorized, sponsorship = facts
-    return "yes" if authorized else "no" if sponsorship else "unsure"
+    that one country's facts give. Only the two complete answers count:
+    "yes" (authorized, no sponsorship needed) and "no" (not authorized,
+    sponsorship needed). Every other pair, one known fact included (e.g.
+    "None of these": false/null), is "unsure": nothing is completed from it.
+    """
+    return next((answer for answer, pair in _WORK_ANSWERS.items() if pair == tuple(facts)), "unsure")
 
 
 def answer_declaration(answer: Optional[str], facts: Facts) -> Facts:

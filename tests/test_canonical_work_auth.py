@@ -354,11 +354,70 @@ def test_the_synthetic_catalogue_reads_the_same_declaration(fresh_session):
         eligibility.candidate_key(D.profile, dict(store.answers()))  # same declaration, same key
 
 
+# ───────────────────────── Complete answers only; no stale store ─────────────────────────
+
+
+@pytest.mark.parametrize("facts, answer, after_unsure", [
+    ((True, False), "yes", (None, None)),
+    ((False, True), "no", (None, None)),
+    ((True, None), "unsure", (True, None)),
+    ((False, None), "unsure", (False, None)),
+    ((None, True), "unsure", (None, True)),
+    ((None, False), "unsure", (None, False)),
+    ((None, None), "unsure", (None, None)),
+    ((False, False), "unsure", (False, False)),
+])
+def test_only_a_complete_pair_is_a_yes_or_no(facts, answer, after_unsure):
+    # "Not sure" withdraws a complete Yes/No and keeps every partial state.
+    assert eligibility.work_answer(facts) == answer
+    assert eligibility.answer_declaration("unsure", facts) == after_unsure
+    assert eligibility.answer_declaration(None, facts) == after_unsure
+
+
+@pytest.mark.parametrize("gb", [
+    {"authorized": ["GB"]}, {"not_authorized": ["GB"]}, {"sponsorship": ["GB"]}, {"no_sponsorship": ["GB"]},
+])
+def test_a_partial_uk_declaration_is_unsure(fresh_session, gb):
+    st.session_state[store.WORK_AUTH] = gb
+    assert store.uk() == "unsure" and store.uk_from_work_auth() == "unsure"
+    before = eligibility.declared(store.work_auth(), "GB")
+    store.set_uk("unsure")  # step 6 continued on "Not sure"
+    assert eligibility.declared(store.work_auth(), "GB") == before
+
+
+def test_a_stale_legacy_answer_cannot_override_the_declaration(fresh_session):
+    # A session from before the declaration: answers["work"] still says yes.
+    st.session_state[store.ANSWERS] = {**st.session_state[store.ANSWERS], "work": {"SG": "yes"}}
+    st.session_state[store.WORK_AUTH] = {"not_authorized": ["SG"]}  # SG false/null
+    live = store.answers()
+    assert "work" not in live and live[store.WORK_AUTH] == {"not_authorized": ["SG"]}
+    assert declarations_of(live)["SG"] == (False, None)
+    assert store.work_answer("SG") is None
+    got = eligibility.work_auth(role(SG_ROLE), live)
+    assert got.status is RuleStatus.UNKNOWN
+    assert got.missing_field_paths == ["declarations.work_authorizations.SG.requires_sponsorship"]
+    assert store.view(D.role(SG_ROLE)).criterion("permission").status == "check"
+
+    store.set_work_answer("CN", "no")  # any write drops the stale answers from the store
+    assert "work" not in st.session_state[store.ANSWERS]
+    assert declarations_of(store.answers())["SG"] == (False, None)
+
+
+def test_writing_the_declaration_drops_stale_legacy_answers(fresh_session):
+    for write in (lambda: store.answer_work_question(["IT"]),
+                  lambda: store.set_work_auth({"authorized": ["IT"], "no_sponsorship": ["IT"]})):
+        st.session_state[store.ANSWERS] = {"uk_work": None, "work": {"SG": "yes"}}
+        write()
+        assert "work" not in st.session_state[store.ANSWERS]
+        assert "SG" not in declarations_of(store.answers())
+
+
 def test_legacy_direct_mappings_still_work():
     # Adapter-only compatibility for mappings without a declaration.
     assert rows({"uk_work": "yes"}) == {"GB": (True, False)}
     assert rows({"work": {"SG": "no"}, "uk_work": "unsure"}) == {"SG": (False, True)}
     assert rows({"work": {"SG": "unsure"}}) == {}
+    assert rows({"work": {"SG": "yes"}}) == {"SG": (True, False)}  # no declaration supplied
 
 
 # ───────────────────────── Reaching the UI ─────────────────────────
