@@ -83,8 +83,8 @@
 [data-testid="stDialog"] .hx-wd span{text-align:right;padding-right:12px}
 [data-testid="stDialog"] [class*="st-key-hx-grid-"]{position:relative;gap:0!important;animation:hx-rise .5s cubic-bezier(.16,1,.3,1) both}
 [data-testid="stDialog"] .hx-g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:90px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.62);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 1px 2px rgba(28,40,64,.04),0 10px 30px rgba(28,40,64,.06),0 0 0 .5px rgba(0,0,0,.07)}
-[data-testid="stDialog"] .hx-g.w{grid-auto-rows:320px}
-[data-testid="stDialog"] .hx-c{box-sizing:border-box;border-right:.5px solid rgba(60,60,67,.12);border-bottom:.5px solid rgba(60,60,67,.12);padding:6px 6px 5px;display:flex;flex-direction:column;gap:3px;overflow:hidden;min-width:0;transition:background .2s}
+[data-testid="stDialog"] .hx-g.w{grid-auto-rows:530px}
+[data-testid="stDialog"] .hx-c{box-sizing:border-box;border-right:1px solid rgba(60,60,67,.075);border-bottom:1px solid rgba(60,60,67,.075);padding:6px 6px 5px;display:flex;flex-direction:column;gap:3px;overflow:hidden;min-width:0;transition:background .2s}
 [data-testid="stDialog"] .hx-c:nth-child(7n){border-right:0}
 [data-testid="stDialog"] .hx-g.m .hx-c:nth-last-child(-n+7),[data-testid="stDialog"] .hx-g.w .hx-c{border-bottom:0}
 [data-testid="stDialog"] .hx-c.we{background:rgba(118,118,128,.035)}
@@ -98,8 +98,8 @@
 [data-testid="stDialog"] .hx-n.t{background:var(--blue);color:#fff;font-weight:650;box-shadow:0 2px 8px rgba(0,113,227,.35)}
 /* Events: tinted capsules with a colour dot, as Calendar draws all-day events. */
 [data-testid="stDialog"] .hx-ev{flex:none;border-radius:7px;padding:2px 7px 2px 6px;font-size:11px;font-weight:600;line-height:16px;background:color-mix(in srgb,var(--c) 15%,rgba(255,255,255,.6));color:color-mix(in srgb,var(--c) 58%,#1D1D1F);box-shadow:inset 0 0 0 .5px color-mix(in srgb,var(--c) 30%,transparent);min-width:0}
-[data-testid="stDialog"] .hx-ev span{display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-[data-testid="stDialog"] .hx-ev i{width:6px;height:6px;border-radius:50%;flex:none;background:var(--c)}
+[data-testid="stDialog"] .hx-ev span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-testid="stDialog"] .hx-ev i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px;background:var(--c)}
 [data-testid="stDialog"] .hx-ev.p{opacity:.45}
 [data-testid="stDialog"] .hx-more{font-size:10.5px;color:var(--t3);font-weight:620;padding-left:7px}
 /* The week: taller columns, the weekday over a large day number. */
@@ -108,14 +108,13 @@
 [data-testid="stDialog"] .hx-wdn{font-size:11px;color:var(--t3);font-weight:620;letter-spacing:.06em;text-transform:uppercase}
 [data-testid="stDialog"] .hx-g.w .hx-n{font-size:20px;height:36px;min-width:36px;border-radius:18px;font-weight:620;letter-spacing:-0.02em}
 [data-testid="stDialog"] .hx-g.w .hx-ev{padding:7px 9px;font-size:12px;line-height:16px;border-radius:10px}
-[data-testid="stDialog"] .hx-g.w .hx-ev span{white-space:normal;align-items:flex-start}
-[data-testid="stDialog"] .hx-g.w .hx-ev i{margin-top:5px}
+[data-testid="stDialog"] .hx-g.w .hx-ev span{white-space:normal}
 [data-testid="stDialog"] .hx-ev small{display:block;font-size:11px;font-weight:450;margin:3px 0 0 11px;opacity:.8}
 [data-testid="stDialog"] .hx-free{font-size:11px;color:var(--t3);text-align:center;margin-top:2px;opacity:.7}
 
 /* Click targets over the drawn grid, same geometry, invisible until hovered. */
 [data-testid="stDialog"] [class*="st-key-hx-cells-"]{position:absolute!important;inset:0;display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:90px;gap:0!important;z-index:2;border-radius:20px;overflow:hidden}
-[data-testid="stDialog"] .st-key-hx-cells-w{grid-auto-rows:320px}
+[data-testid="stDialog"] .st-key-hx-cells-w{grid-auto-rows:530px}
 [data-testid="stDialog"] [class*="st-key-hx-cells-"] [data-testid="stElementContainer"]{width:auto!important;height:100%;min-width:0}
 [data-testid="stDialog"] [class*="st-key-hx-cells-"] .stButton,[data-testid="stDialog"] [class*="st-key-hx-cells-"] button{width:100%;height:100%}
 [data-testid="stDialog"] [class*="st-key-hx-cells-"] button{padding:0;min-height:0;border-radius:0;border:0;box-shadow:none;background:transparent;color:transparent;transition:background .18s}
