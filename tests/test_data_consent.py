@@ -126,6 +126,36 @@ def test_giving_the_consent_in_the_profile_opens_the_other_sections() -> None:
     assert at.session_state["profile_cur"] == 0
 
 
+def test_a_confirmed_section_without_the_consent_asks_for_it_again() -> None:
+    # A session carried over from before the consent existed: the section says
+    # "Confirmed · Given" while the consent itself was never recorded.
+    at = AppTest.from_file(APP, default_timeout=60)
+    at.session_state[store.STAGE] = "app"
+    at.session_state[store.CONSENT] = False
+    at.session_state[store.SECTIONS] = {s["id"]: "ok" for s in store.data().sections}
+    at.session_state[store.VALUES] = {s["id"]: dict(s["vals"]) for s in store.data().sections}
+    at.session_state[store.VALUES][store.CONSENT_SECTION][store.CONSENT_LABEL] = "Given"
+    at.run()
+
+    assert not at.exception
+    assert at.session_state[store.SECTIONS][store.CONSENT_SECTION] == "pend"
+    assert at.session_state[store.VALUES][store.CONSENT_SECTION][store.CONSENT_LABEL] == "Not given"
+    assert at.button(key="ok").label == "Give consent"
+    assert not at.button(key="ok").disabled
+
+
+def test_the_consent_check_follows_the_consent() -> None:
+    at = profile(consent=False)
+    assert "Missing" in page(at)
+
+    at.button(key="ok").click().run()
+    at.button(key=f"ov-sec-{consent_index()}").click().run()
+
+    assert not at.exception
+    assert "Missing" not in page(at)
+    assert "Pass" in page(at)
+
+
 def test_the_consent_section_holds_only_the_consent() -> None:
     (section,) = [s for s in store.data().sections if s["id"] == store.CONSENT_SECTION]
     assert [label for label, _ in section["vals"]] == [store.CONSENT_LABEL]

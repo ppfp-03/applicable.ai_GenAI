@@ -32,6 +32,7 @@ _GLOW = (
 NAV = [
     ("home", "Home"),
     ("matches", "Matches"),
+    ("calendar", "Calendar"),
     ("applications", "Applications"),
     ("explore", "Explore"),
     ("profile", "Profile"),

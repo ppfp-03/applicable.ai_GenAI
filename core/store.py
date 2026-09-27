@@ -197,6 +197,17 @@ def give_consent() -> None:
         st.session_state[VALUES][CONSENT_SECTION][CONSENT_LABEL] = "Given"
 
 
+def show_consent() -> None:
+    """Make the Profile's consent section say what the consent is.
+
+    The consent itself is the one source: a session carried over from before
+    it existed can hold the section as confirmed without it, and then asks again.
+    """
+    given = consent_given()
+    st.session_state[SECTIONS][CONSENT_SECTION] = "ok" if given else "pend"
+    st.session_state[VALUES][CONSENT_SECTION][CONSENT_LABEL] = "Given" if given else "Not given"
+
+
 # ───────────────────────── Access (demo only) ─────────────────────────
 #
 # Sign-up and log-in are staged: nothing leaves the session and any input is
