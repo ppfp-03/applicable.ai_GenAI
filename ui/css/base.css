@@ -136,6 +136,7 @@ html.aa-nav-float .st-key-cap{visibility:hidden}
 /* The tab host (ui/tabs.py): nav.js names the tab in front on <html>. */
 html[data-tab]:not([data-tab="home"]) .st-key-tab-home{display:none!important}
 html[data-tab]:not([data-tab="matches"]) .st-key-tab-matches{display:none!important}
+html[data-tab]:not([data-tab="calendar"]) .st-key-tab-calendar{display:none!important}
 html[data-tab]:not([data-tab="applications"]) .st-key-tab-applications{display:none!important}
 html[data-tab]:not([data-tab="explore"]) .st-key-tab-explore{display:none!important}
 html[data-tab]:not([data-tab="profile"]) .st-key-tab-profile{display:none!important}

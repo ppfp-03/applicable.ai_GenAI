@@ -98,3 +98,28 @@ def test_the_wallet_is_gone():
     at = home()
     keys = {b.key or "" for b in at.button}
     assert not any(k.startswith(("wpick-", "wf-")) for k in keys)
+
+
+def test_the_lens_marker_follows_the_chosen_stage():
+    at = home()
+    marks = [m.value for m in at.markdown if "af-mark" in m.value]
+    assert marks and 'data-cur="progress"' in marks[0]
+    at.button(key="af-interview").click().run()
+    marks = [m.value for m in at.markdown if "af-mark" in m.value]
+    assert 'data-cur="interview"' in marks[0] and 'data-ring="#30A14E"' in marks[0]
+
+
+def test_each_stage_gets_its_own_list_so_its_rows_drop_in():
+    import re
+    home_py = (Path(__file__).resolve().parents[1] / "views" / "home.py").read_text(encoding="utf-8")
+    assert 'key=f"al-{cur}"' in home_py
+    css = (Path(__file__).resolve().parents[1] / "ui" / "css" / "home.css").read_text(encoding="utf-8")
+    assert "@keyframes al-drop" in css and re.search(r"nth-child\(2\)\{animation-delay:70ms\}", css)
+
+
+def test_the_filter_script_is_loaded_and_survives_streamlits_sanitiser():
+    import re
+    at = home()
+    assert any("__aaAppsFilter" in (getattr(h, "body", "") or "") for h in at.get("html"))
+    js = (Path(__file__).resolve().parents[1] / "ui" / "js" / "apps_filter.js").read_text(encoding="utf-8")
+    assert not re.search(r"<[/\w]", js)

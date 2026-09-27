@@ -2,16 +2,17 @@
 (05_Ranking.html).
 
 Left: what happened before ranking, the top five, and one role a rule
-removed however well it matched. Right: the selected role's score and the
-rule that says ranking never changes eligibility. How the score is computed
-(factors, weights, formula) is proprietary and never drawn here.
+removed however well it matched. Right: the selected role's score, its
+four factor scores, and the rule that says ranking never changes eligibility.
+How the factors combine into the score (weights, formula) is proprietary and
+never drawn here.
 """
 
 from __future__ import annotations
 
 import streamlit as st
 
-from core import store
+from core import ranking, store
 from ui import parts, shell, tabs
 from ui.html import LOCK, esc, hit, html, logo
 from ui.theme import page_css
@@ -30,9 +31,18 @@ if st.session_state[SEL] >= len(top):
     st.session_state[SEL] = 0
 
 
-def score_bar(v) -> str:
-    """One solid bar filled to the shown score -- no per-factor split."""
-    return f'<i style="flex:{v.shown};background:#0071E3"></i><i style="flex:{100 - v.shown};background:transparent"></i>'
+def factor_rows(v) -> str:
+    """Four rows: factor, its own 0-100 score and note -- no points, no weights."""
+    rows = []
+    for n, k in enumerate(ranking.FACTORS):
+        score, note = v.factors[k]
+        rows.append(
+            f'<div class="kci"><span class="sw" style="background:{parts.COL[n]}"></span>'
+            f'<span class="nm">{ranking.FACTOR_NAMES[k]}</span>'
+            f'<span class="pt"><b>{score}</b><span>/100</span></span>'
+            f'<span class="kw">{esc(note)}</span></div>'
+        )
+    return "".join(rows)
 
 shell.topbar("matches", store.nav_counts())
 with shell.header(
@@ -63,8 +73,13 @@ with st.container(key="mt-main"):
 
         # The top five.
         with st.container(key="gl-top5"):
+            legend = "".join(
+                f'<span><i style="background:{c}"></i>{n}</span>'
+                for c, n in zip(parts.COL, ("Profile", "Preference", "Deadline urgency", "Freshness"))
+            )
             html(
-                '<div class="sh"><div><b>Your top 5 opportunities</b><span>Ordered by priority score · 0–100</span></div></div>'
+                '<div class="sh"><div><b>Your top 5 opportunities</b><span>Ordered by priority score · 0–100</span></div>'
+                f'<div class="leg2">{legend}</div></div>'
                 '<div class="k-hd"><span>#</span><span>Role</span><span>Why it ranks here</span>'
                 "<span>Eligibility</span><span>Priority score</span></div>"
             )
@@ -78,7 +93,7 @@ with st.container(key="mt-main"):
                         f'<div class="k-jm">{esc(v.company)} · {esc(v.city)} · {esc(v.mode)}</div></div></div>'
                         f'<div><div class="k-why1">{esc(v.why)}</div><div class="k-tags"><span class="chip {cls}">{esc(text)}</span></div></div>'
                         f"{parts.eligibility_dot(v)}"
-                        f'<div class="k-sc"><div class="k-cb">{score_bar(v)}</div><b>{v.shown}</b></div></div>'
+                        f'<div class="k-sc"><div class="k-cb">{parts.bars(v)}</div><b>{v.shown}</b></div></div>'
                     )
                     hit(f"row-{i}", row, f"Select {v.company}", on_click=st.session_state.__setitem__, args=(SEL, i))
 
@@ -109,9 +124,9 @@ with st.container(key="mt-main"):
         )
         html(
             f'<div class="hero2"><div class="n">{v.shown}<small> /100</small></div>'
-            f'<div class="c">Priority score<br>{esc(text)}</div></div><div class="kstack">{score_bar(v)}</div>'
+            f'<div class="c">Priority score<br>{esc(text)}</div></div><div class="kstack">{parts.bars(v)}</div>'
         )
-        html(f'<div class="box why">{esc(v.why)}</div>')
+        html(f'<div class="box">{factor_rows(v)}</div>')
         with st.container(key="end-r"):
             html(f'<div class="gate box">{parts.gate(v)}</div>')
         with st.container(key="mt-foot"):

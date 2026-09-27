@@ -8,9 +8,9 @@ module only translates, and decides nothing:
   degree, graduation month, field, CEFR languages, student status and months
   of experience become `eligibility_answers`; the user's answers become
   `declarations.work_authorizations`. Citizenship is not copied over: it is
-  not a declaration, and it never implies work authorisation. Only GB is
-  passed on today: from the UK answer, or else from the step 2 declaration
-  (see `declarations`), each fact true, false or null as declared;
+  not a declaration, and it never implies work authorisation. Every
+  country in the work authorization declaration is passed on, each fact
+  true, false or null as declared (see `declarations`);
 - a demo role becomes a JobRecord whose demo `requirements` are listed
   explicitly as canonical requirements (classification + modality +
   constraint), plus the typed JobParameterSet the rules compare against;
@@ -85,10 +85,10 @@ _RECEIPT = {
     "produced_at": _AT,
 }
 
-#: What each UK answer declares, as (authorized_to_work, requires_sponsorship).
-#: The question reads "Can you work in the UK without visa sponsorship?"; "Not
-#: sure" and no answer declare nothing.
-_UK_DECLARATIONS = {
+#: What each work answer declares, as (authorized_to_work, requires_sponsorship).
+#: The question reads "Can you work in <country> without visa sponsorship?";
+#: "Not sure" and no answer declare nothing. Used for the UK and every other country.
+_WORK_ANSWERS = {
     "yes": (True, False),
     "no": (False, True),
 }
@@ -203,31 +203,59 @@ def declared(declaration: Optional[Mapping[str, Any]], country: str) -> Facts:
     return authorized, sponsorship
 
 
-def uk_declaration(uk: Optional[str], gb: Facts) -> Facts:
-    """GB's facts under the UK answer `uk`, given what the declaration says of GB.
+def work_answer(facts: Facts) -> str:
+    """The answer to "Can you work in <country> without visa sponsorship?"
+    that one country's facts give: "yes" if authorized, "no" if sponsorship
+    is needed, "unsure" otherwise ("None of these" included)."""
+    authorized, sponsorship = facts
+    return "yes" if authorized else "no" if sponsorship else "unsure"
+
+
+def answer_declaration(answer: Optional[str], facts: Facts) -> Facts:
+    """One country's facts after answering "Can you work in <country> without
+    visa sponsorship?", given what the country held before.
 
     "Yes" and "No" settle both facts. "Not sure" and no answer settle nothing
-    and invent nothing: they keep a declaration that is itself unsettled
-    (neither authorized nor needing sponsorship, e.g. "None of these":
-    false/null; D-050), and clear one that gave "Yes" or "No", the answer
-    being changed.
+    and invent nothing: they keep facts that are themselves unsettled (e.g.
+    "None of these": false/null; D-050), and withdraw a "Yes" or "No", the
+    answer being changed.
     """
-    if uk in _UK_DECLARATIONS:
-        return _UK_DECLARATIONS[uk]
-    return gb if True not in gb else (None, None)
+    if answer in _WORK_ANSWERS:
+        return _WORK_ANSWERS[answer]
+    return facts if work_answer(facts) == "unsure" else (None, None)
 
 
 def declarations(answers: Mapping[str, Any]) -> tuple[tuple[str, Optional[bool], Optional[bool]], ...]:
     """The work-authorisation declarations the user's answers make.
 
-    Only GB: from the UK answer ("uk_work") and the declaration held under
-    DECLARATION. Answers without a declaration go by the UK answer alone.
+    One per country, from the work authorization declaration held under
+    DECLARATION (store.work_auth), each fact as declared. Answers without a
+    declaration go by the UK answer ("uk_work") and per-country answers
+    ("work") alone.
 
     Returns:
         (country_code, authorized_to_work, requires_sponsorship) per country.
     """
-    gb = uk_declaration(answers.get("uk_work"), declared(answers.get(DECLARATION), "GB"))
-    return (("GB", *gb),) if gb != (None, None) else ()
+    declaration = answers.get(DECLARATION)
+    if declaration is None:
+        # Compatibility for mappings without a declaration (the demo persona
+        # before any is made, direct test inputs): the UK answer and any
+        # per-country answers are read as answers. Nothing live writes them.
+        rows = {c: _WORK_ANSWERS.get(a, (None, None)) for c, a in (answers.get("work") or {}).items()}
+        rows["GB"] = _WORK_ANSWERS.get(answers.get("uk_work"), (None, None))
+    else:
+        countries = {c for key in (k for pair in DECLARATION_LISTS.values() for k in pair)
+                     for c in declaration.get(key, ())}
+        rows = {c: declared(declaration, c) for c in countries}
+        # A preview asks "what if I answered this?": an answer that differs
+        # from what the declaration gives replaces that country's facts, as
+        # saving it would. The live answers never differ (store.answers).
+        asked = {**(answers.get("work") or {}), **({"GB": answers["uk_work"]} if "uk_work" in answers else {})}
+        for country, answer in asked.items():
+            facts = rows.get(country, (None, None))
+            if (answer or "unsure") != work_answer(facts):
+                rows[country] = answer_declaration(answer, facts)
+    return tuple((c, *rows[c]) for c in sorted(rows) if rows[c] != (None, None))
 
 
 def _candidate_key(profile: Mapping[str, Any], answers: Mapping[str, Any]) -> str:

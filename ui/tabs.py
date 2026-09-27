@@ -1,8 +1,8 @@
-"""The five capsule screens on one page, so switching between them is instant.
+"""The capsule screens on one page, so switching between them is instant.
 
-Home, Matches, Applications, Explore and Profile are each a script in
+Home, Matches, Calendar, Applications, Explore and Profile are each a script in
 `views/`. Instead of being separate Streamlit pages, which Streamlit tears
-down and rebuilds on every switch, all five run on every rerun, each inside
+down and rebuilds on every switch, all of them run on every rerun, each inside
 its own container (`.st-key-tab-<name>`). The browser shows one and hides the
 others (`ui/js/nav.js`), the way an iOS tab bar keeps every tab alive.
 
@@ -18,7 +18,7 @@ from pathlib import Path
 
 import streamlit as st
 
-TABS = ("home", "matches", "applications", "explore", "profile")
+TABS = ("home", "matches", "calendar", "applications", "explore", "profile")
 
 #: Every page by name, filled in by app.py before any screen runs.
 PAGES: dict = {}
@@ -74,7 +74,7 @@ def go(name: str, **params: str) -> None:
 
 
 def host(front: str) -> None:
-    """Run the five tabs, with `front` shown unless go() asked for another."""
+    """Run every tab, with `front` shown unless go() asked for another."""
     from core import store
     from ui import shell
     from ui.html import esc
@@ -87,7 +87,7 @@ def host(front: str) -> None:
     # the style keeps the other tabs hidden.
     hidden = ",".join(f"html:not([data-tab]) .st-key-tab-{t}" for t in TABS if t != shown)
     st.markdown(
-        f'<div class="aa-tabs" data-active="{esc(shown)}" data-nonce="{st.session_state.get(_NONCE, 0)}"></div>'
+        f'<div class="aa-tabs" data-tabs="{",".join(TABS)}" data-active="{esc(shown)}" data-nonce="{st.session_state.get(_NONCE, 0)}"></div>'
         f"<style>{hidden}{{display:none}}</style>",
         unsafe_allow_html=True,
     )

@@ -137,9 +137,20 @@ def after_step2(declaration, uk="unsure"):
     return {"uk_work": uk, store.WORK_AUTH: declaration}
 
 
+def rows(ans) -> dict:
+    """country -> (authorized_to_work, requires_sponsorship) reaching the engine."""
+    return {c: (a, sp) for c, a, sp in eligibility.declarations(ans)}
+
+
+def declarations_of(ans) -> dict:
+    """The same, read back from the CandidateProfile the engine receives."""
+    return {w.country_code: (w.authorized_to_work, w.requires_sponsorship)
+            for w in eligibility.candidate(D.profile, ans).declarations.work_authorizations}
+
+
 def test_a_country_left_out_stays_undeclared_and_unknown():
     ans = after_step2(CHOSE_EU)
-    assert eligibility.candidate(D.profile, ans).declarations.work_authorizations == []
+    assert declarations_of(ans) == {c: (True, False) for c in EU}  # GB and the rest: none
     got = eligibility.work_auth(role("replai-pa"), ans)
     assert got.status is RuleStatus.UNKNOWN
     assert got.missing_field_paths == list(GB_PATHS.values())
@@ -148,8 +159,7 @@ def test_a_country_left_out_stays_undeclared_and_unknown():
 
 def test_none_of_these_reaches_the_engine_as_not_authorized_sponsorship_unknown():
     ans = after_step2(NONE_OF_THESE)
-    [gb] = eligibility.candidate(D.profile, ans).declarations.work_authorizations
-    assert (gb.country_code, gb.authorized_to_work, gb.requires_sponsorship) == ("GB", False, None)
+    assert declarations_of(ans) == {c: (False, None) for c in ALL}  # every country, not only GB
     for role_id in ("replai-pa", "bolton-strategy"):  # does not sponsor / sponsors
         got = eligibility.work_auth(role(role_id), ans)
         assert got.status is RuleStatus.UNKNOWN, role_id
@@ -161,10 +171,10 @@ def test_a_uk_answer_in_a_preview_overrides_the_declaration():
     # What step 6 and the question page preview is what saving then does.
     for uk, status in (("yes", RuleStatus.MET), ("no", RuleStatus.CONFLICT)):
         assert eligibility.work_auth(role("replai-pa"), after_step2(NONE_OF_THESE, uk)).status is status
-    assert eligibility.declarations(after_step2(NONE_OF_THESE, None)) == (("GB", False, None),)
-    assert eligibility.declarations(after_step2(CHOSE_EU, None)) == ()
+    assert rows(after_step2(NONE_OF_THESE, None))["GB"] == (False, None)
+    assert "GB" not in rows(after_step2(CHOSE_EU, None))
     # "Not sure" retracts a UK answer's own declaration rather than keep it.
-    assert eligibility.declarations(after_step2({"authorized": ["GB"], "no_sponsorship": ["GB"]})) == ()
+    assert rows(after_step2({"authorized": ["GB"], "no_sponsorship": ["GB"]})) == {}
 
 
 def test_later_uk_answers_recompute_after_none_of_these(fresh_session):
@@ -175,13 +185,14 @@ def test_later_uk_answers_recompute_after_none_of_these(fresh_session):
     assert got.status is RuleStatus.UNKNOWN
     assert got.missing_field_paths == [GB_PATHS["requires_sponsorship"]]
     store.set_uk("unsure")  # invents nothing, keeps the declaration
-    assert eligibility.declarations(store.answers()) == (("GB", False, None),)
+    assert rows(store.answers())["GB"] == (False, None)
     store.set_uk("yes")
-    assert eligibility.declarations(store.answers()) == (("GB", True, False),)
+    assert rows(store.answers())["GB"] == (True, False)
     assert store.view(r).standing == "eligible"
     store.set_uk("no")
-    assert eligibility.declarations(store.answers()) == (("GB", False, True),)
+    assert rows(store.answers())["GB"] == (False, True)
     assert store.view(r).standing == "excluded"
+    assert rows(store.answers())["SG"] == (False, None)  # the UK answer says nothing of Singapore
 
 
 def test_preserved_facts_reach_the_engine_losslessly(fresh_session):
@@ -189,20 +200,18 @@ def test_preserved_facts_reach_the_engine_losslessly(fresh_session):
     store.answer_work_question(EU)
     store.set_uk("no")  # a later clarification
     store.answer_work_question(EU)  # step 2 saved again, GB still left out
-    [gb] = eligibility.candidate(D.profile, store.answers()).declarations.work_authorizations
-    assert (gb.country_code, gb.authorized_to_work, gb.requires_sponsorship) == ("GB", False, True)
+    assert declarations_of(store.answers())["GB"] == (False, True)
     assert eligibility.work_auth(r.raw, store.answers()).status is RuleStatus.CONFLICT
 
     store.answer_work_question(None)  # "None of these" keeps the declared need
-    assert eligibility.declarations(store.answers()) == (("GB", False, True),)
+    assert rows(store.answers())["GB"] == (False, True)
     assert store.view(r).standing == "excluded"
 
     store.set_uk("unsure")  # changing the "No" withdraws it: nothing invented
-    assert eligibility.declarations(store.answers()) == ()
+    assert "GB" not in rows(store.answers())
 
     store.answer_work_question(None)  # no need declared any more: false/null
-    [gb] = eligibility.candidate(D.profile, store.answers()).declarations.work_authorizations
-    assert (gb.authorized_to_work, gb.requires_sponsorship) == (False, None)
+    assert declarations_of(store.answers())["GB"] == (False, None)
     got = eligibility.work_auth(r.raw, store.answers())
     assert got.status is RuleStatus.UNKNOWN
     assert got.missing_field_paths == [GB_PATHS["requires_sponsorship"]]
@@ -211,7 +220,7 @@ def test_preserved_facts_reach_the_engine_losslessly(fresh_session):
 def test_choosing_the_uk_in_step_2_is_met(fresh_session):
     store.set_work_auth({"authorized": ["GB"], "no_sponsorship": ["GB"]})
     assert store.uk() == "yes"
-    assert eligibility.declarations(store.answers()) == (("GB", True, False),)
+    assert rows(store.answers()) == {"GB": (True, False)}
     assert store.view(D.role("replai-pa")).standing == "eligible"
 
 
@@ -220,8 +229,95 @@ def test_the_declaration_never_turns_citizenship_into_authorisation(fresh_sessio
     store.set_work_auth(NONE_OF_THESE)
     decl = eligibility.candidate(D.profile, store.answers()).declarations
     assert decl.additional_citizenships == []
-    assert [w.country_code for w in decl.work_authorizations] == ["GB"]
+    # Italy is what the user declared ("None of these"), not their citizenship.
+    assert declarations_of(store.answers())["IT"] == (False, None)
     assert eligibility.work_auth(role("mediobanco-growth"), store.answers()).status is RuleStatus.UNKNOWN
+
+
+# ───────────────────────── Q6: one source for every surface ─────────────────────────
+
+SG_ROLE = "jpmorrow-strategy"  # Singapore, sponsors
+CN_ROLE = "deutsch-shanghai"  # China, does not sponsor
+
+
+def test_step_2_singapore_is_what_the_role_page_and_the_engine_read(fresh_session):
+    store.answer_work_question(["SG"])
+    assert store.work_answer("SG") == "yes"
+    assert rows(store.answers())["SG"] == (True, False)
+    assert store.view(D.role(SG_ROLE)).criterion("permission").status == "met"
+
+
+def test_role_page_answers_write_the_declaration(fresh_session):
+    store.set_work_answer("SG", "yes")
+    assert eligibility.declared(store.work_auth(), "SG") == (True, False)
+    assert "work" not in st.session_state[store.ANSWERS]  # no second store
+    store.set_work_answer("SG", "no")
+    assert eligibility.declared(store.work_auth(), "SG") == (False, True)
+    assert declarations_of(store.answers())["SG"] == (False, True)
+    assert store.view(D.role(SG_ROLE)).criterion("permission").status == "met"  # sponsors
+    store.set_work_answer("CN", "no")
+    assert store.view(D.role(CN_ROLE)).standing == "excluded"  # does not sponsor
+
+
+def test_role_page_not_sure_withdraws_a_complete_answer_only(fresh_session):
+    store.set_work_answer("SG", "yes")
+    store.set_work_answer("SG", "unsure")
+    assert eligibility.declared(store.work_auth(), "SG") == (None, None)
+    assert store.work_answer("SG") is None
+    store.answer_work_question(None)  # SG: false/null
+    store.set_work_answer("SG", "unsure")
+    assert eligibility.declared(store.work_auth(), "SG") == (False, None)  # the partial fact stays
+
+
+def test_a_role_page_answer_survives_a_step_2_resave_and_is_overridden_by_choosing(fresh_session):
+    store.answer_work_question(EU)
+    store.set_work_answer("SG", "no")
+    store.answer_work_question(EU)  # SG left out again
+    assert eligibility.declared(store.work_auth(), "SG") == (False, True)
+    store.answer_work_question([*EU, "SG"])  # SG chosen: a new explicit answer
+    assert eligibility.declared(store.work_auth(), "SG") == (True, False)
+
+
+def test_none_of_these_across_countries_keeps_a_role_page_need(fresh_session):
+    store.set_work_answer("SG", "no")
+    store.answer_work_question(None)
+    decl = store.work_auth()
+    assert eligibility.declared(decl, "SG") == (False, True)
+    for c in ALL:
+        if c != "SG":
+            assert eligibility.declared(decl, c) == (False, None), c
+
+
+def test_one_answer_settles_no_other_country(fresh_session):
+    store.answer_work_question(EU)
+    store.set_work_answer("SG", "yes")
+    got = rows(store.answers())
+    for c in ("CH", "CN", "HK", "GB"):
+        assert c not in got, c
+    assert store.work_answer("CH") is None and store.uk() == "unsure"
+
+
+def test_a_clarification_before_step_2_does_not_answer_step_2(fresh_session):
+    store.set_work_answer("SG", "yes")  # e.g. after "Save and exit"
+    assert store.work_auth() is not None
+    assert not store.work_auth_complete()
+    store.answer_work_question(["IT", "SG"])  # the editor opens with SG chosen
+    assert store.work_auth_complete()
+    assert eligibility.declared(store.work_auth(), "SG") == (True, False)
+    assert eligibility.declared(store.work_auth(), "IT") == (True, False)
+
+
+def test_the_demo_persona_keeps_its_uk_answer_when_a_role_page_answer_starts_the_declaration(fresh_session):
+    assert store.work_auth() is None and store.uk() == "yes"
+    store.set_work_answer("SG", "no")
+    assert rows(store.answers()) == {"GB": (True, False), "SG": (False, True)}
+
+
+def test_legacy_direct_mappings_still_work():
+    # Adapter-only compatibility for mappings without a declaration.
+    assert rows({"uk_work": "yes"}) == {"GB": (True, False)}
+    assert rows({"work": {"SG": "no"}, "uk_work": "unsure"}) == {"SG": (False, True)}
+    assert rows({"work": {"SG": "unsure"}}) == {}
 
 
 # ───────────────────────── Reaching the UI ─────────────────────────

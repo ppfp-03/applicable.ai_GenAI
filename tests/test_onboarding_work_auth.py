@@ -536,15 +536,16 @@ def run_store(cases, later=("no",)):
     return at
 
 
-def test_non_uk_declarations_do_not_change_demo_eligibility_or_ranking() -> None:
+def test_non_uk_declarations_reach_eligibility_and_leave_the_uk_open() -> None:
+    # D-050 applies to every country (Q6): what is declared for a country
+    # decides its roles, and says nothing of the UK.
     at = run_store({
-        "eu": chosen(*EU),
         "asia": decl(["CN", "HK", "SG"], sponsorship=["CH"], no_sponsorship=["CN", "HK", "SG"]),
         "nothing": decl(),
     })
     out = at.session_state["out"]
-    assert out["eu"] == out["asia"] == out["nothing"]
-    assert out["eu"]["uk"] == "unsure"
+    assert out["asia"]["counts"]["eligible"] > out["nothing"]["counts"]["eligible"]
+    assert out["asia"]["uk"] == out["nothing"]["uk"] == "unsure"
 
 
 def test_a_later_uk_answer_updates_the_declaration() -> None:
@@ -633,6 +634,24 @@ def test_resaving_keeps_the_single_question_and_step_2_opens() -> None:
     at.button(key="ed-save").click().run()
     at.button(key="next").click().run()
     assert not at.exception
+    assert at.session_state["ob_step"] == "3b"
+
+
+def test_a_role_page_answer_is_prefilled_and_the_gate_still_asks() -> None:
+    at = AppTest.from_file(ONBOARDING, default_timeout=30)
+    at.session_state["ob_step"] = "2"
+    at.session_state[store.ANSWERS] = {"uk_work": None}
+    at.session_state[store.WORK_AUTH] = decl(not_authorized=["SG"], sponsorship=["SG"])
+    at.session_state[store.WORK_QUESTION] = False  # as store.set_work_answer leaves it
+    at.run()
+    assert "Add your work authorization in Edit profile to continue." in page(at)
+    at.button(key="oo-st3").click().run()
+    assert at.session_state["ob_step"] == "2"
+    at = answer(editor(at), ["EU"])
+    assert facts(declared(at), "SG") == (False, True)  # the role page's answer stays
+    at.run()
+    assert "Needed in Singapore · Not needed in EU" in page(at)
+    at.button(key="next").click().run()
     assert at.session_state["ob_step"] == "3b"
 
 

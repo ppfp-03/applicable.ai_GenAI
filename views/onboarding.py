@@ -410,7 +410,7 @@ def work_auth_cards() -> list[str]:
     or, before it, a note that work authorization is required to continue.
     Sponsorship is never required, and unknown sponsorship shows as such."""
     decl = store.work_auth()
-    if decl is None:
+    if not store.work_auth_complete():
         missing = S.get("ob_missing", False)
         badges = {"Work authorization": (MISSING, " miss") if missing else (REQUIRED, ""),
                   "Sponsorship": (NOT_DECLARED, "")}
@@ -587,10 +587,7 @@ def draft_work_auth() -> None:
     """Fill the question from the saved declaration, or leave it blank. An
     answer covering only part of the EU opens with the EU split; "None of
     these" when every platform country is declared not authorized."""
-    decl = store.work_auth()
-    if decl is None:
-        S["ed-wa-auth"], S[EU_SPLIT] = [], False
-        return
+    decl = store.work_auth() or {}
     authorized = decl.get("authorized", [])
     eu = store.eu_codes()
     part = set(eu) & set(authorized)
@@ -1480,7 +1477,7 @@ with st.container(key="obody"):
         right, y, w, h = EDIT_2
         st.markdown(f"<style>.stApp .st-key-oo-edit{{left:auto!important;right:{right}px}}</style>", unsafe_allow_html=True)
         opened = overlay("edit", (0, y, w, h), "Edit profile", on_click=open_editor)
-        if store.work_auth() is None:
+        if not store.work_auth_complete():
             mid = CTA_2["wa"][0]
             st.markdown(f"<style>.stApp .st-key-oo-wa{{left:calc(50% + {mid}px)!important}}</style>", unsafe_allow_html=True)
             for name, label in zip(CTA_2, REQUIRED_CTA.values()):

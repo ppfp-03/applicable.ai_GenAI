@@ -170,9 +170,15 @@ def test_the_work_authorization_declaration_is_translated_losslessly():
         ("unsure", {"authorized": ["IT"], "no_sponsorship": ["IT"]}, None),
     ):
         c = eligibility.candidate(D.profile, {"uk_work": uk, store.WORK_AUTH: declared})
-        got = [(w.country_code, w.authorized_to_work, w.requires_sponsorship)
-               for w in c.declarations.work_authorizations]
-        assert got == ([("GB", *row)] if row else []), declared
+        got = {w.country_code: (w.authorized_to_work, w.requires_sponsorship)
+               for w in c.declarations.work_authorizations}
+        assert got.pop("GB", None) == row, declared
+        # Every other declared country too, exactly as declared (Q6).
+        assert got == ({"IT": (True, False)} if "IT" in declared.get("authorized", []) else {}), declared
+    mixed = {"not_authorized": ["SG", "CH"], "sponsorship": ["SG"]}
+    c = eligibility.candidate(D.profile, {store.WORK_AUTH: mixed})
+    assert {(w.country_code, w.authorized_to_work, w.requires_sponsorship)
+            for w in c.declarations.work_authorizations} == {("SG", False, True), ("CH", False, None)}
 
 
 def test_hsk_never_reaches_the_candidate_answers():
