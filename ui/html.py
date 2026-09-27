@@ -15,6 +15,7 @@ from __future__ import annotations
 import base64
 import re
 from html import escape
+from pathlib import Path
 
 import streamlit as st
 
@@ -70,6 +71,18 @@ MARK_SVG = (
     'A0.71 0.71 0 0 1 42.63 66.6L35.73 80.72A6.43 6.43 0 0 1 29.96 84.32Z"/></svg>'
 )
 MARK = f'<span class="mark">{MARK_SVG}</span>'
+_LOCKUP_FILE = Path(__file__).resolve().parent.parent / "static" / "applicable-lockup.svg"
+
+
+def lockup() -> str:
+    """The tile + wordmark lockup, inlined at 34px tall (the tile matches the old 28px mark).
+
+    Read on every render, not at import: Streamlit only reloads changed .py
+    files, so a cached copy would keep showing a replaced SVG.
+    """
+    return _LOCKUP_FILE.read_text().replace(
+        'width="242" height="48"', 'width="171" height="34" style="display:block"', 1
+    )
 SEARCH = (
     '<svg width="15" height="15" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5" stroke="#3A3A3C" '
     'stroke-width="1.6" fill="none"/><path d="M10.5 10.5 14 14" stroke="#3A3A3C" stroke-width="1.6" '

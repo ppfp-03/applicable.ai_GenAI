@@ -32,7 +32,7 @@ from oi.providers.kimi import KimiClient
 from oi.providers.model_client import ExtractionError
 from ui import onboarding_markup as M
 from ui import guide, parts, tabs
-from ui.html import CK12, CK_WHITE, MARK_SVG, NEXT, PREV, WN12, XR, esc, html, squash
+from ui.html import CK12, CK_WHITE, NEXT, PREV, WN12, XR, esc, html, lockup, squash
 from ui.palette import orange
 from ui.theme import page_css
 
@@ -1518,7 +1518,7 @@ html(
 
 with st.container(key="otop"):
     html(
-        f'<div class="w-brand"><div class="mark">{MARK_SVG}</div><b>Applicable.ai</b></div>'
+        f'<div class="w-brand">{lockup()}</div>'
     )
     pills = []
     for n, name in enumerate(STEP_NAMES, start=1):
