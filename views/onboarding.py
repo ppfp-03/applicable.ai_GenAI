@@ -482,7 +482,7 @@ def authorization_value(decl: dict) -> str:
 
 def authorization_card(decl: dict) -> str:
     return profile_card("Work authorization", DECLARED, f'<div class="p-v">{esc(authorization_value(decl))}</div>',
-                        "Declared by you")
+                        "Declared by you", edit=True)
 
 
 def sponsorship_card(decl: dict) -> str:
@@ -490,13 +490,15 @@ def sponsorship_card(decl: dict) -> str:
     out, or "None of these", declares nothing: it shows as not declared yet."""
     yes, no, unknown = declared_lists(decl, "sponsorship", "no_sponsorship")
     if not unknown and not yes:
-        return profile_card("Sponsorship", DECLARED, '<div class="p-v">Not needed anywhere</div>', "Declared by you")
+        return profile_card("Sponsorship", DECLARED, '<div class="p-v">Not needed anywhere</div>', "Declared by you",
+                            edit=True)
     parts = [f"Needed in {country_list(yes)}"] * bool(yes) + [f"Not needed in {country_list(no)}"] * bool(no)
     if not parts:
         return profile_card("Sponsorship", NOT_DECLARED, '<div class="p-v">Not declared yet</div>'
-                            '<div class="p-m">We’ll ask if a role needs it</div>')
+                            '<div class="p-m">We’ll ask if a role needs it</div>', edit=True)
     note = '<div class="p-m">Not declared yet for other countries</div>' if unknown else ""
-    return profile_card("Sponsorship", DECLARED, f'<div class="p-v">{esc(" · ".join(parts))}</div>{note}', "Declared by you")
+    return profile_card("Sponsorship", DECLARED, f'<div class="p-v">{esc(" · ".join(parts))}</div>{note}', "Declared by you",
+                        edit=True)
 
 
 def languages_card(profile) -> str:

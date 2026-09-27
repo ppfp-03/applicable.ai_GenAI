@@ -771,6 +771,12 @@ def test_without_a_cv_only_the_declared_cards_can_be_edited() -> None:
     assert 'data-edit="xe-work"' in shown and 'data-edit="xe-sponsorship"' in shown
 
 
+@pytest.mark.parametrize("declaration", [chosen(*EU), NONE_OF_THESE, decl(authorized=EU, sponsorship=["GB"])])
+def test_the_declared_cards_can_still_be_edited(declaration) -> None:
+    shown = page(at_step2(declared=declaration))
+    assert 'data-edit="xe-work"' in shown and 'data-edit="xe-sponsorship"' in shown
+
+
 def test_every_refused_confirm_shows_the_error_again() -> None:
     at = at_step2()
     seen = []
