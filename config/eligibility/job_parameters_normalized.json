@@ -1,0 +1,3426 @@
+{
+  "layer_version": "0.1-temporary",
+  "entries": [
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-001",
+      "requirement_id": "synthetic-normalized:SYN-JOB-001:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-001:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-001",
+      "requirement_id": "synthetic-normalized:SYN-JOB-001:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "master",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-001:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-001",
+      "requirement_id": "synthetic-normalized:SYN-JOB-001:req-004",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "economics"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-001:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-001",
+      "requirement_id": "synthetic-normalized:SYN-JOB-001:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-001:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-001",
+      "requirement_id": "synthetic-normalized:SYN-JOB-001:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "DE",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-001:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-002",
+      "requirement_id": "synthetic-normalized:SYN-JOB-002:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-002:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-002",
+      "requirement_id": "synthetic-normalized:SYN-JOB-002:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-002:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-002",
+      "requirement_id": "synthetic-normalized:SYN-JOB-002:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-002:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-002",
+      "requirement_id": "synthetic-normalized:SYN-JOB-002:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "SG",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-002:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-003",
+      "requirement_id": "synthetic-normalized:SYN-JOB-003:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-003:requirement-002",
+        "synthetic-normalized:SYN-JOB-003:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:study."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-003",
+      "requirement_id": "synthetic-normalized:SYN-JOB-003:req-003",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2028-06-01",
+        "end": "2028-09-30"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-003:requirement-003",
+        "synthetic-normalized:SYN-JOB-003:norm-grad-window"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: summer_is_june_to_september."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-003",
+      "requirement_id": "synthetic-normalized:SYN-JOB-003:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-003:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-003",
+      "requirement_id": "synthetic-normalized:SYN-JOB-003:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "GB",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-003:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-004",
+      "requirement_id": "synthetic-normalized:SYN-JOB-004:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-004:requirement-002",
+        "synthetic-normalized:SYN-JOB-004:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:early-career."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-004",
+      "requirement_id": "synthetic-normalized:SYN-JOB-004:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-004:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-004",
+      "requirement_id": "synthetic-normalized:SYN-JOB-004:req-004",
+      "constraint_id": "HC_MIN_EXPERIENCE",
+      "parameters": {
+        "kind": "min_experience",
+        "min_months": 3,
+        "answer_key": null
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-004:requirement-004",
+        "synthetic-normalized:SYN-JOB-004:norm-experience"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: experience_months_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-004",
+      "requirement_id": "synthetic-normalized:SYN-JOB-004:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "HK",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-004:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-005",
+      "requirement_id": "synthetic-normalized:SYN-JOB-005:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-005:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-005",
+      "requirement_id": "synthetic-normalized:SYN-JOB-005:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "master",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-005:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-005",
+      "requirement_id": "synthetic-normalized:SYN-JOB-005:req-004",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "business_administration",
+          "engineering",
+          "economics",
+          "data_science",
+          "management",
+          "mathematics",
+          "finance",
+          "statistics",
+          "computer_science",
+          "information_technology"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-005:requirement-004",
+        "synthetic-normalized:SYN-JOB-005:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+broad_terms:analytics+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-005",
+      "requirement_id": "synthetic-normalized:SYN-JOB-005:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-005:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-005",
+      "requirement_id": "synthetic-normalized:SYN-JOB-005:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-005:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-006",
+      "requirement_id": "synthetic-normalized:SYN-JOB-006:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-006:requirement-002",
+        "synthetic-normalized:SYN-JOB-006:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:study."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-006",
+      "requirement_id": "synthetic-normalized:SYN-JOB-006:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-006:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-006",
+      "requirement_id": "synthetic-normalized:SYN-JOB-006:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "DE",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-006:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-007",
+      "requirement_id": "synthetic-normalized:SYN-JOB-007:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-007:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-007",
+      "requirement_id": "synthetic-normalized:SYN-JOB-007:req-003",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "management",
+          "business_administration"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-007:requirement-003",
+        "synthetic-normalized:SYN-JOB-007:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+broad_terms:logistics,operations,supply chain."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-007",
+      "requirement_id": "synthetic-normalized:SYN-JOB-007:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "de",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-007:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-007",
+      "requirement_id": "synthetic-normalized:SYN-JOB-007:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-007:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-007",
+      "requirement_id": "synthetic-normalized:SYN-JOB-007:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "DE",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-007:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-008",
+      "requirement_id": "synthetic-normalized:SYN-JOB-008:req-002",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "CH",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-008:requirement-002",
+        "synthetic-normalized:SYN-JOB-008:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_phrase:approved work authorization for the selected office."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-008",
+      "requirement_id": "synthetic-normalized:SYN-JOB-008:req-003",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-008:requirement-003",
+        "synthetic-normalized:SYN-JOB-008:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:recently graduated + penultimate."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-008",
+      "requirement_id": "synthetic-normalized:SYN-JOB-008:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-008:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-009",
+      "requirement_id": "synthetic-normalized:SYN-JOB-009:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-009:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-009",
+      "requirement_id": "synthetic-normalized:SYN-JOB-009:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-009:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-009",
+      "requirement_id": "synthetic-normalized:SYN-JOB-009:req-004",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "finance",
+          "economics",
+          "business_administration",
+          "accounting",
+          "mathematics",
+          "statistics",
+          "management"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-009:requirement-004",
+        "synthetic-normalized:SYN-JOB-009:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-009",
+      "requirement_id": "synthetic-normalized:SYN-JOB-009:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-009:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-009",
+      "requirement_id": "synthetic-normalized:SYN-JOB-009:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "CH",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-009:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-010",
+      "requirement_id": "synthetic-normalized:SYN-JOB-010:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-010:requirement-002",
+        "synthetic-normalized:SYN-JOB-010:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:study."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-010",
+      "requirement_id": "synthetic-normalized:SYN-JOB-010:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "master",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-010:requirement-003",
+        "synthetic-normalized:SYN-JOB-010:norm-degree"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: degree_level_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-010",
+      "requirement_id": "synthetic-normalized:SYN-JOB-010:req-004",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "business_administration",
+          "marketing",
+          "information_technology",
+          "data_science",
+          "management",
+          "communications",
+          "computer_science",
+          "statistics"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-010:requirement-004",
+        "synthetic-normalized:SYN-JOB-010:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+broad_terms:IT,data analysis,project management+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-010",
+      "requirement_id": "synthetic-normalized:SYN-JOB-010:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-010:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-010",
+      "requirement_id": "synthetic-normalized:SYN-JOB-010:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "NL",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-010:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-011",
+      "requirement_id": "synthetic-normalized:SYN-JOB-011:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-011:requirement-002",
+        "synthetic-normalized:SYN-JOB-011:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:bachelor's graduate + enrolled."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-011",
+      "requirement_id": "synthetic-normalized:SYN-JOB-011:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-011:requirement-003",
+        "synthetic-normalized:SYN-JOB-011:norm-degree"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: bachelor_or_master_is_bachelor."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-011",
+      "requirement_id": "synthetic-normalized:SYN-JOB-011:req-004",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "business_administration",
+          "economics",
+          "engineering",
+          "management",
+          "finance",
+          "statistics",
+          "mathematics"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-011:requirement-004",
+        "synthetic-normalized:SYN-JOB-011:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-011",
+      "requirement_id": "synthetic-normalized:SYN-JOB-011:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-011:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-011",
+      "requirement_id": "synthetic-normalized:SYN-JOB-011:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "NL",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-011:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-012",
+      "requirement_id": "synthetic-normalized:SYN-JOB-012:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-012:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-012",
+      "requirement_id": "synthetic-normalized:SYN-JOB-012:req-003",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2027-12-01",
+        "end": "2028-07-31"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-012:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-012",
+      "requirement_id": "synthetic-normalized:SYN-JOB-012:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "zh",
+        "scale": "HSK",
+        "min_level": "4"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-012:requirement-004",
+        "synthetic-normalized:SYN-JOB-012:norm-language-zh"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: alternatives_convention:zh=HSK:4."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-012",
+      "requirement_id": "synthetic-normalized:SYN-JOB-012:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "SG",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-012:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-013",
+      "requirement_id": "synthetic-normalized:SYN-JOB-013:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-013:requirement-002",
+        "synthetic-normalized:SYN-JOB-013:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:qualification achieved + predicted."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-013",
+      "requirement_id": "synthetic-normalized:SYN-JOB-013:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-013:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-013",
+      "requirement_id": "synthetic-normalized:SYN-JOB-013:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "GB",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-013:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-014",
+      "requirement_id": "synthetic-normalized:SYN-JOB-014:req-002",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "does_not_count"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-014:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-014",
+      "requirement_id": "synthetic-normalized:SYN-JOB-014:req-003",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "finance",
+          "accounting",
+          "economics",
+          "statistics",
+          "mathematics"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-014:requirement-003",
+        "synthetic-normalized:SYN-JOB-014:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-014",
+      "requirement_id": "synthetic-normalized:SYN-JOB-014:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-014:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-014",
+      "requirement_id": "synthetic-normalized:SYN-JOB-014:norm-student-status",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-014:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: student_status_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-014",
+      "requirement_id": "synthetic-normalized:SYN-JOB-014:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "IE",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-014:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-015",
+      "requirement_id": "synthetic-normalized:SYN-JOB-015:req-002",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-015:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-015",
+      "requirement_id": "synthetic-normalized:SYN-JOB-015:norm-student-status",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-015:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: student_status_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-015",
+      "requirement_id": "synthetic-normalized:SYN-JOB-015:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "GB",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-015:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-016",
+      "requirement_id": "synthetic-normalized:SYN-JOB-016:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-016:requirement-002",
+        "synthetic-normalized:SYN-JOB-016:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:student."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-016",
+      "requirement_id": "synthetic-normalized:SYN-JOB-016:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-016:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-016",
+      "requirement_id": "synthetic-normalized:SYN-JOB-016:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "GB",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-016:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-017",
+      "requirement_id": "synthetic-normalized:SYN-JOB-017:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-017:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-017",
+      "requirement_id": "synthetic-normalized:SYN-JOB-017:req-003",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2027-12-01",
+        "end": "2028-07-31"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-017:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-017",
+      "requirement_id": "synthetic-normalized:SYN-JOB-017:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "zh",
+        "scale": "HSK",
+        "min_level": "4"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-017:requirement-004",
+        "synthetic-normalized:SYN-JOB-017:norm-language-zh"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: alternatives_convention:zh=HSK:4."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-017",
+      "requirement_id": "synthetic-normalized:SYN-JOB-017:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "HK",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-017:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-018",
+      "requirement_id": "synthetic-normalized:SYN-JOB-018:req-002",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "CN",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-018:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-018",
+      "requirement_id": "synthetic-normalized:SYN-JOB-018:req-003",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-018:requirement-003",
+        "synthetic-normalized:SYN-JOB-018:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:recently graduated + penultimate."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-018",
+      "requirement_id": "synthetic-normalized:SYN-JOB-018:req-004-1",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "zh",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-018:norm-language-zh",
+        "synthetic-normalized:SYN-JOB-018:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: split_languages."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-018",
+      "requirement_id": "synthetic-normalized:SYN-JOB-018:req-004-2",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-018:norm-language-en",
+        "synthetic-normalized:SYN-JOB-018:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: split_languages."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-019",
+      "requirement_id": "synthetic-normalized:SYN-JOB-019:req-002",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "master",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-019:requirement-002",
+        "synthetic-normalized:SYN-JOB-019:norm-degree"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: bac_plus_4_or_5_is_master."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-019",
+      "requirement_id": "synthetic-normalized:SYN-JOB-019:req-003",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "marketing",
+          "business_administration",
+          "management",
+          "communications"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-019:requirement-003",
+        "synthetic-normalized:SYN-JOB-019:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: field_terms."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-019",
+      "requirement_id": "synthetic-normalized:SYN-JOB-019:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-019:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-019",
+      "requirement_id": "synthetic-normalized:SYN-JOB-019:norm-student-status",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-019:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: student_status_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-019",
+      "requirement_id": "synthetic-normalized:SYN-JOB-019:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-019:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-020",
+      "requirement_id": "synthetic-normalized:SYN-JOB-020:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-020:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-020",
+      "requirement_id": "synthetic-normalized:SYN-JOB-020:req-003",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2026-12-01",
+        "end": "2027-07-31"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-020:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-020",
+      "requirement_id": "synthetic-normalized:SYN-JOB-020:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "zh",
+        "scale": "HSK",
+        "min_level": "4"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-020:requirement-004",
+        "synthetic-normalized:SYN-JOB-020:norm-language-zh"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: alternatives_convention:zh=HSK:4."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-020",
+      "requirement_id": "synthetic-normalized:SYN-JOB-020:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "HK",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-020:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-021",
+      "requirement_id": "synthetic-normalized:SYN-JOB-021:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-021:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-021",
+      "requirement_id": "synthetic-normalized:SYN-JOB-021:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-021:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-021",
+      "requirement_id": "synthetic-normalized:SYN-JOB-021:req-004",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "business_administration",
+          "management"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-021:requirement-004",
+        "synthetic-normalized:SYN-JOB-021:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-021",
+      "requirement_id": "synthetic-normalized:SYN-JOB-021:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "es",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-021:requirement-005",
+        "synthetic-normalized:SYN-JOB-021:norm-language-es"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: wording_map+fluent_as_cefr_c1."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-021",
+      "requirement_id": "synthetic-normalized:SYN-JOB-021:req-006",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-021:requirement-006"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-021",
+      "requirement_id": "synthetic-normalized:SYN-JOB-021:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-021:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-022",
+      "requirement_id": "synthetic-normalized:SYN-JOB-022:req-002",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-022:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-022",
+      "requirement_id": "synthetic-normalized:SYN-JOB-022:norm-student-status",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-022:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: student_status_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-022",
+      "requirement_id": "synthetic-normalized:SYN-JOB-022:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-022:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-023",
+      "requirement_id": "synthetic-normalized:SYN-JOB-023:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-023:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-023",
+      "requirement_id": "synthetic-normalized:SYN-JOB-023:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "master",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-023:requirement-003",
+        "synthetic-normalized:SYN-JOB-023:norm-degree"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: bac_plus_4_or_5_is_master."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-023",
+      "requirement_id": "synthetic-normalized:SYN-JOB-023:req-004",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "marketing",
+          "business_administration"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-023:requirement-004",
+        "synthetic-normalized:SYN-JOB-023:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: field_terms."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-023",
+      "requirement_id": "synthetic-normalized:SYN-JOB-023:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-023:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-023",
+      "requirement_id": "synthetic-normalized:SYN-JOB-023:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-023:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-024",
+      "requirement_id": "synthetic-normalized:SYN-JOB-024:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-024:requirement-002",
+        "synthetic-normalized:SYN-JOB-024:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:graduate-entry."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-024",
+      "requirement_id": "synthetic-normalized:SYN-JOB-024:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-024:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-024",
+      "requirement_id": "synthetic-normalized:SYN-JOB-024:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "GB",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-024:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-025",
+      "requirement_id": "synthetic-normalized:SYN-JOB-025:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-025:requirement-002",
+        "synthetic-normalized:SYN-JOB-025:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:university-level."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-025",
+      "requirement_id": "synthetic-normalized:SYN-JOB-025:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-025:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-025",
+      "requirement_id": "synthetic-normalized:SYN-JOB-025:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "GB",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-025:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-026",
+      "requirement_id": "synthetic-normalized:SYN-JOB-026:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-026:requirement-002",
+        "synthetic-normalized:SYN-JOB-026:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:enrolled."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-026",
+      "requirement_id": "synthetic-normalized:SYN-JOB-026:req-003",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "marketing",
+          "communications"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-026:requirement-003",
+        "synthetic-normalized:SYN-JOB-026:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+broad_terms:journalism+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-026",
+      "requirement_id": "synthetic-normalized:SYN-JOB-026:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-026:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-026",
+      "requirement_id": "synthetic-normalized:SYN-JOB-026:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "NL",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-026:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-027",
+      "requirement_id": "synthetic-normalized:SYN-JOB-027:req-002",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "NL",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-027:requirement-002",
+        "synthetic-normalized:SYN-JOB-027:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: sponsorship_phrase:without visa sponsorship."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-027",
+      "requirement_id": "synthetic-normalized:SYN-JOB-027:req-003",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-027:requirement-003",
+        "synthetic-normalized:SYN-JOB-027:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:fresh-graduate."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-027",
+      "requirement_id": "synthetic-normalized:SYN-JOB-027:req-004",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-027:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-027",
+      "requirement_id": "synthetic-normalized:SYN-JOB-027:req-005",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "engineering",
+          "data_science",
+          "economics",
+          "management",
+          "mathematics",
+          "statistics",
+          "computer_science",
+          "information_technology",
+          "finance",
+          "business_administration"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-027:requirement-005",
+        "synthetic-normalized:SYN-JOB-027:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+broad_terms:industrial engineering,econometrics,operations management,supply chain,business analytics+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-027",
+      "requirement_id": "synthetic-normalized:SYN-JOB-027:req-006",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-027:requirement-006"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-028",
+      "requirement_id": "synthetic-normalized:SYN-JOB-028:req-002",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "fr",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-028:requirement-002",
+        "synthetic-normalized:SYN-JOB-028:norm-language-fr"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: faithful_parameter+fluent_as_cefr_c1."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-028",
+      "requirement_id": "synthetic-normalized:SYN-JOB-028:norm-student-status",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-028:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: student_status_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-028",
+      "requirement_id": "synthetic-normalized:SYN-JOB-028:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-028:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-029",
+      "requirement_id": "synthetic-normalized:SYN-JOB-029:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-029:requirement-002",
+        "synthetic-normalized:SYN-JOB-029:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:studies."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-029",
+      "requirement_id": "synthetic-normalized:SYN-JOB-029:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "fr",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-029:requirement-003",
+        "synthetic-normalized:SYN-JOB-029:norm-language-fr"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: faithful_parameter+fluent_as_cefr_c1."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-029",
+      "requirement_id": "synthetic-normalized:SYN-JOB-029:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-029:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-030",
+      "requirement_id": "synthetic-normalized:SYN-JOB-030:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-030:requirement-002",
+        "synthetic-normalized:SYN-JOB-030:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:studies."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-030",
+      "requirement_id": "synthetic-normalized:SYN-JOB-030:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "fr",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-030:requirement-003",
+        "synthetic-normalized:SYN-JOB-030:norm-language-fr"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: faithful_parameter+fluent_as_cefr_c1."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-030",
+      "requirement_id": "synthetic-normalized:SYN-JOB-030:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-030:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-030",
+      "requirement_id": "synthetic-normalized:SYN-JOB-030:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-030:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-031",
+      "requirement_id": "synthetic-normalized:SYN-JOB-031:req-002",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "it",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-031:requirement-002",
+        "synthetic-normalized:SYN-JOB-031:norm-language-it"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: wording_map+fluent_as_cefr_c1."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-031",
+      "requirement_id": "synthetic-normalized:SYN-JOB-031:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "CEFR",
+        "min_level": "B2"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-031:requirement-003",
+        "synthetic-normalized:SYN-JOB-031:norm-language-en"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: wording_map."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-031",
+      "requirement_id": "synthetic-normalized:SYN-JOB-031:norm-student-status",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-031:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: student_status_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-031",
+      "requirement_id": "synthetic-normalized:SYN-JOB-031:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "IT",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-031:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-032",
+      "requirement_id": "synthetic-normalized:SYN-JOB-032:req-002",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "es",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-032:requirement-002",
+        "synthetic-normalized:SYN-JOB-032:norm-language-es"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: faithful_parameter+fluent_as_cefr_c1."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-032",
+      "requirement_id": "synthetic-normalized:SYN-JOB-032:norm-student-status",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-032:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: student_status_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-032",
+      "requirement_id": "synthetic-normalized:SYN-JOB-032:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "ES",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-032:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-033",
+      "requirement_id": "synthetic-normalized:SYN-JOB-033:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-033:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-033",
+      "requirement_id": "synthetic-normalized:SYN-JOB-033:req-003",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "business_administration",
+          "engineering"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-033:requirement-003",
+        "synthetic-normalized:SYN-JOB-033:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: field_terms."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-033",
+      "requirement_id": "synthetic-normalized:SYN-JOB-033:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-033:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-033",
+      "requirement_id": "synthetic-normalized:SYN-JOB-033:req-005",
+      "constraint_id": "HC_MIN_EXPERIENCE",
+      "parameters": {
+        "kind": "min_experience",
+        "min_months": 3,
+        "answer_key": null
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-033:requirement-005",
+        "synthetic-normalized:SYN-JOB-033:norm-experience"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: experience_months_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-033",
+      "requirement_id": "synthetic-normalized:SYN-JOB-033:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-033:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-034",
+      "requirement_id": "synthetic-normalized:SYN-JOB-034:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-034:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-034",
+      "requirement_id": "synthetic-normalized:SYN-JOB-034:req-003",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "finance",
+          "economics",
+          "accounting"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-034:requirement-003",
+        "synthetic-normalized:SYN-JOB-034:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-034",
+      "requirement_id": "synthetic-normalized:SYN-JOB-034:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "CEFR",
+        "min_level": "B2"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-034:requirement-004",
+        "synthetic-normalized:SYN-JOB-034:norm-language-en"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: wording_map."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-034",
+      "requirement_id": "synthetic-normalized:SYN-JOB-034:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-034:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-035",
+      "requirement_id": "synthetic-normalized:SYN-JOB-035:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-035:requirement-002",
+        "synthetic-normalized:SYN-JOB-035:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:student."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-035",
+      "requirement_id": "synthetic-normalized:SYN-JOB-035:req-003",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "engineering",
+          "business_administration"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-035:requirement-003",
+        "synthetic-normalized:SYN-JOB-035:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+broad_terms:engineering school,business school."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-035",
+      "requirement_id": "synthetic-normalized:SYN-JOB-035:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-035:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-035",
+      "requirement_id": "synthetic-normalized:SYN-JOB-035:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-035:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-036",
+      "requirement_id": "synthetic-normalized:SYN-JOB-036:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-036:requirement-002",
+        "synthetic-normalized:SYN-JOB-036:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:studies."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-036",
+      "requirement_id": "synthetic-normalized:SYN-JOB-036:req-003",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "engineering",
+          "business_administration"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-036:requirement-003",
+        "synthetic-normalized:SYN-JOB-036:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+broad_terms:engineering school,business school."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-036",
+      "requirement_id": "synthetic-normalized:SYN-JOB-036:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-036:requirement-004",
+        "synthetic-normalized:SYN-JOB-036:norm-language-en"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: wording_map."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-036",
+      "requirement_id": "synthetic-normalized:SYN-JOB-036:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-036:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-037",
+      "requirement_id": "synthetic-normalized:SYN-JOB-037:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-037:requirement-002",
+        "synthetic-normalized:SYN-JOB-037:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:recent graduate + studies."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-037",
+      "requirement_id": "synthetic-normalized:SYN-JOB-037:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-037:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-037",
+      "requirement_id": "synthetic-normalized:SYN-JOB-037:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "DE",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-037:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-038",
+      "requirement_id": "synthetic-normalized:SYN-JOB-038:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-038:requirement-002",
+        "synthetic-normalized:SYN-JOB-038:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:recently finished + end of university."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-038",
+      "requirement_id": "synthetic-normalized:SYN-JOB-038:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-038:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-038",
+      "requirement_id": "synthetic-normalized:SYN-JOB-038:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "de",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-038:requirement-004",
+        "synthetic-normalized:SYN-JOB-038:norm-language-de"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: faithful_parameter+fluent_as_cefr_c1."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-038",
+      "requirement_id": "synthetic-normalized:SYN-JOB-038:req-005",
+      "constraint_id": "HC_MIN_EXPERIENCE",
+      "parameters": {
+        "kind": "min_experience",
+        "min_months": 3,
+        "answer_key": null
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-038:requirement-005",
+        "synthetic-normalized:SYN-JOB-038:norm-experience"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: experience_months_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-038",
+      "requirement_id": "synthetic-normalized:SYN-JOB-038:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "DE",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-038:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-039",
+      "requirement_id": "synthetic-normalized:SYN-JOB-039:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-039:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-039",
+      "requirement_id": "synthetic-normalized:SYN-JOB-039:req-003",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "marketing",
+          "communications",
+          "business_administration",
+          "management"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-039:requirement-003",
+        "synthetic-normalized:SYN-JOB-039:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-039",
+      "requirement_id": "synthetic-normalized:SYN-JOB-039:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "nl",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-039:requirement-004",
+        "synthetic-normalized:SYN-JOB-039:norm-language-nl"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: faithful_parameter+fluent_as_cefr_c1."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-039",
+      "requirement_id": "synthetic-normalized:SYN-JOB-039:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-039:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-039",
+      "requirement_id": "synthetic-normalized:SYN-JOB-039:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "NL",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-039:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-040",
+      "requirement_id": "synthetic-normalized:SYN-JOB-040:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-040:requirement-002",
+        "synthetic-normalized:SYN-JOB-040:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:student."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-040",
+      "requirement_id": "synthetic-normalized:SYN-JOB-040:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-040:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-040",
+      "requirement_id": "synthetic-normalized:SYN-JOB-040:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-040:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-040",
+      "requirement_id": "synthetic-normalized:SYN-JOB-040:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "GB",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-040:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-041",
+      "requirement_id": "synthetic-normalized:SYN-JOB-041:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-041:requirement-002",
+        "synthetic-normalized:SYN-JOB-041:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:student."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-041",
+      "requirement_id": "synthetic-normalized:SYN-JOB-041:req-003",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2027-01-01",
+        "end": "2027-12-31"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-041:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-041",
+      "requirement_id": "synthetic-normalized:SYN-JOB-041:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-041:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-041",
+      "requirement_id": "synthetic-normalized:SYN-JOB-041:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "GB",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-041:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-042",
+      "requirement_id": "synthetic-normalized:SYN-JOB-042:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-042:requirement-002",
+        "synthetic-normalized:SYN-JOB-042:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:university candidate."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-042",
+      "requirement_id": "synthetic-normalized:SYN-JOB-042:req-003",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2027-06-01",
+        "end": "2028-09-30"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-042:requirement-003",
+        "synthetic-normalized:SYN-JOB-042:norm-grad-window"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: summer_is_june_to_september."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-042",
+      "requirement_id": "synthetic-normalized:SYN-JOB-042:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-042:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-042",
+      "requirement_id": "synthetic-normalized:SYN-JOB-042:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "SG",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-042:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-043",
+      "requirement_id": "synthetic-normalized:SYN-JOB-043:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-043:requirement-002",
+        "synthetic-normalized:SYN-JOB-043:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:early-career."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-043",
+      "requirement_id": "synthetic-normalized:SYN-JOB-043:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-043:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-043",
+      "requirement_id": "synthetic-normalized:SYN-JOB-043:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "SG",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-043:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-044",
+      "requirement_id": "synthetic-normalized:SYN-JOB-044:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-044:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-044",
+      "requirement_id": "synthetic-normalized:SYN-JOB-044:req-003",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2027-01-01",
+        "end": "2028-12-31"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-044:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-044",
+      "requirement_id": "synthetic-normalized:SYN-JOB-044:req-004",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-044:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-044",
+      "requirement_id": "synthetic-normalized:SYN-JOB-044:req-005",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "statistics",
+          "economics",
+          "engineering",
+          "mathematics",
+          "data_science",
+          "finance"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-044:requirement-005",
+        "synthetic-normalized:SYN-JOB-044:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-044",
+      "requirement_id": "synthetic-normalized:SYN-JOB-044:req-006",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-044:requirement-006",
+        "synthetic-normalized:SYN-JOB-044:norm-language-en"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: wording_map."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-044",
+      "requirement_id": "synthetic-normalized:SYN-JOB-044:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "HK",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-044:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-045",
+      "requirement_id": "synthetic-normalized:SYN-JOB-045:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-045:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-045",
+      "requirement_id": "synthetic-normalized:SYN-JOB-045:req-003",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "management",
+          "finance",
+          "business_administration",
+          "economics",
+          "accounting"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-045:requirement-003",
+        "synthetic-normalized:SYN-JOB-045:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-045",
+      "requirement_id": "synthetic-normalized:SYN-JOB-045:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "fr",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-045:requirement-004",
+        "synthetic-normalized:SYN-JOB-045:norm-language-fr"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: faithful_parameter+fluent_as_cefr_c1."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-045",
+      "requirement_id": "synthetic-normalized:SYN-JOB-045:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "CEFR",
+        "min_level": "B2"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-045:requirement-005",
+        "synthetic-normalized:SYN-JOB-045:norm-language-en"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: wording_map."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-045",
+      "requirement_id": "synthetic-normalized:SYN-JOB-045:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-045:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-046",
+      "requirement_id": "synthetic-normalized:SYN-JOB-046:req-002",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "DE",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-046:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-046",
+      "requirement_id": "synthetic-normalized:SYN-JOB-046:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "de",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-046:requirement-003",
+        "synthetic-normalized:SYN-JOB-046:norm-language-de"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: wording_map+fluent_as_cefr_c1."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-046",
+      "requirement_id": "synthetic-normalized:SYN-JOB-046:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-046:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-046",
+      "requirement_id": "synthetic-normalized:SYN-JOB-046:norm-student-status",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-046:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: student_status_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-047",
+      "requirement_id": "synthetic-normalized:SYN-JOB-047:req-002",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "GB",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-047:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-047",
+      "requirement_id": "synthetic-normalized:SYN-JOB-047:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-047:requirement-003",
+        "synthetic-normalized:SYN-JOB-047:norm-degree-policy"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: in_progress_policy_fill."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-047",
+      "requirement_id": "synthetic-normalized:SYN-JOB-047:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-047:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-047",
+      "requirement_id": "synthetic-normalized:SYN-JOB-047:req-005",
+      "constraint_id": "HC_MIN_EXPERIENCE",
+      "parameters": {
+        "kind": "min_experience",
+        "min_months": 3,
+        "answer_key": null
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-047:requirement-005",
+        "synthetic-normalized:SYN-JOB-047:norm-experience"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: experience_months_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-047",
+      "requirement_id": "synthetic-normalized:SYN-JOB-047:norm-student-status",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-047:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: student_status_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-048",
+      "requirement_id": "synthetic-normalized:SYN-JOB-048:req-003",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-048:requirement-003",
+        "synthetic-normalized:SYN-JOB-048:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:university candidate."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-048",
+      "requirement_id": "synthetic-normalized:SYN-JOB-048:req-004",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2027-08-01",
+        "end": "2028-12-31"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-048:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-048",
+      "requirement_id": "synthetic-normalized:SYN-JOB-048:req-005",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-048:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-048",
+      "requirement_id": "synthetic-normalized:SYN-JOB-048:req-006",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "finance",
+          "information_technology",
+          "engineering",
+          "mathematics",
+          "statistics",
+          "economics",
+          "accounting",
+          "computer_science",
+          "data_science"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-048:requirement-006",
+        "synthetic-normalized:SYN-JOB-048:norm-field"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: field_terms+broad_terms:technology+related_broadened."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-048",
+      "requirement_id": "synthetic-normalized:SYN-JOB-048:req-007",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-048:requirement-007"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-048",
+      "requirement_id": "synthetic-normalized:SYN-JOB-048:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "HK",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-048:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-049",
+      "requirement_id": "synthetic-normalized:SYN-JOB-049:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-049:requirement-002",
+        "synthetic-normalized:SYN-JOB-049:norm-student-status"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, NORMALIZED: student_status_phrase:early-career."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-049",
+      "requirement_id": "synthetic-normalized:SYN-JOB-049:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-049:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-049",
+      "requirement_id": "synthetic-normalized:SYN-JOB-049:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-049:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-050",
+      "requirement_id": "synthetic-normalized:SYN-JOB-050:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-050:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-050",
+      "requirement_id": "synthetic-normalized:SYN-JOB-050:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "fr",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-050:requirement-004",
+        "synthetic-normalized:SYN-JOB-050:norm-language-fr"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: faithful_parameter+fluent_as_cefr_c1."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-050",
+      "requirement_id": "synthetic-normalized:SYN-JOB-050:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-050:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SOURCE: faithful_parameter."
+    },
+    {
+      "job_id": "synthetic-normalized:SYN-JOB-050",
+      "requirement_id": "synthetic-normalized:SYN-JOB-050:norm-work-auth",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "FR",
+        "employer_sponsorship": "offered"
+      },
+      "evidence_ids": [
+        "synthetic-normalized:SYN-JOB-050:norm-work-auth"
+      ],
+      "origin": "curated",
+      "note": "Normalized demo layer, SYNTHETIC_FILL: sponsorship_quota."
+    }
+  ]
+}
