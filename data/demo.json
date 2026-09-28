@@ -545,11 +545,11 @@
      "count": [["3", "days since you applied"]],
      "checks": [["ok", "CV + cover letter sent"], ["ok", "Score now 81 · up 3"], ["gap", "Typical reply in 10 days"]],
      "buttons": [["View application", true], ["Not now", false]], "note": "We will remind you on <b>Thu 1 Oct</b>"},
-    {"kind": "interview", "role": "jpmorrow-strategy", "dot": "#0071E3", "kicker": "Today · 15:00", "title": "J.P. Morrow interview",
-     "sub": "Strategy Analyst Intern · Singapore · video call", "label": "Starts today at 15:00", "label_color": "var(--blue)",
-     "countdown": "2026-09-24T15:00", "units": "hms",
-     "checks": [["ok", "3 prep notes ready"], ["ok", "Role and team researched"], ["gap", "Prepare 1 case question"]],
-     "buttons": [["View application", true], ["Not now", false]], "note": "From <b>recruiter email · 11:24</b>"},
+    {"kind": "next", "role": "roshe-product", "dot": "#0071E3", "kicker": "In progress · 1 of 3 ready", "title": "Finish your Roshe application",
+     "sub": "Product Intern · Shanghai · Hybrid", "label": "Closes Tue 20 Oct, 23:59 CST", "label_color": "var(--amber)",
+     "countdown": "2026-10-20T23:59", "units": "dhm",
+     "checks": [["ok", "CV tailored"], ["work_auth", ""], ["gap", "Cover letter to write"]],
+     "buttons": [["Continue application", true], ["Not now", false]], "note": "Why now: <b>you are already in Shanghai</b>"},
     {"kind": "next", "role": "replai-pa", "dot": "#0071E3", "kicker": "Next best action", "kicker_color": "var(--blue)", "title": "Finish your Replai application",
      "sub": "Product Analyst Intern · London · Hybrid", "label": "Closes Sat 31 Oct, 23:59 GMT", "label_color": "var(--amber)",
      "countdown": "2026-10-31T23:59", "units": "dhm",
@@ -567,8 +567,8 @@
     "events": [
       {"date": "2026-09-21", "at": 0.6, "label": "Applied · Lazarde", "color": "#30A14E", "past": true, "card": 0},
       {"date": "2026-09-22", "at": 0.78, "label": "Last visit", "color": "#C7C7CC", "past": true},
-      {"date": "2026-09-24", "at": 0.62, "label": "J.P. Morrow interview 15:00", "color": "#0071E3", "card": 1},
-      {"date": "2026-09-30", "at": 0.5, "label": "J.P. Morrow · decision expected", "color": "#5AA2F0", "card": 1},
+      {"date": "2026-09-24", "at": 0.62, "label": "J.P. Morrow interview 15:00", "color": "#0071E3"},
+      {"date": "2026-09-30", "at": 0.5, "label": "J.P. Morrow · decision expected", "color": "#5AA2F0"},
       {"date": "2026-10-03", "at": 0.95, "label": "Nestella closes", "color": "#E3A03A", "toast": "Nestella · Strategy Intern closes Sat 3 Oct"}
     ]
   },

@@ -19,7 +19,7 @@ from ui import parts
 
 D = store.data()
 APP = str(Path(__file__).resolve().parents[1] / "app.py")
-NEXT = next(w for w in D.week if w["kind"] == "next")
+NEXT = next(w for w in D.week if w.get("role") == "replai-pa")
 ROLE = D.role(NEXT["role"])  # Replai, London, does not sponsor
 
 #: UK answer -> (canonical status, row kind, row text, standing label)
@@ -64,7 +64,7 @@ def test_home_renders_the_current_state(uk):
     at = AppTest.from_file(APP, default_timeout=60)
     at.session_state[store.STAGE] = "app"
     at.session_state[store.ANSWERS] = {"uk_work": uk}
-    at.session_state["home_card"] = [w["kind"] for w in D.week].index("next")
+    at.session_state["home_card"] = D.week.index(NEXT)
     at.run()
     assert not at.exception
     page = "".join(m.value for m in at.markdown)
