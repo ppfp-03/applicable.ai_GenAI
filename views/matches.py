@@ -4,18 +4,20 @@
 One population: curated roles and synthetic demo postings, ranked together by
 the same formula (core/matches.py, D-051). Left: what happened before ranking,
 the top five, the rest of the ranked roles, and one role a rule removed however
-well it matched. Right: the selected role's Priority score, its four factor
-scores, and the rule that says ranking never changes eligibility. A role to
-verify is ordered 15 points lower; its Priority score is never changed.
+well it matched. Right: the selected role as Explore shows it -- its Priority
+score, the 8 fixed criteria (what the role asks beside what the profile has)
+and the rule that says ranking never changes eligibility. A synthetic posting
+shows its curated copy, the role Explore lists. A role to verify is ordered
+15 points lower; its Priority score is never changed.
 """
 
 from __future__ import annotations
 
 import streamlit as st
 
-from core import store
+from core import clock, store
 from ui import parts, shell, tabs
-from ui.html import LOCK, esc, hit, html, logo
+from ui.html import LOCK, check_icon, esc, hit, html, logo
 from ui.theme import page_css
 
 d = store.data()
@@ -38,6 +40,21 @@ if st.session_state[SEL] >= len(top):
 
 #: Synthetic postings have no logo colour of their own.
 GREY = "#8E8E93"
+#: A synthetic posting's curated copy: the same role, as Explore lists it.
+TWIN = {job_id: role_id for role_id, job_id in m.represented_by.items()}
+
+
+def twin(o):
+    """The curated role Explore shows for this opportunity, or None for a
+    posting with no curated copy."""
+    role_id = o.role_id if o.kind == "curated" else TWIN.get(o.role_id)
+    return d.role(role_id) if role_id else None
+
+
+def target(o) -> str:
+    """The role id "Open role" opens: the curated role when there is one."""
+    r = twin(o)
+    return r.id if r else o.role_id
 
 
 def mono(o) -> str:
@@ -138,7 +155,7 @@ with st.container(key="mt-main"):
                 with st.container(key="klist-more"):
                     for i, o in enumerate(rest, start=6):
                         if hit(f"more-{i}", row(o, i, False), f"Open {o.company}"):
-                            tabs.go("role", id=o.role_id)
+                            tabs.go("role", id=target(o))
 
         # A high match that a rule removed.
         gone = next((v for v in store.excluded() if v.get("semantic")), None)
@@ -156,34 +173,45 @@ with st.container(key="mt-main"):
             ):
                 tabs.go("role", id=gone.id)
 
-    # The selected role, taken apart.
+    # The selected role, as Explore shows it.
     with st.container(key="pan-r"):
         if not top:
             html('<div class="pan"><div class="kk">No ranked roles</div><h3>Nothing to rank yet</h3></div>')
         else:
             i = st.session_state[SEL]
             o = top[i]
-            cls, text = parts.unified_tag(o)
+            r = twin(o)
+            v = store.view(r) if r else None
+            label = {"eligible": "Eligible", "verify": "To verify"}[o.standing]
+            chip = {"eligible": "g", "verify": "u"}[o.standing]
             html(
-                f'<div class="pan"><div class="kk">#{i + 1} · {esc(o.company)} · {esc(o.city)}</div>'
-                f'<h3>{"Why this is your top match" if i == 0 else f"Why it ranks #{i + 1}"}</h3></div>'
+                f'<div class="pan"><div class="kk">#{i + 1} · {meta(o)}</div>'
+                f'<h3>{esc(o.title)}<span class="chip {chip}">{label}</span></h3></div>'
             )
+            closes = clock.closes_line(v)[0] if v else parts.unified_tag(o)[1]
             html(
-                f'<div class="hero2"><div class="n">{o.shown}<small> /100</small></div>'
-                f'<div class="c">Priority score<br>{esc(text)}</div></div><div class="kstack">{parts.unified_bars(o)}</div>'
+                f'<div><div class="hero2"><div class="n">{o.shown}<small> /100</small></div>'
+                f'<div class="c">Priority score<br>{esc(closes)}</div></div>'
+                f'<div class="kstack">{parts.unified_bars(o)}</div></div>'
             )
-            html(f'<div class="box">{parts.unified_factor_rows(o)}</div>')
+            if v:
+                rows = "".join(
+                    f'<div class="ck">{check_icon(c.status)}{esc(c.name)}<span class="s">{esc(c.value)}</span></div>'
+                    for c in v.criteria
+                )
+                html(f'<div class="lab">8 fixed criteria<span>{v.met} of 8 met</span></div><div class="box crit">{rows}</div>')
             with st.container(key="end-r"):
                 note = parts.verify_note(o)
-                html(f'<div class="gate box">{gate(o)}</div>'
+                html(f'<div class="gate box">{parts.gate(v) if v else gate(o)}</div>'
                      + (f'<div class="vnote">{esc(note)}</div>' if note else ""))
             with st.container(key="mt-foot"):
                 if st.button("Open role", key="mt-open"):
-                    tabs.go("role", id=o.role_id)
-                if o.kind == "curated":
-                    app = parts.application_for(o.role_id)
+                    tabs.go("role", id=target(o))
+                if r:
+                    app = parts.application_for(r.id)
                     applied = app is not None and app["stage"] in ("applied", "interview")
-                    if st.button("View application" if applied else "Start application", type="primary", key="go"):
+                    if st.button("View application" if applied else "Start application", type="primary", key="go",
+                                 disabled=not applied and clock.is_closed(r)):
                         if not applied:
-                            store.save_application(o.role_id)
-                        tabs.go("applications", id=o.role_id)
+                            store.save_application(r.id)
+                        tabs.go("applications", id=r.id)

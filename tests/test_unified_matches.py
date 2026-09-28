@@ -350,6 +350,43 @@ def test_the_same_curated_score_everywhere_outside_onboarding():
             assert f'<div class="sc">{store.priority(v.id)}<small>' in home
 
 
+#: A preference that brings synthetic postings into the top five.
+FINANCE = [{"field": "role_family", "values": ["Finance"], "level": "important"}]
+
+
+def matches_at(sel: int) -> AppTest:
+    at = AppTest.from_file(APP, default_timeout=120)
+    at.session_state["stage"] = "app"
+    at.session_state["home_guide_seen"] = True
+    at.session_state[store.PREFERENCES] = FINANCE
+    at.session_state["matches_sel"] = sel
+    at.switch_page("views/matches.py")
+    at.run()
+    assert not at.exception
+    return at
+
+
+@pytest.mark.parametrize("sel", range(5))
+def test_every_top_match_shows_the_explore_panel_and_both_actions(sel):
+    at = matches_at(sel)
+    html = markup(at)
+    # The selected role's side panel: its header, then the criteria right under the score.
+    panel = html[html.index(f'<div class="kk">#{sel + 1} · '):][:3000]
+    assert '<div class="lab">8 fixed criteria' in panel
+    assert re.search(r"\d of 8 met", panel)
+    labels = [b.label for b in at.button]
+    assert "Open role" in labels and "Start application" in labels
+
+
+def test_starting_a_synthetic_posting_saves_its_curated_role():
+    # Under FINANCE the top match is a synthetic posting whose curated copy is an oi50 role.
+    at = matches_at(0)
+    before = {a["role"] for a in at.session_state[store.APPS]}
+    next(b for b in at.button if b.label == "Start application").click().run()
+    added = {a["role"] for a in at.session_state[store.APPS]} - before
+    assert len(added) == 1 and next(iter(added)).startswith("oi50-")
+
+
 # --- Isolation -------------------------------------------------------------------------------------------
 
 
