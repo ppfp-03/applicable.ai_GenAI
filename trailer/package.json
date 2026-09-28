@@ -1,0 +1,42 @@
+{
+  "name": "applicable-launch-trailer",
+  "version": "1.0.0",
+  "description": "30-second launch film for Applicable.ai, generated from code (Remotion + a synthesized score).",
+  "repository": {},
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@remotion/cli": "4.0.529",
+    "@remotion/fonts": "4.0.529",
+    "@remotion/layout-utils": "4.0.529",
+    "@remotion/media": "4.0.529",
+    "@remotion/motion-blur": "4.0.529",
+    "@remotion/noise": "4.0.529",
+    "@remotion/paths": "4.0.529",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.529"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config-flat": "4.0.529",
+    "@types/react": "19.2.7",
+    "@types/web": "0.0.166",
+    "eslint": "9.19.0",
+    "prettier": "3.8.1",
+    "tsx": "^4.23.15",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "studio": "remotion studio",
+    "setup:python": "python3 -m venv .venv && .venv/bin/pip install -r requirements.txt",
+    "cues": "tsx scripts/export-cues.ts",
+    "audio": "npm run cues && .venv/bin/python scripts/soundtrack.py",
+    "backdrops": ".venv/bin/python scripts/make-backdrops.py",
+    "render:preview": "scripts/render.sh preview",
+    "render": "scripts/render.sh final",
+    "render:chunks": "scripts/render-chunks.sh",
+    "check": ".venv/bin/python scripts/check-sync.py out/applicable-launch-final.mp4 && .venv/bin/python scripts/validate.py out/applicable-launch-final.mp4",
+    "sheet": "scripts/sheet.sh",
+    "lint": "eslint src && tsc"
+  }
+}
