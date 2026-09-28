@@ -21,6 +21,8 @@ htmlcov/
 # Node artifacts (npm scripts here only wrap Python commands)
 node_modules/
 package-lock.json
+# The launch film (trailer/) is a real npm project: its lockfile pins the Remotion toolchain.
+!trailer/package-lock.json
 
 # Operating system files
 .DS_Store
