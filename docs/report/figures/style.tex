@@ -1,0 +1,36 @@
+% Shared style for the report's bar charts.
+% Load once in the preamble:  \input{figures/style.tex}
+% Requires: \usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% Colours follow design-system/tokens.css (light theme).
+\definecolor{brand}{HTML}{F26A3D}     % --brand: the category the chart is about
+\definecolor{neutralbar}{HTML}{BDB4AA} % context categories
+\definecolor{ink}{HTML}{1F1B16}        % --ink
+\definecolor{inkmuted}{HTML}{675E55}   % --ink-muted
+\definecolor{rule}{HTML}{D9D2C9}
+
+\pgfplotsset{
+  hbarchart/.style={
+    xbar,
+    scale only axis,
+    bar width=9pt,
+    enlarge y limits=0.12,
+    xmin=0,
+    y dir=reverse,
+    ytick=data,
+    axis x line*=bottom,
+    axis y line*=left,
+    axis line style={draw=rule},
+    xtick style={draw=rule},
+    ytick style={draw=none},
+    xmajorgrids,
+    grid style={draw=rule!60, very thin},
+    tick label style={font=\small, text=ink},
+    xticklabel style={font=\footnotesize, text=inkmuted},
+    label style={font=\footnotesize, text=inkmuted},
+    nodes near coords,
+    nodes near coords style={font=\footnotesize, text=ink, anchor=west},
+    every axis plot/.append style={draw=none},
+  },
+}

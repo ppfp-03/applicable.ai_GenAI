@@ -1,0 +1,30 @@
+% Standalone preview of the report figures: pdflatex figures-preview.tex
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{pgfplots}
+\input{figures/style.tex}
+
+\begin{document}
+
+\begin{figure}[ht]
+  \centering
+  \input{figures/requirement-statements.tex}
+  \caption{154 hard requirement statements extracted from 50 Greenhouse
+    postings. Extraction classifies stated requirements without rewriting
+    the source text; 84 are precise enough to become deterministic rule
+    inputs.}
+  \label{fig:requirement-statements}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{figures/constraint-families.tex}
+  \caption{The 84 rule-ready requirements as deterministic parameters, by
+    hard-constraint family. No posting states a minimum-experience
+    threshold.}
+  \label{fig:constraint-families}
+\end{figure}
+
+\end{document}

@@ -1,0 +1,29 @@
+% The 84 rule-ready requirements, grouped as deterministic parameters
+% by hard-constraint family (47+16+11+6+3+1+0 = 84).
+\begin{tikzpicture}
+\begin{axis}[
+  hbarchart,
+  width=0.68\linewidth,   % plot area only; tick labels sit outside it
+  height=6cm,
+  xmax=53,
+  xtick={0,10,20,30,40,50},
+  xlabel={Deterministic parameters},
+  symbolic y coords={
+    Language,
+    Student status,
+    Degree level,
+    Graduation window,
+    Work authorization,
+    Field of study,
+    Minimum experience},
+]
+\addplot[fill=brand] coordinates {
+  (47,Language)
+  (16,Student status)
+  (11,Degree level)
+  (6,Graduation window)
+  (3,Work authorization)
+  (1,Field of study)
+  (0,Minimum experience)};
+\end{axis}
+\end{tikzpicture}
