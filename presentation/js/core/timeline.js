@@ -144,6 +144,16 @@
       this.steps[key].set(t, value);
       return this;
     }
+    /**
+     * Paint the element at k× detail over [t0, t1) without changing what it looks like.
+     * Under the viewport's perspective Chromium rasterises layers at their CSS size, whatever
+     * the camera's zoom; CSS zoom makes the layer k× larger and the transform scales it back.
+     */
+    hires(t0, t1, k = 2) {
+      if (!this.zoom) this.zoom = new StepTrack(1);
+      this.zoom.set(t0, k).set(t1, 1);
+      return this;
+    }
     has(prop) {
       return !!this.tracks[prop];
     }
@@ -163,8 +173,19 @@
       const x = g('x'), y = g('y'), z = g('z'), s = g('s'), sx = g('sx'), sy = g('sy');
       const r = g('r'), rx = g('rx'), ry = g('ry');
       const anchor = ANCHORS[this.anchor] || '';
+      const k = this.zoom ? this.zoom.at(t) : 1;
+      let tx = x, ty = y, tz = z, unzoom = '';
+      if (k !== 1) {
+        // Zoom multiplies every length (translation, anchor, origin) by k: undo it in front.
+        if (!c.origin) c.origin = getComputedStyle(this.el).transformOrigin.split(' ').map(parseFloat);
+        tx = (x - (k - 1) * c.origin[0]) / k;
+        ty = (y - (k - 1) * c.origin[1]) / k;
+        tz = z / k;
+        unzoom = ` scale3d(${1 / k},${1 / k},${1 / k})`;
+      }
+      if (c.zoom !== k) style.zoom = (c.zoom = k) === 1 ? '' : String(k);
       const tf =
-        `translate3d(${round(x, 100)}px,${round(y, 100)}px,${round(z, 100)}px)${anchor}` +
+        `translate3d(${round(tx, 100)}px,${round(ty, 100)}px,${round(tz, 100)}px)${unzoom}${anchor}` +
         (rx ? ` rotateX(${round(rx, 1000)}deg)` : '') +
         (ry ? ` rotateY(${round(ry, 1000)}deg)` : '') +
         (r ? ` rotate(${round(r, 1000)}deg)` : '') +

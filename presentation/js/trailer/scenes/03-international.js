@@ -26,6 +26,9 @@
     cam.to(T.dusk + 0.1, 2.0, { s: S, x: HX - 290 / S, y: HY + 150, rx: 12, ry: -6, r: 0 }, 'inOutCubic');
     sfx(T.dusk + 0.1, 'whoosh', { d: 2.0, gain: 0.7 });
     hero.to(T.dusk + 0.9, 1.1, { z: HZ, rx: -8, r: 0 }, 'outCubic');
+    // Close to the lens the role and its constraints are enlarged ~2×: paint them at 2× detail.
+    const HIRES = [T.dusk + 0.6, T.question];
+    hero.hires(...HIRES);
 
     const head = C.headline(K.abroad, 'xl');
     const headA = place(head, hud, { x: 110, y: 520 }, { anchor: 'left' });
@@ -47,7 +50,7 @@
       const y = HY + 86 + 12 + 29 + i * 66;
       const a = place(el, world, { x: HX, y, z: HZ, rx: -100, o: 0 }, null, 'constraint' + i);
       const t0 = T.constraints + i * T.constraintStep;
-      a.to(t0, 0.12, { o: 1 }).to(t0, 0.7, { rx: -8 }, 'outBack');
+      a.to(t0, 0.12, { o: 1 }).to(t0, 0.7, { rx: -8 }, 'outBack').hires(...HIRES);
       inner(el.querySelector('.ck'), { s: 1 }).to(t0 + 0.45, 0.16, { s: 1.4 }, 'outCubic').to(t0 + 0.61, 0.35, { s: 1 }, 'outBack');
       sfx(t0, 'constraint', { i });
       return a;
