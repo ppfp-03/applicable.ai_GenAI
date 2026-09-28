@@ -169,7 +169,7 @@ def body(item: dict) -> str:
         rows = "".join(
             f'<div class="nrow"><span class="m2" style="background:{v.bg}">{v.mono}</span>'
             f'<b>{esc(v.company)}</b><span class="r">{esc(v.title.replace(" Intern", " Intern"))} · {esc(v.city)}</span>'
-            f'<span class="s">{v.shown}</span></div>'
+            f'<span class="s">{parts.priority_text(v.id)}</span></div>'
             for v in store.new_matches()
         )
         return f'<div style="display:flex;flex-direction:column;gap:9px;margin-top:20px">{rows}</div>'
@@ -320,7 +320,8 @@ with st.container(key="gl-tl"):
 
 # ───────────────────────── Top matches and applications ─────────────────────────
 
-tops = store.top_matches()
+# The same order as Matches: one ranking, one number per role.
+tops = sorted(store.top_matches(), key=lambda v: -store.ordering(v.id))
 apps = {a["role"]: a for a in store.applications()}
 STEP = 208  # card width plus gap
 
@@ -338,10 +339,10 @@ def mcard(v) -> str:
     mark = "!" if v.get("highlight_kind") == "gap" else "✓"
     return (
         f'<div class="mc"><div class="h">{logo(v.mono, v.bg, 36, 13)}'
-        f'<div class="sc">{v.shown}<small>{small}</small></div></div>'
+        f'<div class="sc">{parts.priority_text(v.id)}<small>{small}</small></div></div>'
         f'<div class="t">{esc(v.title)}</div><div class="m">{esc(v.company)} · {esc(v.city)}</div>'
         f'<div class="why">{mark} {esc(v.highlight)}</div>'
-        f'<div class="b" style="margin-top:auto"><i style="width:{v.shown}%"></i></div>'
+        f'<div class="b" style="margin-top:auto"><i style="width:{parts.priority_width(v.id)}%"></i></div>'
         + (f'<div class="f"><span>{SIM}</span></div></div>' if sim else
            f'<div class="f"><span class="{"u" if urgent else ""}">{esc(foot)}</span><span>Demo data</span></div></div>')
     )
@@ -389,7 +390,7 @@ def app_details(a: dict) -> str:
     return (
         f'<div class="ad"><div class="meta"><span>{esc(r.city)} · {esc(r.mode)}</span>'
         f'<span class="{"u" if hot else ""}">{esc(close)}</span>'
-        f'<span>Priority {store.view(r).shown}</span></div>{prog}</div>'
+        f'<span>Priority {parts.priority_text(r.id)}</span></div>{prog}</div>'
     )
 
 
@@ -397,7 +398,7 @@ with st.container(key="bt"):
     with st.container(key="gl-top"):
         with st.container(key="sh-top"):
             html(
-                f'<div class="sh"><div><b>Your top matches</b><span>{store.counts()["eligible"]} eligible · '
+                f'<div class="sh"><div><b>Your top matches</b><span>{store.nav_counts()["matches"]} eligible · '
                 "same rules for every role</span></div></div>"
             )
             with st.container(key="marr"):

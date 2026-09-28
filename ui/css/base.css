@@ -241,3 +241,5 @@ body:has([class*="st-key-ib-x-"] button:hover) > div:has(> div > [data-testid="s
 [data-testid="stButtonGroup"] button[data-variant="pills"] p{font-size:inherit;font-weight:inherit}
 [data-testid="stButtonGroup"] button[aria-checked="true"],[data-testid="stButtonGroup"] button[aria-pressed="true"],[data-testid="stButtonGroup"] button[data-selected="true"]{background:var(--blue);color:#fff}
 [data-testid="stButtonGroup"] button[aria-checked="true"] p,[data-testid="stButtonGroup"] button[aria-pressed="true"] p,[data-testid="stButtonGroup"] button[data-selected="true"] p{color:#fff}
+/* How a role to verify is ordered (Matches, role pages): its score is unchanged. */
+.vnote{font-size:11.5px;color:var(--t2);padding:2px 4px 0}

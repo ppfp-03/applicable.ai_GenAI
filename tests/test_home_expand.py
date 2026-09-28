@@ -72,7 +72,9 @@ def test_week_of_and_shift_month() -> None:
 
 def test_sort_orders() -> None:
     tops = store.top_matches()
-    assert [v.shown for v in hx.sort_matches(tops, "Score")] == sorted((v.shown for v in tops), reverse=True)
+    # "Score" sorts by the Priority score the cards show (the one Matches ranking's raw score).
+    score = lambda v: store.priority(v.id) or -1  # noqa: E731
+    assert [score(v) for v in hx.sort_matches(tops, "Score")] == sorted((score(v) for v in tops), reverse=True)
     assert [v.closes for v in hx.sort_matches(tops, "Closing soon")] == sorted(v.closes for v in tops)
     assert [v.city for v in hx.sort_matches(tops, "City")] == sorted(v.city for v in tops)
     assert hx.sort_matches(tops, None) == hx.sort_matches(tops, "Score")

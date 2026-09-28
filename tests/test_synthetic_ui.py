@@ -1,8 +1,9 @@
-"""The OI-50 synthetic catalogue on the screens (core/synthetic, ui/synthetic).
+"""The faithful synthetic catalogue adapter (core/synthetic) and legacy links.
 
-The catalogue is checked by the canonical engine and ranked by the production
-pipeline, shown as its own section under Matches with a canonical role page,
-and never mixed into the curated demo roles.
+core/synthetic still checks and ranks the faithful catalogue for audit and
+supplies the readable rule wording the screens use. The screens themselves
+show synthetic postings inside the one Matches ranking (tests/test_unified_matches.py);
+an older `synthetic:` link opens the same posting's page.
 """
 
 from __future__ import annotations
@@ -107,23 +108,8 @@ def page(at) -> str:
     return "".join(m.value for m in at.markdown)
 
 
-def test_matches_shows_the_catalogue_as_its_own_labelled_section(app):
-    markup = page(app)
-    assert "OI-50 synthetic catalogue" in markup
-    rows = re.findall(r'<div class="sy-row tile">.*?</b></div>', markup)
-    assert len(rows) == 50  # every job reachable, ranked groups first, the rest behind expanders
-    assert all('<span class="syn">SYNTHETIC</span>' in row for row in rows)
-    labels = [e.label for e in app.expander]
-    assert any(label.startswith("Not scored yet (") for label in labels)
-    assert any(label.startswith("Excluded (") for label in labels)
 
 
-def test_the_curated_top_five_comes_first_and_is_unchanged(app):
-    markup = page(app)
-    assert markup.index("Your top 5 opportunities") < markup.index("OI-50 synthetic catalogue")
-    curated = re.findall(r'<div class="k-jt">(.*?)</div>', markup)
-    assert len(curated) == 5
-    assert not [row for row in re.findall(r'<div class="k-row.*?</div></div></div>', markup) if "SYNTHETIC" in row]
 
 
 def test_no_audit_url_reaches_the_screens(app):
@@ -145,25 +131,8 @@ def role_page(job_id: str) -> AppTest:
     return at
 
 
-def test_the_role_page_opens_a_canonical_synthetic_job(cat):
-    job = next(j for j in synthetic.jobs() if j.job_id == "synthetic:SYN-JOB-024")
-    at = role_page(job.job_id)
-    markup = page(at)
-    assert escape(job.title) in markup and escape(job.company) in markup  # shown escaped
-    assert "Synthetic catalogue" in markup and "SYNTHETIC" in markup
-    status = cat.result(job.job_id).status.value
-    assert synthetic.STATUS_LABELS[status] in markup
-    labels = [b.label for b in at.button]
-    assert "Open job posting" not in labels and "Start application" not in labels
-    for host in AUDIT_HOSTS:
-        assert host not in markup
 
 
-def test_an_unscored_job_says_so_instead_of_showing_a_number():
-    at = role_page("synthetic:SYN-JOB-001")  # no deadline, no other ranking data
-    markup = page(at)
-    assert "Not scored yet" in markup or "Not ranked" in markup
-    assert "/100" not in markup
 
 
 def test_curated_role_pages_are_unchanged():
@@ -246,27 +215,10 @@ def test_the_basis_text_names_every_contributing_factor():
     assert not synthetic.limited(Fake())  # no score at all: "Not scored yet", not limited
 
 
-def test_matches_labels_every_scored_synthetic_row_limited_data(app, cat):
-    markup = page(app)
-    rows = re.findall(r'<div class="sy-row tile">.*?</b></div>', markup)
-    labelled = [r for r in rows if "Limited-data score" in r]
-    assert len(labelled) == len(scored_entries(cat))
-    assert all("Based on deadline urgency only · 3 factors unavailable" in r for r in labelled)
 
 
-def test_the_role_page_labels_a_limited_data_score():
-    markup = page(role_page("synthetic:SYN-JOB-003"))  # deadline far away: a numeric 0
-    assert "Limited-data score" in markup
-    assert "Based on deadline urgency only · 3 factors unavailable" in markup
-    assert ">0<small" in markup
 
 
-def test_an_unscored_role_page_says_not_scored_yet(cat):
-    p = cat.pipeline
-    unscored = [e.job_id for g in (p.eligible, p.uncertain) for e in g.unscored]
-    assert unscored
-    markup = page(role_page(unscored[0]))
-    assert "Not scored yet" in markup and "Limited-data score" not in markup and "/100" not in markup
 
 
 # --- No internal identifiers on screen ------------------------------------------------

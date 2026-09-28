@@ -372,10 +372,14 @@ def imports(path: Path) -> set[str]:
         f"{n.module}.{a.name}" for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module for a in n.names}
 
 
-def test_no_screen_and_no_onboarding_path_uses_the_normalized_scoring_yet():
-    files = [ROOT / "app.py", ROOT / "core" / "store.py", *(ROOT / "views").glob("*.py"), *(ROOT / "ui").glob("*.py")]
+def test_screens_reach_the_scoring_only_through_the_matches_boundary():
+    # Screens read the one Matches ranking (core.matches, via the store), never
+    # the normalized scoring directly; onboarding reads neither.
+    files = [ROOT / "app.py", *(ROOT / "views").glob("*.py"), *(ROOT / "ui").glob("*.py")]
     for path in files:
         assert "core.normalized" not in imports(path), path
+    onboarding = imports(ROOT / "views" / "onboarding.py")
+    assert not {m for m in onboarding if m.startswith(("core.matches", "core.normalized"))}
 
 
 def test_no_private_helper_crosses_a_module_boundary():

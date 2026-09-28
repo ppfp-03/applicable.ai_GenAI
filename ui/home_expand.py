@@ -128,10 +128,10 @@ def shift_month(first: date, n: int) -> date:
 def sort_matches(views: list, by: str | None) -> list:
     """Top matches by score (the default), by closing date or by city."""
     if by == "Closing soon":
-        return sorted(views, key=lambda v: (v.closes, -v.shown))
+        return sorted(views, key=lambda v: (v.closes, -(store.priority(v.id) or -1)))
     if by == "City":
-        return sorted(views, key=lambda v: (v.city, -v.shown))
-    return sorted(views, key=lambda v: -v.shown)
+        return sorted(views, key=lambda v: (v.city, -(store.priority(v.id) or -1)))
+    return sorted(views, key=lambda v: -(store.priority(v.id) or -1))
 
 
 def by_stage(applications: list[dict]) -> dict[str, list[dict]]:
