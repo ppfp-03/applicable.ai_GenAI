@@ -45,3 +45,29 @@ def test_after_starting_an_application_it_shows_applications_only() -> None:
     assert at.session_state[store.STAGE] == "app"
     assert tour.ONLY not in at.session_state
     assert "aa-tour-mark" not in page(at)
+
+
+def test_a_new_account_with_no_applications_still_gets_the_tour() -> None:
+    # Every tab runs before the tour is drawn, so one that fails on an empty
+    # account (sign_up() starts with no applications) hides the tour.
+    at = AppTest.from_file(APP, default_timeout=60)
+    at.session_state[store.STAGE] = "tour"
+    at.session_state[store.APPS] = []
+    at.run()
+    assert not at.exception
+    assert tour.STEPS[0][2] in page(at)
+    assert {"tour-skip", "tour-next"} <= {b.key for b in at.button if b.key}
+    # The tour's Applications step lights up the empty page's main area.
+    for _ in range(3):
+        at.button(key="tour-next").click().run()
+    assert not at.exception
+    assert f'data-sel="{tour.STEPS[3][1]}"' in page(at)
+    assert "No applications yet" in page(at)
+
+
+def test_skipping_the_tour_does_not_open_homes_intro_sheet() -> None:
+    at = open_tour()
+    at.button(key="tour-skip").click().run()
+    assert not at.exception
+    assert at.session_state[store.STAGE] == "app"
+    assert "hg-start" not in {b.key for b in at.button if b.key}

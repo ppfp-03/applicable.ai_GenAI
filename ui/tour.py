@@ -8,8 +8,9 @@ follows a marker this module renders (`.aa-tour-mark`) and does nothing once
 the marker is gone.
 
 The tour shows while the session is at the "tour" stage (core/store.py).
-Finishing or skipping it opens the app; "Replay the tour" in the avatar menu
-starts it again. Starting an application from onboarding's ranking shows
+Finishing or skipping it opens the app, without Home's intro sheet
+(ui/home_guide.py), which would repeat it; "Replay the tour" in the avatar
+menu starts it again. Starting an application from onboarding's ranking shows
 only the step for Applications, where that application now is, so the user
 can close it and carry on with the application.
 """
@@ -21,7 +22,7 @@ from pathlib import Path
 import streamlit as st
 
 from core import store
-from ui import tabs
+from ui import home_guide, tabs
 from ui.html import esc, html
 from ui.theme import page_css
 
@@ -80,6 +81,8 @@ def _to(i: int) -> None:
 
 def _done() -> None:
     store.set_stage("app")
+    # The tour already showed Home, finished or skipped: its intro sheet would repeat it.
+    st.session_state[home_guide.SEEN] = True
     st.session_state.pop(STEP, None)
     st.session_state.pop(ONLY, None)
 

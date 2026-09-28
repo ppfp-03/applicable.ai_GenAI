@@ -49,7 +49,8 @@ arrival = (qid, tabs.nonce())
 if qid and any(a["role"] == qid for a in apps) and st.session_state.get(ARRIVED) != arrival:
     st.session_state[SEL] = qid
     st.session_state[ARRIVED] = arrival
-st.session_state.setdefault(SEL, next((a["role"] for a in apps if a["stage"] == "interview"), apps[0]["role"]))
+if apps:  # a new account starts with none
+    st.session_state.setdefault(SEL, next((a["role"] for a in apps if a["stage"] == "interview"), apps[0]["role"]))
 sc = store.stage_counts()
 total = sum(sc.values())
 
@@ -67,6 +68,8 @@ with shell.header(
 
 with st.container(key="ap-strip"):
     bar = "".join(f'<i style="flex:{max(sc[k], .2)};background:{c}"></i>' for k, _, c in STAGES)
+    if not total:  # nothing started yet: an empty track, not four equal stages
+        bar = '<i style="flex:1;background:rgba(0,0,0,.06)"></i>'
     leg = "".join(f'<span><i style="background:{c}"></i>{n} <b>{sc[k]}</b></span>' for k, n, c in STAGES)
     html(f'<div class="astrip gl"><span class="s-t">Pipeline</span><div class="abar">{bar}</div><div class="aleg">{leg}</div></div>')
 
@@ -120,49 +123,62 @@ with st.container(key="ap-main"):
                     st.button(f"Move {a['r'].company} to {name}", key=f"mv-{a['role']}--{k}",
                               on_click=move, args=(a["role"], k))
 
-    a = next((a for a in apps if a["role"] == st.session_state[SEL]), apps[0])
-    r = a["r"]
-    v = store.view(r)
-    stage_color = dict((k, c) for k, _, c in STAGES)[a["stage"]]
-    with st.container(key="pan-a"):
-        html(
-            f'<div class="pan"><div class="kk"><i style="background:{stage_color}"></i>{STAGE_NAME[a["stage"]]} · {esc(r.company)}</div>'
-            f'<h3>{esc(r.title)}</h3></div>'
-            f'<div class="big2">{logo(r.mono, r.bg, 46, 16, 12)}<div><div class="tt">{parts.priority_text(v.id)}<span style="font-size:13px;color:var(--t3);font-weight:560"> /100 priority</span></div>'
-            f'<div class="mm">{esc(r.city)} · {esc(r.mode)} · {esc(clock.closes_line(r)[0])}</div></div></div>'
-        )
-        items = CHECKLIST[a["stage"]]
-        if a["stage"] == "progress" and a.get("progress"):
-            done = a["progress"][0]
-            items = [(t, i < done) for i, (t, _) in enumerate(CHECKLIST["progress"])]
-        rows = "".join(
-            f'<div class="ck"><span class="ci{"" if ok else " a"}">{CK if ok else WN}</span>{esc(t)}'
-            f'<span class="s">{"Done" if ok else "To do"}</span></div>'
-            for t, ok in items
-        )
-        html(f'<div class="lab">Checklist<span>{sum(ok for _, ok in items)} of {len(items)}</span></div><div class="box ckl">{rows}</div>')
-        html(
-            '<div class="lab">Eligibility<span>Fixed rules</span></div>'
-            f'<div class="gate box" style="display:flex;align-items:center;gap:10px;padding:12px 14px;font-size:12.5px">{parts.gate(v)}</div>'
-        )
-        html('<div class="lab">Stage<span>Move when something happens</span></div>')
-        with st.container(key="stage"):
-            keys = [k for k, _, _ in STAGES]
-            new = st.selectbox("Stage", keys, index=keys.index(a["stage"]), format_func=STAGE_NAME.get, key=f"stage-{r.id}")
-            if new != a["stage"]:
-                store.save_application(r.id, new)
-                st.toast(f"{r.company} moved to {STAGE_NAME[new]}")
-                st.rerun()
-        with st.container(key="anote"):
-            html('<div class="lab">Notes<span>Only you see these</span></div>')
-            st.text_area("Notes", key=f"note-{r.id}", placeholder="Recruiter name, what you discussed, next step…")
-        with st.container(key="end-a"):
-            pass
-        with st.container(key="ap-foot"):
-            # You are already on the application, so the one action here is the
-            # posting itself: its checks and requirements.
-            if st.button("Open role", type="primary", key="ap-open"):
-                tabs.go("role", id=r.id)
+    a = next((a for a in apps if a["role"] == st.session_state.get(SEL)), apps[0] if apps else None)
+    if a is None:
+        with st.container(key="pan-a"):
+            html(
+                '<div class="pan"><div class="kk">No applications yet</div><h3>Start with a role</h3></div>'
+                '<div class="aempty">Open a role in Matches or Explore and start an application: '
+                "it shows up here, and you can move it along as you go.</div>"
+            )
+            with st.container(key="end-a"):
+                pass
+            with st.container(key="ap-foot"):
+                if st.button("See my matches", type="primary", key="ap-matches"):
+                    tabs.go("matches")
+    else:
+        r = a["r"]
+        v = store.view(r)
+        stage_color = dict((k, c) for k, _, c in STAGES)[a["stage"]]
+        with st.container(key="pan-a"):
+            html(
+                f'<div class="pan"><div class="kk"><i style="background:{stage_color}"></i>{STAGE_NAME[a["stage"]]} · {esc(r.company)}</div>'
+                f'<h3>{esc(r.title)}</h3></div>'
+                f'<div class="big2">{logo(r.mono, r.bg, 46, 16, 12)}<div><div class="tt">{parts.priority_text(v.id)}<span style="font-size:13px;color:var(--t3);font-weight:560"> /100 priority</span></div>'
+                f'<div class="mm">{esc(r.city)} · {esc(r.mode)} · {esc(clock.closes_line(r)[0])}</div></div></div>'
+            )
+            items = CHECKLIST[a["stage"]]
+            if a["stage"] == "progress" and a.get("progress"):
+                done = a["progress"][0]
+                items = [(t, i < done) for i, (t, _) in enumerate(CHECKLIST["progress"])]
+            rows = "".join(
+                f'<div class="ck"><span class="ci{"" if ok else " a"}">{CK if ok else WN}</span>{esc(t)}'
+                f'<span class="s">{"Done" if ok else "To do"}</span></div>'
+                for t, ok in items
+            )
+            html(f'<div class="lab">Checklist<span>{sum(ok for _, ok in items)} of {len(items)}</span></div><div class="box ckl">{rows}</div>')
+            html(
+                '<div class="lab">Eligibility<span>Fixed rules</span></div>'
+                f'<div class="gate box" style="display:flex;align-items:center;gap:10px;padding:12px 14px;font-size:12.5px">{parts.gate(v)}</div>'
+            )
+            html('<div class="lab">Stage<span>Move when something happens</span></div>')
+            with st.container(key="stage"):
+                keys = [k for k, _, _ in STAGES]
+                new = st.selectbox("Stage", keys, index=keys.index(a["stage"]), format_func=STAGE_NAME.get, key=f"stage-{r.id}")
+                if new != a["stage"]:
+                    store.save_application(r.id, new)
+                    st.toast(f"{r.company} moved to {STAGE_NAME[new]}")
+                    st.rerun()
+            with st.container(key="anote"):
+                html('<div class="lab">Notes<span>Only you see these</span></div>')
+                st.text_area("Notes", key=f"note-{r.id}", placeholder="Recruiter name, what you discussed, next step…")
+            with st.container(key="end-a"):
+                pass
+            with st.container(key="ap-foot"):
+                # You are already on the application, so the one action here is the
+                # posting itself: its checks and requirements.
+                if st.button("Open role", type="primary", key="ap-open"):
+                    tabs.go("role", id=r.id)
 
 with st.container(key="aa-js-apps"):
     st.html(f"<script>{DRAG_JS}</script>", unsafe_allow_javascript=True)
