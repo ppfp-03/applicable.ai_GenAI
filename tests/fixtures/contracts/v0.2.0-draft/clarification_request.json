@@ -1,0 +1,12 @@
+{
+  "question_id": "clarify-relocation-001",
+  "field_path": "eligibility_answers.relocation_willingness.willing_to_relocate",
+  "constraint_id": "relocation_willingness",
+  "question": "Would you relocate to another country for an entry-level role?",
+  "answer_type": "single_choice",
+  "allowed_choices": ["yes", "no", "only_within_eu"],
+  "reason": "Several shortlisted jobs are outside the declared preferred countries.",
+  "job_ids": ["synthetic:job-001"],
+  "evidence_ids": ["ev-job-location-001"],
+  "priority": "high"
+}

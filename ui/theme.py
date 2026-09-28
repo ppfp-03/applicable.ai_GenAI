@@ -1,25 +1,24 @@
-"""Inject the design system's stylesheet into the Streamlit page.
+"""Deliver the stylesheets to the page.
 
-The design system ships two files -- `tokens.css` (custom properties) and
-`bundle.css` (the `aa-` component classes). Both are copied verbatim from
-`design-system/` and must not be hand-edited here. A third file,
-`redesign.css`, is ours: it is loaded last and carries every change the
-redesign makes, so the two copies stay refreshable.
+The approved mockups carry their own CSS; `ui/css/` holds it, split into one
+shared file and one file per screen. Every file goes through
+`ui.palette.orange()` on the way out, so the blues the mockups were drawn in
+reach the browser as the palette's oranges.
 
-Two wrinkles are worth explaining.
+Inside the tab host (ui/tabs.py) five screens share one page, so each
+screen's stylesheet is confined to its own tab container before publishing:
+two screens can style the same class differently without meeting.
 
-First, delivery. Streamlit 1.64 strips `<style>` elements out of `st.html()`,
-so inlining the stylesheet silently produces unstyled markup -- the classes
-are in the DOM and nothing paints them. We therefore write the stylesheet to
-`static/` and pull it in with a `<link>`, which survives sanitisation, served
-by `enableStaticServing`.
+Delivery goes through `static/`: Streamlit strips `<style>` elements from
+`st.html()`, so each stylesheet is written to a hashed file and linked with
+`st.markdown`, which carries a `<link>` through. The hash in the name means a
+changed file is fetched fresh and an unchanged one is never rewritten.
 
-Second, the dark palette. `tokens.css` switches on `[data-theme="dark"]`, an
-attribute the page is expected to set on `<html>`. Streamlit owns that element
-and sets its own theme attributes there, so we cannot add ours. When the
-active theme is dark we promote that block to `:root`, where it wins by
-cascade order. The design system's own file is never edited; the rewrite
-happens on the copy we serve.
+The mockups are drawn on a 1600 px stage. `inject()` also sets `--aa-k`, the
+zoom that fits that stage inside the window, and loads the floating glass
+top bar (`ui/js/nav.js`). base.css applies it to the stage and the capsule
+only: zooming <html> would shrink the 100vh scroll container with it and
+leave an empty band under the page.
 """
 
 from __future__ import annotations
@@ -31,107 +30,143 @@ from pathlib import Path
 
 import streamlit as st
 
+from ui import tabs
+from ui.palette import orange
+
 _UI_DIR = Path(__file__).resolve().parent
+_CSS_DIR = _UI_DIR / "css"
 _STATIC_DIR = _UI_DIR.parent / "static"
+_NAV_JS = _UI_DIR / "js" / "nav.js"
 
-#: The dark block's selector in tokens.css, and what it becomes when promoted.
-_DARK_SELECTOR = '[data-theme="dark"]'
+#: Size of the mockups' stage, in CSS pixels. The whole stage fits the window
+#: (width and height), so a screen reads without scrolling at any browser zoom.
+STAGE_WIDTH = 1600
+STAGE_HEIGHT = 1000
+
+_ZOOM_JS = f"""
+<script>
+(function(){{
+  const fit=()=>{{const k=Math.max(.4,Math.min(window.innerWidth/{STAGE_WIDTH},window.innerHeight/{STAGE_HEIGHT},2));
+    const h=document.documentElement;h.style.zoom='';h.style.setProperty('--aa-k',k);}};
+  if(!window.__aaZoom){{window.__aaZoom=1;window.addEventListener('resize',fit);}}
+  fit();
+}})();
+</script>
+"""
 
 
-def _promote_dark(css: str) -> str:
-    """Rewrite a file's dark block so it applies at `:root`.
+#: A selector that starts with a keyed-container class, at the start of a rule
+#: or after a comma. Streamlit's own emotion classes are injected after our
+#: stylesheet, so a bare `.st-key-x` loses to them on equal specificity.
+_KEYED = re.compile(r'(\A|[{},/])(\s*)(?=\.st-key-|\[class\*="st-key-)', re.MULTILINE)
 
-    Only the selector changes; the declarations inside are left exactly as
-    they were written. The light block keeps its own `:root` rule, but the
-    dark one comes later in the file and therefore wins.
+
+def _strengthen(css: str) -> str:
+    """Prefix keyed-container selectors with `.stApp` so they win."""
+    return _KEYED.sub(lambda m: f"{m.group(1)}{m.group(2)}.stApp ", css)
+
+
+_COMMENT = re.compile(r"/\*.*?\*/", re.S)
+_DOC_ROOT = re.compile(r"(html|:root|body)(\S*)\s*(.*)", re.S)
+
+
+def _split(prelude: str) -> list[str]:
+    """Split a selector list on its top-level commas (not those in :not(...))."""
+    parts, depth, cur = [], 0, ""
+    for ch in prelude:
+        depth += (ch == "(") - (ch == ")")
+        if ch == "," and depth == 0:
+            parts.append(cur)
+            cur = ""
+        else:
+            cur += ch
+    return [p.strip() for p in parts + [cur] if p.strip()]
+
+
+def _scope_selector(sel: str, root: str) -> str:
+    m = _DOC_ROOT.fullmatch(sel)
+    if m:  # html.state .x → html.state <root> .x
+        head, rest = m.group(1) + m.group(2), m.group(3)
+        return f"{head} {root} {rest}" if rest else sel
+    return f"{root} {sel}"
+
+
+def _scope(css: str, root: str) -> str:
+    """Confine every rule in a stylesheet to descendants of `root`.
+
+    @media and @supports are entered; @keyframes and other at-rules are kept
+    as they are.
+    """
+    css = _COMMENT.sub("", css)
+    out, i = [], 0
+    while True:
+        j = css.find("{", i)
+        if j < 0:
+            break
+        depth, k = 1, j + 1
+        while depth:
+            depth += (css[k] == "{") - (css[k] == "}")
+            k += 1
+        prelude, body = css[i:j].strip(), css[j + 1 : k - 1]
+        if prelude.startswith(("@media", "@supports")):
+            out.append(f"{prelude}{{{_scope(body, root)}}}")
+        elif prelude.startswith("@"):
+            out.append(f"{prelude}{{{body}}}")
+        else:
+            out.append(",".join(_scope_selector(s, root) for s in _split(prelude)) + f"{{{body}}}")
+        i = k
+    return "\n".join(out)
+
+
+def _mtime(name: str) -> float:
+    """Modification time of one stylesheet, so edits bust the cache."""
+    return (_CSS_DIR / f"{name}.css").stat().st_mtime
+
+
+@lru_cache(maxsize=32)
+def _published(name: str, mtime: float, tab: str | None = None) -> str:
+    """Write one stylesheet under static/ and return its served URL.
 
     Args:
-        css: The stylesheet text.
+        name: Stylesheet name in ui/css/, without extension.
+        mtime: Its modification time; part of the cache key only.
+        tab: Confine the rules to this tab's container (ui/tabs.py).
 
     Returns:
-        The same text with the dark scope promoted and any remaining
-        attribute-scoped rules (e.g. `[data-theme=dark] .x`) unscoped, since
-        those selectors could never match once Streamlit owns `<html>`.
+        The app-relative URL of the published copy.
     """
-    css = css.replace(_DARK_SELECTOR + " {", ":root {")
-    return re.sub(re.escape(_DARK_SELECTOR) + r"\s+", "", css)
-
-
-@lru_cache(maxsize=2)
-def _stylesheet(dark: bool) -> str:
-    """Build the stylesheet for one theme, read from disk once per theme.
-
-    Three files, in cascade order: `tokens.css` and `bundle.css` are copies
-    from the design system and are never hand-edited, so everything the
-    redesign changes lives in `redesign.css` and is loaded last.
-
-    Args:
-        dark: Whether to promote the dark palette to `:root`.
-
-    Returns:
-        The full CSS text, tokens first so components can use the variables.
-    """
-    tokens = (_UI_DIR / "tokens.css").read_text(encoding="utf-8")
-    bundle = (_UI_DIR / "bundle.css").read_text(encoding="utf-8")
-    redesign = (_UI_DIR / "redesign.css").read_text(encoding="utf-8")
-
-    # The stylesheet is served from static/, so font URLs resolve relative to
-    # that directory: the "app/static/" prefix the file carries would look for
-    # static/app/static/.
-    tokens = tokens.replace("url('app/static/", "url('")
-
-    if dark:
-        tokens = _promote_dark(tokens)
-        redesign = _promote_dark(redesign)
-
-    return "\n".join((tokens, bundle, redesign))
-
-
-def is_dark() -> bool:
-    """Report whether Streamlit is currently rendering the dark theme.
-
-    `st.context.theme` arrives in Streamlit 1.46. If it is unavailable or
-    unset, we fall back to light, which is the design system's default.
-    """
-    try:
-        theme = st.context.theme
-    except Exception:
-        return False
-    return bool(theme) and getattr(theme, "type", None) == "dark"
-
-
-@lru_cache(maxsize=2)
-def _published(dark: bool) -> str:
-    """Write the stylesheet under static/ and return its served URL.
-
-    The filename carries a hash of the contents, so a changed stylesheet is
-    fetched rather than served from cache, and an unchanged one is not
-    rewritten on every rerun.
-    """
-    css = _stylesheet(dark)
+    css = orange((_CSS_DIR / f"{name}.css").read_text(encoding="utf-8"))
+    if tab:
+        css = _scope(css, f".st-key-tab-{tab}")
+    css = _strengthen(css)
     digest = hashlib.sha256(css.encode("utf-8")).hexdigest()[:12]
-    name = f"applicable-{'dark' if dark else 'light'}-{digest}.css"
-
-    target = _STATIC_DIR / name
+    stem = f"aa-tab-{name}" if tab else f"aa-{name}"
+    target = _STATIC_DIR / f"{stem}-{digest}.css"
     if not target.exists():
-        # Clear older builds for this theme so static/ does not accumulate.
-        for stale in _STATIC_DIR.glob(
-            f"applicable-{'dark' if dark else 'light'}-*.css"
-        ):
+        for stale in _STATIC_DIR.glob(f"{stem}-*.css"):
             stale.unlink()
         target.write_text(css, encoding="utf-8")
+    return f"app/static/{target.name}"
 
-    return f"app/static/{name}"
+
+def _link(name: str, tab: str | None = None) -> None:
+    st.markdown(
+        f'<link rel="stylesheet" href="{_published(name, _mtime(name), tab)}">',
+        unsafe_allow_html=True,
+    )
 
 
 def inject() -> None:
-    """Link the design system's stylesheet into the page.
+    """Link the shared stylesheet and fit the stage to the window.
 
-    Call once in `app.py`, after `st.navigation` has resolved and before the
-    page runs. `st.markdown` is the route that carries a `<link>` through to
-    the DOM; `st.html` drops it.
+    Call once in `app.py`, before the page runs.
     """
-    st.markdown(
-        f'<link rel="stylesheet" href="{_published(is_dark())}">',
-        unsafe_allow_html=True,
-    )
+    _link("base")
+    with st.container(key="aa-js"):
+        nav = _NAV_JS.read_text(encoding="utf-8")
+        st.html(_ZOOM_JS + f"<script>{nav}</script>", unsafe_allow_javascript=True)
+
+
+def page_css(name: str) -> None:
+    """Link one screen's stylesheet. Call at the top of that screen."""
+    _link(name, tabs.running())

@@ -1,9 +1,18 @@
 """Applicable.ai — entry point.
 
-Sets up the page, injects the design system's stylesheet once, and hands over
-to `st.navigation`. Pages are declared here, grouped the way the information
-architecture groups them: decide, track, you. The order is explicit rather
-than alphabetical, because it is the order of the work.
+Sets up the page, links the shared stylesheet, and hands over to
+`st.navigation`. Navigation is hidden: the capsule in the top bar
+(ui/shell.py) is the only way around, as in the mockups. The question,
+role and onboarding screens are reached from inside the product rather than
+from the capsule.
+
+Nothing opens before the first-run flow allows it: a visitor starts on the
+access screens (views/welcome.py), goes through onboarding and the guided
+tour, and only then reaches the app. `?demo=skip` jumps straight in.
+
+The five capsule tabs share one host (ui/tabs.py) that runs them all, so
+switching tab happens in the browser. Each still has its own URL: one page
+per tab, each bringing its own tab to the front.
 """
 
 from __future__ import annotations
@@ -12,59 +21,56 @@ import sys
 from pathlib import Path
 
 import streamlit as st
+from dotenv import load_dotenv
 
 # The ingestion packages (oi.*) live under src/.
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
-from core import demo, state  # noqa: E402  (after sys.path setup)
-from ui.components import set_monograms  # noqa: E402
-from ui.theme import inject, is_dark  # noqa: E402
+from core import store  # noqa: E402  (after sys.path setup)
+from ui import tabs  # noqa: E402
+from ui.theme import inject  # noqa: E402
 
 st.set_page_config(
     page_title="Applicable.ai",
     page_icon="static/applicable-mark.svg",
-    # The opportunities list and its detail pane need the width; every page
-    # caps its own content, so wide here does not mean sprawling there.
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
-# The wordmark is dark ink, so on a dark sidebar it needs the light variant.
-st.logo(
-    "static/applicable-lockup-on-dark.svg"
-    if is_dark()
-    else "static/applicable-lockup.svg",
-    icon_image="static/applicable-mark.svg",
-    size="large",
-)
-
-data = demo.load()
-set_monograms(data.company_monograms)
-state.init(data)
-
-pages = {
-    "Decide": [
-        st.Page("views/today.py", title="Today", icon=":material/today:", default=True),
-        st.Page(
-            "views/opportunities.py",
-            title="Opportunities",
-            icon=":material/explore:",
-        ),
-    ],
-    "Track": [
-        st.Page("views/tracker.py", title="Tracker", icon=":material/view_kanban:"),
-    ],
-    "You": [
-        st.Page("views/profile.py", title="Profile", icon=":material/person:"),
-        st.Page("views/preferences.py", title="Preferences", icon=":material/tune:"),
-        st.Page("views/onboarding.py", title="Set up", icon=":material/upload_file:"),
-    ],
-}
-
-page = st.navigation(pages, position="sidebar")
-
-# Inject after navigation resolves: anything written before `.run()` belongs
-# to no page and is discarded, which leaves the markup unstyled.
 inject()
+# KIMI_API_KEY and friends, for CV extraction. Variables already set in the
+# environment win; a missing .env leaves extraction to fail visibly.
+load_dotenv(Path(__file__).resolve().parent / ".env")
+store.init()
 
+
+
+def _tab(name: str):
+    """A page that runs the tab host with `name` in front."""
+
+    def run() -> None:
+        tabs.host(name)
+
+    run.__name__ = f"tab_{name}"
+    return run
+
+
+tabs.PAGES.update(
+    home=st.Page(_tab("home"), title="Home", url_path="home", default=True),
+    matches=st.Page(_tab("matches"), title="Matches", url_path="matches"),
+    applications=st.Page(_tab("applications"), title="Applications", url_path="applications"),
+    explore=st.Page(_tab("explore"), title="Explore", url_path="explore"),
+    profile=st.Page(_tab("profile"), title="Profile", url_path="profile"),
+    question=st.Page("views/question.py", title="One quick question", url_path="question"),
+    role=st.Page("views/role.py", title="Role", url_path="role"),
+    onboarding=st.Page("views/onboarding.py", title="Onboarding", url_path="onboarding"),
+    welcome=st.Page("views/welcome.py", title="Welcome", url_path="welcome"),
+)
+
+page = st.navigation(list(tabs.PAGES.values()), position="hidden")
+allowed = store.STAGE_PAGES.get(store.stage())
+if allowed is None and page.url_path == tabs.PAGES["welcome"].url_path:
+    st.switch_page(tabs.PAGES["home"])  # signed in: the access screens are behind you
+if allowed and page.url_path not in {tabs.PAGES[n].url_path for n in allowed}:
+    st.switch_page(tabs.PAGES[allowed[0]])
 page.run()

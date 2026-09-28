@@ -1,0 +1,135 @@
+{
+  "schema_version": "0.2.0-draft",
+  "job_id": "synthetic:job-001",
+  "source": "synthetic",
+  "source_job_id": "job-001",
+  "company": "Synthetic Capital Partners",
+  "title": "Junior Financial Analyst",
+  "url": "https://example.invalid/jobs/job-001",
+  "description": {
+    "document_id": "job-doc-001",
+    "kind": "job",
+    "text": "Synthetic job description text for the shared contract fixture.",
+    "content_hash": "hash-job-doc-001",
+    "source_ref": "synthetic_fixture"
+  },
+  "source_documents": [
+    {
+      "document_id": "job-ats-001",
+      "kind": "ats_metadata",
+      "text": "Synthetic ATS metadata payload.",
+      "content_hash": "hash-job-ats-001",
+      "source_ref": "synthetic_fixture"
+    }
+  ],
+  "locations": [
+    {
+      "country_code": "NL",
+      "city": "Amsterdam",
+      "evidence_ids": ["ev-job-location-001"]
+    }
+  ],
+  "source_published_at": "2026-09-10T09:00:00+00:00",
+  "source_updated_at": "2026-09-15T09:00:00+00:00",
+  "deadline_at": "2026-10-15T21:59:00+00:00",
+  "first_seen_at": "2026-09-18T08:00:00+00:00",
+  "last_seen_at": "2026-09-20T08:00:00+00:00",
+  "active_state": "active",
+  "discovery_kind": "initial_snapshot",
+  "facts": {
+    "skills": [
+      {
+        "value": "Financial modelling",
+        "evidence_ids": ["ev-job-skill-001"]
+      }
+    ],
+    "experience": [
+      {
+        "value": "Up to one year of relevant experience",
+        "evidence_ids": ["ev-job-experience-001"]
+      }
+    ],
+    "education": [
+      {
+        "value": "Bachelor degree in economics, finance or management",
+        "evidence_ids": ["ev-job-education-001"]
+      }
+    ],
+    "role_family": {
+      "value": "finance_analyst",
+      "evidence_ids": ["ev-job-role-family-001"]
+    },
+    "requirements": [
+      {
+        "requirement_id": "req-001",
+        "text": "Applicants must hold a valid work permit for the Netherlands.",
+        "classification": "hard_constraint",
+        "modality": "mandatory",
+        "constraint_id": "work_authorization_nl",
+        "evidence_ids": ["ev-job-requirement-001"]
+      },
+      {
+        "requirement_id": "req-002",
+        "text": "Strong interest in capital markets is a plus.",
+        "classification": "fit",
+        "modality": "preferred",
+        "constraint_id": null,
+        "evidence_ids": ["ev-job-requirement-002"]
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "evidence_id": "ev-job-location-001",
+      "document_id": "job-doc-001",
+      "quote": "Location: Amsterdam, Netherlands",
+      "field_path": "locations"
+    },
+    {
+      "evidence_id": "ev-job-skill-001",
+      "document_id": "job-doc-001",
+      "quote": "You will build and maintain financial models",
+      "field_path": "facts.skills"
+    },
+    {
+      "evidence_id": "ev-job-experience-001",
+      "document_id": "job-doc-001",
+      "quote": "Zero to one year of professional experience",
+      "field_path": "facts.experience"
+    },
+    {
+      "evidence_id": "ev-job-education-001",
+      "document_id": "job-doc-001",
+      "quote": "Bachelor degree in economics, finance or management",
+      "field_path": "facts.education"
+    },
+    {
+      "evidence_id": "ev-job-role-family-001",
+      "document_id": "job-doc-001",
+      "quote": "Junior Financial Analyst",
+      "field_path": "facts.role_family"
+    },
+    {
+      "evidence_id": "ev-job-requirement-001",
+      "document_id": "job-doc-001",
+      "quote": "Applicants must hold a valid work permit for the Netherlands",
+      "field_path": "facts.requirements"
+    },
+    {
+      "evidence_id": "ev-job-requirement-002",
+      "document_id": "job-doc-001",
+      "quote": "Strong interest in capital markets is a plus",
+      "field_path": "facts.requirements"
+    }
+  ],
+  "extraction": {
+    "mode": "fixture",
+    "provider": "synthetic",
+    "model_id": "synthetic-fixture-model",
+    "prompt_version": "1",
+    "schema_version": "0.2.0-draft",
+    "input_hash": "hash-job-input-001",
+    "produced_at": "2026-09-20T10:00:00+00:00",
+    "latency_ms": 0
+  }
+}

@@ -14,25 +14,21 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
 from typing import Optional
 
 from pydantic import ValidationError
 
-from oi.contracts import CandidateProfile
-from oi.providers.model_client import ExtractedFields, ExtractionError
+from oi.providers.model_client import (
+    ExtractedFields,
+    ExtractionError,
+    load_candidate_prompt,
+)
 
 #: NVIDIA's OpenAI-compatible inference endpoint.
 DEFAULT_BASE_URL = "https://integrate.api.nvidia.com/v1"
 
 #: Kimi K3 as served by NVIDIA. Override per-instance or via KIMI_MODEL.
 DEFAULT_MODEL = "moonshotai/kimi-k3"
-
-#: Extraction instructions live in version control as a reviewable file,
-#: not inline, so prompt changes show up in diffs.
-PROMPT_PATH = (
-    Path(__file__).resolve().parents[3] / "prompts" / "candidate_extraction.md"
-)
 
 
 class KimiClient:
@@ -83,24 +79,15 @@ class KimiClient:
         )
         self._client = OpenAI(api_key=key, base_url=self.base_url)
 
-    def _load_prompt(self) -> str:
-        """Read the extraction instructions from the prompts directory."""
-        try:
-            return PROMPT_PATH.read_text(encoding="utf-8")
-        except OSError as exc:
-            raise ExtractionError(
-                f"Could not read the extraction prompt at {PROMPT_PATH}."
-            ) from exc
-
-    def extract_candidate_profile(self, document_text: str) -> CandidateProfile:
-        """Ask Kimi to extract candidate facts from CV text.
+    def extract_candidate_fields(self, document_text: str) -> ExtractedFields:
+        """Ask Kimi to extract candidate facts, with quotes, from CV text.
 
         Args:
             document_text: The plain text of the candidate's CV.
 
         Returns:
-            A CandidateProfile carrying the extracted fields. `candidate_id` is
-            left empty and `extraction` is unset -- the caller assigns both.
+            The model's facts, each paired with the quote it claims supports
+            it. Quotes are unverified here; the caller checks them.
 
         Raises:
             ValueError: If `document_text` is empty.
@@ -112,18 +99,19 @@ class KimiClient:
 
         from openai import OpenAIError
 
+        prompt = load_candidate_prompt()
         try:
             response = self._client.chat.completions.create(
                 model=self.model_id,
                 messages=[
-                    {"role": "system", "content": self._load_prompt()},
+                    {"role": "system", "content": prompt.text},
                     {"role": "user", "content": document_text},
                 ],
                 response_format={
                     "type": "json_schema",
                     "json_schema": {
                         "name": "candidate_fields",
-                        "schema": ExtractedFields.model_json_schema(),
+                        "schema": prompt.schema,
                         "strict": True,
                     },
                 },
@@ -149,10 +137,8 @@ class KimiClient:
             ) from exc
 
         try:
-            fields = ExtractedFields.model_validate(payload)
+            return ExtractedFields.model_validate(payload)
         except ValidationError as exc:
             raise ExtractionError(
                 f"Kimi response did not match the expected schema: {exc}"
             ) from exc
-
-        return fields.to_profile()

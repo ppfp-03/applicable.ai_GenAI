@@ -1,0 +1,172 @@
+{
+  "schema_version": "0.2.0-draft",
+  "candidate_id": "synthetic-candidate-001",
+  "cv_document_id": "cv-001",
+  "skills": [
+    {
+      "value": "Financial modelling in Excel",
+      "evidence_ids": ["ev-cv-skill-001"]
+    },
+    {
+      "value": "Python for data analysis",
+      "evidence_ids": ["ev-cv-skill-002"]
+    }
+  ],
+  "education": [
+    {
+      "value": "BSc Economics and Management, expected 2027",
+      "evidence_ids": ["ev-cv-education-001"]
+    }
+  ],
+  "experience": [
+    {
+      "value": "Summer internship in corporate finance, 3 months",
+      "evidence_ids": ["ev-cv-experience-001"]
+    }
+  ],
+  "preferences": {
+    "allowed_country_codes": ["IT", "NL", "DE"],
+    "preferred_country_codes": ["NL", "IT"],
+    "preferred_role_families": ["finance_analyst", "business_analyst"],
+    "preferred_industries": ["banking", "consulting"]
+  },
+  "declarations": {
+    "additional_citizenships": ["IT"],
+    "work_authorizations": [
+      {
+        "country_code": "NL",
+        "authorized_to_work": true,
+        "requires_sponsorship": false,
+        "evidence_ids": ["ev-questionnaire-work-auth-nl"]
+      },
+      {
+        "country_code": "GB",
+        "authorized_to_work": null,
+        "requires_sponsorship": true,
+        "evidence_ids": ["ev-questionnaire-work-auth-gb"]
+      }
+    ]
+  },
+  "eligibility_answers": {
+    "graduation_window": [
+      {
+        "constraint_id": "graduation_window",
+        "answer_key": "expected_graduation_date",
+        "state": "known",
+        "answer_type": "date",
+        "value": "2027-07-15",
+        "evidence_ids": ["ev-questionnaire-graduation"],
+        "source_document_id": "questionnaire-001"
+      }
+    ],
+    "language_requirement": [
+      {
+        "constraint_id": "language_requirement",
+        "answer_key": "spoken_languages",
+        "state": "known",
+        "answer_type": "multi_choice",
+        "value": ["english", "italian"],
+        "evidence_ids": ["ev-clarification-languages"],
+        "source_document_id": "clarification-001"
+      }
+    ],
+    "relocation_willingness": [
+      {
+        "constraint_id": "relocation_willingness",
+        "answer_key": "willing_to_relocate",
+        "state": "unknown",
+        "answer_type": "boolean",
+        "value": null,
+        "evidence_ids": [],
+        "source_document_id": "questionnaire-001"
+      }
+    ]
+  },
+  "provenance": {
+    "questionnaire_document_ids": ["questionnaire-001"],
+    "clarification_document_ids": ["clarification-001"],
+    "documents": {
+      "cv-001": {
+        "document_id": "cv-001",
+        "kind": "cv",
+        "text": "Synthetic CV text for the shared contract fixture.",
+        "content_hash": "hash-cv-001",
+        "source_ref": "synthetic_fixture"
+      },
+      "questionnaire-001": {
+        "document_id": "questionnaire-001",
+        "kind": "questionnaire",
+        "text": "Synthetic onboarding questionnaire answers.",
+        "content_hash": "hash-questionnaire-001",
+        "source_ref": "synthetic_fixture"
+      },
+      "clarification-001": {
+        "document_id": "clarification-001",
+        "kind": "questionnaire",
+        "text": "Synthetic clarification answers collected after a first pass.",
+        "content_hash": "hash-clarification-001",
+        "source_ref": "synthetic_fixture"
+      }
+    },
+    "evidence": [
+      {
+        "evidence_id": "ev-cv-skill-001",
+        "document_id": "cv-001",
+        "quote": "Built three-statement financial models in Excel",
+        "field_path": "skills"
+      },
+      {
+        "evidence_id": "ev-cv-skill-002",
+        "document_id": "cv-001",
+        "quote": "Used Python and pandas for coursework data analysis",
+        "field_path": "skills"
+      },
+      {
+        "evidence_id": "ev-cv-education-001",
+        "document_id": "cv-001",
+        "quote": "BSc Economics and Management, expected graduation 2027",
+        "field_path": "education"
+      },
+      {
+        "evidence_id": "ev-cv-experience-001",
+        "document_id": "cv-001",
+        "quote": "Corporate finance summer intern, June to August",
+        "field_path": "experience"
+      },
+      {
+        "evidence_id": "ev-questionnaire-work-auth-nl",
+        "document_id": "questionnaire-001",
+        "quote": "I can work in the Netherlands without sponsorship",
+        "field_path": "declarations.work_authorizations.NL.authorized_to_work"
+      },
+      {
+        "evidence_id": "ev-questionnaire-work-auth-gb",
+        "document_id": "questionnaire-001",
+        "quote": "For the United Kingdom I would need sponsorship",
+        "field_path": "declarations.work_authorizations.GB.requires_sponsorship"
+      },
+      {
+        "evidence_id": "ev-questionnaire-graduation",
+        "document_id": "questionnaire-001",
+        "quote": "My expected graduation date is 15 July 2027",
+        "field_path": "eligibility_answers.graduation_window.expected_graduation_date"
+      },
+      {
+        "evidence_id": "ev-clarification-languages",
+        "document_id": "clarification-001",
+        "quote": "I speak English and Italian",
+        "field_path": "eligibility_answers.language_requirement.spoken_languages"
+      }
+    ],
+    "extraction": {
+      "mode": "fixture",
+      "provider": "synthetic",
+      "model_id": "synthetic-fixture-model",
+      "prompt_version": "1",
+      "schema_version": "0.2.0-draft",
+      "input_hash": "hash-candidate-input-001",
+      "produced_at": "2026-09-20T10:00:00+00:00",
+      "latency_ms": 0
+    }
+  }
+}

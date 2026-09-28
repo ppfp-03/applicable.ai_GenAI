@@ -14,6 +14,15 @@ from pypdf import PdfReader
 from oi.contracts import SourceDocument
 
 
+class PdfExtractionError(ValueError):
+    """Uploaded PDF bytes could not be turned into usable text.
+
+    Covers malformed or unreadable files, encrypted files this module cannot
+    open, and text-free files such as scans. It stays a `ValueError` so
+    existing callers of the previous contract keep working.
+    """
+
+
 def extract_pdf_text(pdf_bytes: bytes, document_id: str) -> SourceDocument:
     """Extract the text of a PDF and wrap it in a SourceDocument.
 
@@ -22,22 +31,36 @@ def extract_pdf_text(pdf_bytes: bytes, document_id: str) -> SourceDocument:
         document_id: Identifier assigned to the resulting document.
 
     Returns:
-        A SourceDocument of kind "cv" holding the extracted text and the
-        SHA-256 hash of the original bytes. Provenance is recorded as
-        source_ref="uploaded_pdf" (where it came from) and
-        extraction_method="native_pdf" (how the text was read).
+        A SourceDocument of kind "cv" holding the extracted text, the
+        SHA-256 hash of the original bytes, and a "uploaded_pdf" source ref.
 
     Raises:
-        ValueError: If the PDF yields no text. This typically means the file
-            is a scanned image, which would need OCR (not supported here).
+        PdfExtractionError: If the bytes cannot be read as a PDF, cannot be
+            decrypted, fail during text extraction, or yield no text. A
+            text-free file is typically a scanned image, which would need
+            OCR (not supported here).
     """
-    reader = PdfReader(BytesIO(pdf_bytes))
+    # Uploaded bytes are untrusted input and pypdf signals damage with
+    # whatever the underlying parse happens to raise, not one error family,
+    # so every read failure is caught and re-raised as one stable error.
+    try:
+        reader = PdfReader(BytesIO(pdf_bytes))
+    except Exception as error:
+        raise PdfExtractionError(
+            f"PDF '{document_id}' could not be read: {error}"
+        ) from error
 
-    pages = [page.extract_text() or "" for page in reader.pages]
+    try:
+        pages = [page.extract_text() or "" for page in reader.pages]
+    except Exception as error:
+        raise PdfExtractionError(
+            f"Text extraction failed for PDF '{document_id}': {error}"
+        ) from error
+
     text = "\n".join(pages).strip()
 
     if not text:
-        raise ValueError(
+        raise PdfExtractionError(
             f"No text could be extracted from PDF '{document_id}'. "
             "The file may be a scanned image; OCR is not supported."
         )
@@ -48,5 +71,4 @@ def extract_pdf_text(pdf_bytes: bytes, document_id: str) -> SourceDocument:
         text=text,
         content_hash=hashlib.sha256(pdf_bytes).hexdigest(),
         source_ref="uploaded_pdf",
-        extraction_method="native_pdf",
     )

@@ -5,18 +5,31 @@ The pipeline talks to an LLM only through `ModelClient`. Anything vendor
 implementation of this protocol, so swapping providers touches the provider
 package and nothing else.
 
-This module also holds the two pieces every provider needs and none of them
-should define privately: the schema the model is asked to fill in, and the
-error type raised when a provider cannot deliver a usable answer.
+This module also holds the pieces every provider needs and none of them
+should define privately: the schema the model is asked to fill in, the
+extraction prompt, and the error type raised when a provider cannot deliver a
+usable answer.
+
+Providers return `ExtractedFields`, never a domain contract. Turning model
+output into a `CandidateProfile` -- verifying quotes, minting evidence ids,
+recording provenance -- is `oi.intelligence.extraction`'s job.
 """
 
 from __future__ import annotations
 
-from typing import Optional, Protocol, runtime_checkable
+import hashlib
+import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Protocol, runtime_checkable
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
-from oi.contracts import CandidateProfile
+#: Extraction instructions live in version control as a reviewable file,
+#: not inline, so prompt changes show up in diffs.
+CANDIDATE_PROMPT_PATH = (
+    Path(__file__).resolve().parents[3] / "prompts" / "candidate_extraction.md"
+)
 
 
 class ExtractionError(RuntimeError):
@@ -27,34 +40,78 @@ class ExtractionError(RuntimeError):
     """
 
 
-class ExtractedFields(BaseModel):
-    """The subset of a candidate profile a model is asked to produce.
+@dataclass(frozen=True)
+class Prompt:
+    """Everything the model is given besides the document, plus its version.
 
-    Narrower than CandidateProfile on purpose. `candidate_id`, `evidence` and
-    `extraction` are absent, so no model can populate its own identifiers or
-    invent its own provenance -- the application assigns those.
+    Providers send `text` as instructions and `schema` as the structured
+    output format, so the version recorded in the ExtractionReceipt covers
+    exactly what the model saw.
     """
 
-    name: Optional[str] = None
-    skills: list[str] = []
-    education: list[str] = []
-    experience: list[str] = []
-    languages: list[str] = []
+    text: str
+    schema: dict[str, Any]
+    version: str
 
-    def to_profile(self) -> CandidateProfile:
-        """Build an un-stamped CandidateProfile from these fields.
 
-        `candidate_id` is left empty and `extraction` unset; the orchestration
-        layer fills both in.
-        """
-        return CandidateProfile(
-            candidate_id="",
-            name=self.name,
-            skills=self.skills,
-            education=self.education,
-            experience=self.experience,
-            languages=self.languages,
-        )
+def model_input_version(text: str, schema: dict[str, Any]) -> str:
+    """Hash prompt text and output schema into one deterministic version.
+
+    Both are serialized as one canonical JSON document (sorted keys, fixed
+    separators), so equal inputs always give equal versions and any edit to
+    either -- including a field or description change in the schema --
+    gives a new one.
+    """
+    canonical = json.dumps(
+        {"prompt": text, "schema": schema},
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    return f"sha256:{hashlib.sha256(canonical.encode('utf-8')).hexdigest()[:16]}"
+
+
+def load_candidate_prompt() -> Prompt:
+    """Read the candidate extraction prompt and version it with its schema.
+
+    Raises:
+        ExtractionError: If the prompt file cannot be read.
+    """
+    try:
+        text = CANDIDATE_PROMPT_PATH.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise ExtractionError(
+            f"Could not read the extraction prompt at {CANDIDATE_PROMPT_PATH}."
+        ) from exc
+    schema = ExtractedFields.model_json_schema()
+    return Prompt(text=text, schema=schema, version=model_input_version(text, schema))
+
+
+class ExtractedFact(BaseModel):
+    """One fact the model read from the CV, with the text that supports it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    value: str = Field(description="The fact, kept close to the CV's wording.")
+    quote: str = Field(
+        description="A passage copied verbatim from the CV that states the fact."
+    )
+
+
+class ExtractedFields(BaseModel):
+    """What a model is asked to produce from a CV -- and nothing more.
+
+    Ids, evidence ids, timestamps and the extraction receipt are absent, so no
+    model can populate its own identifiers or invent its own provenance; the
+    application assigns those. Every field is required and extra keys are
+    forbidden, which keeps the JSON schema valid for strict structured output.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    skills: list[ExtractedFact]
+    education: list[ExtractedFact]
+    experience: list[ExtractedFact]
 
 
 @runtime_checkable
@@ -74,11 +131,8 @@ class ModelClient(Protocol):
     #: Short vendor name (e.g. "kimi"), recorded in the ExtractionReceipt.
     provider_name: str
 
-    def extract_candidate_profile(self, document_text: str) -> CandidateProfile:
-        """Extract candidate facts from CV text.
-
-        Returns a CandidateProfile with `candidate_id` empty and `extraction`
-        unset -- provenance is the caller's responsibility.
+    def extract_candidate_fields(self, document_text: str) -> ExtractedFields:
+        """Extract candidate facts, each with a supporting quote, from CV text.
 
         Raises:
             ValueError: If `document_text` is empty.
