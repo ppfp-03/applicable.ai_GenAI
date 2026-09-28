@@ -49,13 +49,14 @@
 
   // The ghost lives outside the lanes: each lane is glass (backdrop-filter),
   // its own stacking context, so a card moved inside one would slide under
-  // the lanes painted after it.
+  // the lanes painted after it. Its layer sits in the tab's container, where
+  // this screen's (tab-scoped) rules reach it and the stage zoom applies.
   let layer = null;
   function ghostOf(tile) {
     if (!layer || !layer.isConnected) {
       layer = document.createElement('div');
       layer.className = 'aa-ap-layer';
-      document.body.appendChild(layer);
+      (tile.closest('[class*="st-key-tab-"]') || document.body).appendChild(layer);
     }
     const g = tile.cloneNode(true);
     g.classList.add('ap-ghost');
