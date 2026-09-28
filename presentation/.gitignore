@@ -1,0 +1,5 @@
+# Review renders and generated audio (see tools/)
+*.mp4
+out/
+audio/soundtrack.wav
+tools/node_modules

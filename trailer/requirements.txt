@@ -1,0 +1,8 @@
+# Python tools for the trailer pipeline (score synthesis, backdrops, motion blur, QA).
+# Install: npm run setup:python   (creates trailer/.venv)
+numpy==2.5.3
+scipy==1.18.1
+soundfile==0.14.0
+pyloudnorm==0.2.0
+opencv-python-headless==5.0.0.93
+pillow==12.3.0

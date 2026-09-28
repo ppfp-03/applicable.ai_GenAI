@@ -1,0 +1,40 @@
+/* Stage: a fixed 1920×1080 canvas, scaled to fit the window (see js/core/stage.js). */
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0E0C0A; /* letterbox */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+}
+body { font-family: var(--font-sans); color: var(--ink); }
+
+.stage {
+  position: absolute;
+  width: 1920px;
+  height: 1080px;
+  transform: scale(var(--stage-scale, 0.5));
+  transform-origin: 0 0;
+  overflow: hidden;
+  background: var(--canvas);
+  opacity: 0;
+}
+html.is-loaded .stage { opacity: 1; transition: opacity .4s ease; }
+
+.trailer, .deck { position: absolute; inset: 0; }
+.trailer { cursor: none; }
+html[data-state="PRESENTATION_READY"] .trailer { cursor: default; }
+
+.layer { position: absolute; inset: 0; }
+.viewport { overflow: hidden; will-change: opacity, filter; }
+.world { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-origin: 0 0; }
+
+/* Every placed actor is positioned by its transform alone. */
+.stage .actor { position: absolute; left: 0; top: 0; }
+
+.debug {
+  position: fixed; left: 12px; bottom: 12px; z-index: 99;
+  font: 500 13px/1 var(--font-mono); color: #fff; background: rgba(0,0,0,.6);
+  padding: 8px 10px; border-radius: 6px; pointer-events: none;
+}
