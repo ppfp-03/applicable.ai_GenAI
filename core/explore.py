@@ -12,6 +12,8 @@ verdict i is the one given to story i.
 
 from __future__ import annotations
 
+from oi.intelligence.profile_fit import skill_named
+
 LIKE, PASS, UNSURE = "r", "l", "u"
 VERDICTS = (LIKE, PASS, UNSURE)
 
@@ -113,10 +115,4 @@ def history(stories: list[dict], verdicts: list[str], n: int = 5) -> list[tuple[
 
 def cv_overlap(story: dict, skills: list[str]) -> list[str]:
     """The story's skills the CV also names, compared without case."""
-    have = [s.lower() for s in skills]
-
-    def named(k: str) -> bool:
-        k = k.lower()
-        return any(k == s or (len(s) > 2 and s in k) or (len(k) > 2 and k in s) for s in have)
-
-    return [k for k in story["sk"] if named(k)]
+    return [k for k in story["sk"] if skill_named(k, skills)]
