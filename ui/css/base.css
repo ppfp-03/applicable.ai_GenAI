@@ -212,6 +212,12 @@ html.aa-dragging,html.aa-dragging *{user-select:none!important;-webkit-user-sele
 [data-testid="stTooltipContent"]{background:rgba(29,29,31,.92)!important;color:#fff!important;border:0!important;border-radius:10px!important;padding:7px 12px!important;max-width:280px;overflow:visible!important;backdrop-filter:blur(20px);box-shadow:0 8px 24px rgba(28,40,64,.2)!important;font-family:"Inter",sans-serif}
 [data-testid="stTooltipContent"] [data-testid="stMarkdownContainer"]{margin:0!important}
 [data-testid="stTooltipContent"] *{color:#fff!important;font-size:12.5px!important;font-weight:560;line-height:1.4!important}
+/* The hint of Home's ⤢ buttons shows for a second, then fades, even while
+ * the pointer stays. The tooltip mounts on <body>, outside the tab, so the
+ * rule lives here rather than in the tab-scoped home.css; the fade restarts
+ * on each mount. */
+body:has([class*="st-key-ib-x-"] button:hover) > div:has(> div > [data-testid="stTooltipContent"]){animation:ib-tip-out .25s ease 1s forwards}
+@keyframes ib-tip-out{to{opacity:0;visibility:hidden}}
 
 /* Toasts are the mockups' dark pill, bottom centre. */
 [data-testid="stToastContainer"]{left:50%!important;right:auto!important;top:auto!important;bottom:36px!important;margin:0!important;transform:translateX(-50%);align-items:center}
@@ -235,3 +241,5 @@ html.aa-dragging,html.aa-dragging *{user-select:none!important;-webkit-user-sele
 [data-testid="stButtonGroup"] button[data-variant="pills"] p{font-size:inherit;font-weight:inherit}
 [data-testid="stButtonGroup"] button[aria-checked="true"],[data-testid="stButtonGroup"] button[aria-pressed="true"],[data-testid="stButtonGroup"] button[data-selected="true"]{background:var(--blue);color:#fff}
 [data-testid="stButtonGroup"] button[aria-checked="true"] p,[data-testid="stButtonGroup"] button[aria-pressed="true"] p,[data-testid="stButtonGroup"] button[data-selected="true"] p{color:#fff}
+/* How a role to verify is ordered (Matches, role pages): its score is unchanged. */
+.vnote{font-size:11.5px;color:var(--t2);padding:2px 4px 0}

@@ -10,15 +10,18 @@ New postings come only from the controlled "Simulated ingestion event"
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import streamlit as st
 
 from core import clock, store
-from ui import parts, shell, tabs
+from ui import choice, parts, shell, tabs
 from ui.html import check_icon, esc, hit, html, logo
 from ui.theme import page_css
 
 d = store.data()
 page_css("explore")
+PAGER_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "pager.js").read_text(encoding="utf-8")
 
 SIM = d.simulated_event["label"]
 NEW = "Simulated event"
@@ -44,7 +47,7 @@ with shell.header(
                       value=tabs.param("city", ""))
 
 with st.container(key="filters"):
-    f = st.pills("Filter", FILTERS, default="All", key="x-filter", label_visibility="collapsed") or "All"
+    f = choice.pills("Filter", FILTERS, default="All", key="x-filter", label_visibility="collapsed") or "All"
 
 
 def keep(v) -> bool:
@@ -105,9 +108,9 @@ def card(v) -> str:
         why = ("! " if v.get("highlight_kind") == "gap" else "✓ ") + v.highlight
     return (
         f'<div class="mc tile{" sel" if sel else ""}{" x2" if v.standing == "excluded" else ""}">'
-        f'<div class="h">{logo(v.mono, v.bg, 36, 13)}<div class="sc">{v.shown if v.standing != "excluded" else "—"}<small>{small}</small></div></div>'
+        f'<div class="h">{logo(v.mono, v.bg, 36, 13)}<div class="sc">{parts.priority_text(v.id) if v.standing != "excluded" else "—"}<small>{small}</small></div></div>'
         f'<div class="t">{esc(v.title)}</div><div class="m">{esc(v.company)} · {esc(v.city)}</div>'
-        f'<div class="why">{esc(why)}</div><div class="b" style="margin-top:auto"><i style="width:{v.shown if v.standing != "excluded" else 0}%"></i></div>'
+        f'<div class="why">{esc(why)}</div><div class="b" style="margin-top:auto"><i style="width:{parts.priority_width(v.id) if v.standing != "excluded" else 0}%"></i></div>'
         + (f'<div class="f"><span>{SIM}</span></div></div>' if store.is_simulated(v) else
            f'<div class="f"><span class="{"u" if hot else ""}">{esc(close)}</span><span>Demo data</span></div></div>')
     )
@@ -128,6 +131,9 @@ with st.container(key="ex-main"):
             html('<div style="font-size:13px;color:var(--t2);margin-top:14px">No roles match. Try another filter.</div>')
         if pages > 1:
             with st.container(key="x-pager", horizontal=True, gap="small"):
+                # Tells ui/js/pager.js which number is lit: its liquid-glass lens
+                # slides there, and stays put between reruns instead of redrawing.
+                html(f'<i class="xp-mark" data-cur="{cur}"></i>')
                 st.button("‹", key="x-pg-prev", help="Previous page", disabled=cur == 0,
                           on_click=go_page, args=(cur - 1,))
                 for n in page_nums(cur, pages):
@@ -153,9 +159,9 @@ with st.container(key="ex-main"):
                      f'{esc(d.simulated_event["disclaimer"])}</div>')
             if v.standing != "excluded":
                 html(
-                    f'<div><div class="hero2"><div class="n">{v.shown}<small> /100</small></div>'
+                    f'<div><div class="hero2"><div class="n">{parts.priority_text(v.id)}<small> /100</small></div>'
                     f'<div class="c">Priority score<br>{esc(clock.closes_line(v)[0])}</div></div>'
-                    f'<div class="kstack">{parts.bars(v)}</div></div>'
+                    f'<div class="kstack">{parts.unified_bars(store.matches().get(v.id)) if store.priority(v.id) is not None else ""}</div></div>'
                 )
             rows = "".join(
                 f'<div class="ck">{check_icon(c.status)}{esc(c.name)}<span class="s">{esc(c.value)}</span></div>'
@@ -170,3 +176,6 @@ with st.container(key="ex-main"):
                 if st.button("Save", type="primary", key="save", disabled=v.standing == "excluded"):
                     store.save_application(v.id, "saved")
                     st.toast(f"Saved · {v.company} · {v.title}")
+
+with st.container(key="aa-js-pager"):
+    st.html(f"<script>{PAGER_JS}</script>", unsafe_allow_javascript=True)

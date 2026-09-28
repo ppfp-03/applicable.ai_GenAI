@@ -27,7 +27,7 @@
  * card sits, turning about its horizontal axis, and settles with a small
  * overshoot. home.css turns the card away at the same time. */
 @keyframes hx-flip-in{
-  0%{opacity:0;transform:perspective(2200px) translate3d(0,24vh,0) rotateX(-78deg) scale(.56)}
+  0%{opacity:0;transform:perspective(2200px) translate3d(var(--hx-x,0),var(--hx-y,24vh),0) rotateX(-78deg) scale(.56)}
   38%{opacity:1}
   72%{transform:perspective(2200px) translate3d(0,-4px,0) rotateX(4deg) scale(1.005)}
   100%{opacity:1;transform:none}
@@ -51,6 +51,18 @@
 /* The close button, a small glass disc. */
 [data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-calbar) > button{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:inset 0 1px 0 #fff,0 1px 3px rgba(28,40,64,.10),0 0 0 .5px rgba(0,0,0,.07);transition:background .2s,transform .2s}
 [data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-calbar) > button:hover{background:#fff;transform:scale(1.06)}
+
+/* Top matches and Applications flip open the same way, each out of its own
+ * card: --hx-x/--hx-y start the sheet where the card sits on Home (matches
+ * bottom left, applications bottom right). home.css turns the card away. */
+[data-testid="stDialog"]:has(.st-key-hx-mbar),[data-testid="stDialog"]:has(.st-key-hx-board){background:transparent!important}
+[data-testid="stDialog"]:has(.st-key-hx-mbar)::before,[data-testid="stDialog"]:has(.st-key-hx-board)::before{content:"";position:fixed;inset:0;z-index:-1;background:rgba(226,231,240,.32);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);animation:hx-veil .5s ease-out both}
+[data-testid="stDialog"] > div:has(.st-key-hx-mbar),[data-testid="stDialog"] > div:has(.st-key-hx-board){
+  transform-origin:50% 60%;will-change:transform,opacity;
+  animation:hx-flip-in .9s cubic-bezier(.16,1,.3,1) both}
+[data-testid="stDialog"] > div:has(.st-key-hx-mbar){--hx-x:-12vw;--hx-y:30vh}
+[data-testid="stDialog"] > div:has(.st-key-hx-board){--hx-x:22vw;--hx-y:30vh}
+[data-testid="stDialog"] .st-key-hx-mg,[data-testid="stDialog"] [data-testid="stHorizontalBlock"]:has([class*="st-key-hx-ap-"]){animation:hx-rise .55s .12s cubic-bezier(.16,1,.3,1) both}
 
 /* Title, ‹ Today › and the view switch on one line. The month title takes
  * the dialog title's place, as in Calendar.app; the bar leaves room for the
@@ -152,6 +164,9 @@
   [data-testid="stDialog"]:has(.st-key-hx-calbar)::before,
   [data-testid="stDialog"] > div:has(.st-key-hx-calbar),[data-testid="stDialog"] [class*="st-key-hx-grid-"],
   [data-testid="stDialog"] .st-key-hx-side{animation:none}
+  [data-testid="stDialog"]:has(.st-key-hx-mbar)::before,[data-testid="stDialog"]:has(.st-key-hx-board)::before,
+  [data-testid="stDialog"] > div:has(.st-key-hx-mbar),[data-testid="stDialog"] > div:has(.st-key-hx-board),
+  [data-testid="stDialog"] .st-key-hx-mg,[data-testid="stDialog"] [data-testid="stHorizontalBlock"]:has([class*="st-key-hx-ap-"]){animation:none}
 }
 
 /* This week */
@@ -171,6 +186,13 @@
 /* Top matches: the Home card, in a wrapping grid. */
 [data-testid="stDialog"] .st-key-hx-mbar{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;flex-wrap:nowrap!important}
 [data-testid="stDialog"] .st-key-hx-mbar [data-testid="stElementContainer"]{width:auto!important}
+/* The sheet stays inside the window: its body scrolls, never the page
+ * behind it, and the count and sort stay pinned above the grid. */
+[data-testid="stDialog"]:has(.st-key-hx-mbar){overflow:hidden}
+[data-testid="stDialog"] > div:has(.st-key-hx-mbar),[data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-mbar){max-height:calc(100dvh - 96px)}
+[data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-mbar){min-height:0;overflow:hidden}
+[data-testid="stDialog"] [role="dialog"]:has(.st-key-hx-mbar) > div:has(.st-key-hx-mbar){flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-top:0}
+[data-testid="stDialog"] [data-testid="stLayoutWrapper"]:has(> .st-key-hx-mbar){position:sticky;top:16px;z-index:3;background:#F5F6F8;box-shadow:0 -16px 0 16px #F5F6F8;padding:12px 0 10px;margin-bottom:-10px}
 [data-testid="stDialog"] .st-key-hx-mg{position:relative}
 [data-testid="stDialog"] .hx-mt,[data-testid="stDialog"] .st-key-hx-mcells{display:grid!important;grid-template-columns:repeat(auto-fill,196px);grid-auto-rows:232px;gap:12px!important;justify-content:start}
 [data-testid="stDialog"] .st-key-hx-mcells{position:absolute!important;inset:0;z-index:2}

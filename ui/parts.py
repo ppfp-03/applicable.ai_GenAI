@@ -119,3 +119,94 @@ def eligibility_dot(v) -> str:
     if v.standing == "eligible":
         return '<span class="k-el" style="color:var(--green)"><i style="background:var(--green)"></i>Eligible</span>'
     return '<span class="k-el" style="color:var(--amber)"><i style="background:#D98A1E"></i>To verify</span>'
+
+
+# ───────────────────────── The one Matches ranking (core/matches.py) ─────────────────────────
+
+MONTH_ABBR = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+#: The small per-job disclosure a synthetic posting carries. It never groups or ranks.
+DEMO_POSTING = "Demo posting"
+
+
+def unified_bars(o) -> str:
+    """The stacked contribution bar of a ranked opportunity."""
+    segs = "".join(f'<i style="flex:{c:.2f};background:{COL[i]}"></i>' for i, c in enumerate(o.parts))
+    rest = max(0.0, 100 - (o.raw or 0))
+    return segs + f'<i style="flex:{rest:.2f};background:transparent"></i>'
+
+
+def _date(iso: str) -> str:
+    y, m, d = iso.split("-")
+    return f"{int(d)} {MONTH_ABBR[int(m) - 1]}"
+
+
+def factor_note(o, name: str) -> str:
+    """What one factor rests on, in plain words. Ranking skills a curated role
+    does not state are called typical for the role, never posting facts."""
+    fit, e = o.profile, o.entry
+    if name == "profile_fit":
+        n, m = len(o.job_profile.skills), len(fit.matched_skills)
+        typical = len(o.topped_up_skills)
+        skills = f"{m} of {n} skills" + (f" ({typical} typical for the role)" if typical else "")
+        edu = {100.0: "degree and field match", 50.0: "degree or field matches", 0.0: "degree and field differ"}
+        bits = [skills, edu.get(fit.education_field, "")]
+        if fit.experience is not None and fit.experience < 100:
+            bits.append("less experience than asked")
+        return " · ".join(b for b in bits if b)
+    if name == "preference_fit":
+        sub = e.preference.subfactors
+        bits = []
+        if sub.get("location") is not None:
+            bits.append(f"{o.city} is a preferred place" if sub["location"] else "Not a preferred place")
+        if sub.get("role_family") is not None:
+            bits.append(f"{o.role_family} role" if sub["role_family"] else "Other role family")
+        return " · ".join(bits)
+    if name == "deadline_urgency":
+        return f"Applications close {_date(o.closes)}"
+    days = e.freshness.age_days
+    if days is None:
+        return ""
+    n = int(days)
+    return ("Found today" if n == 0 else f"Found {n} day{'s' if n != 1 else ''} ago") + " · simulated"
+
+
+def unified_factor_rows(o) -> str:
+    """Four rows: factor · its score, its weighted points and weight, a note."""
+    from core.matches import FACTOR_NAMES, FACTORS, WEIGHTS
+
+    rows = []
+    for i, k in enumerate(FACTORS):
+        rows.append(
+            f'<div class="kci"><span class="sw" style="background:{COL[i]}"></span>'
+            f'<span class="nm">{FACTOR_NAMES[k]} · {int(o.factor(k) + 0.5)}</span>'
+            f'<span class="pt"><b>+{o.parts[i]:.1f}</b><span>× {int(WEIGHTS[k] * 100)}%</span></span>'
+            f'<span class="kw">{esc(factor_note(o, k))}</span></div>'
+        )
+    return "".join(rows)
+
+
+def unified_tag(o) -> tuple[str, str]:
+    """The one chip a Matches row shows: applied, closing soon, or its demo label."""
+    app = application_for(o.role_id)
+    if app and app["stage"] in ("applied", "interview"):
+        return "g", app["note"].split(" · ")[0].replace("Sent", "Applied")
+    n = clock.days_until(o.closes)
+    if n <= 9:
+        return "u", f"Closes in {n} days"
+    return "", DEMO_POSTING if o.kind == "synthetic" else "Demo data"
+
+
+def verify_note(o) -> str:
+    """For a job to verify: how it is ordered. Its Priority score is unchanged."""
+    return "Ordered 15 points lower until verified · its Priority score is unchanged" if o.standing == "verify" else ""
+
+
+def priority_text(role_id: str) -> str:
+    """A role's raw Priority score as the screens print it, or "—" when not ranked."""
+    n = store.priority(role_id)
+    return "—" if n is None else str(n)
+
+
+def priority_width(role_id: str) -> int:
+    """The width, in percent, of a role's score bar."""
+    return store.priority(role_id) or 0

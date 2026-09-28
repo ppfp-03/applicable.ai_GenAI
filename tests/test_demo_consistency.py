@@ -43,7 +43,8 @@ def test_counts_are_the_available_roles(ran, total, uk):
     assert sum(got.values()) == total
     assert got == {"eligible": 0, "verify": 0, "excluded": 0,
                    **Counter(v.standing for v in store.views(ans))}
-    assert store.nav_counts()["matches"] == store.counts()["eligible"]
+    # The badge counts what Matches ranks as eligible: the one population.
+    assert store.nav_counts()["matches"] == sum(o.status == "eligible" for o in store.matches().ordered)
 
 
 def test_uk_roles_are_the_available_uk_roles():

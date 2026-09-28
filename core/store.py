@@ -29,6 +29,7 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass, field
+from datetime import timezone
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Optional
@@ -36,6 +37,7 @@ from typing import Any, Optional
 import streamlit as st
 
 from core import eligibility, eligibility_view, ranking, rules
+from core import matches as matches_core
 from oi.contracts import AnswerState, AnswerType, CandidateProfile
 from oi.intelligence.eligibility.catalogue import LANGUAGE_CONSTRAINT_ID, language_level_key
 
@@ -787,6 +789,54 @@ def _reviewed_safe() -> bool:
         return False
 
 
+# ───────────────────────── The one Matches ranking ─────────────────────────
+
+#: Recent unified rankings, keyed by everything they read; oldest dropped first.
+_MATCHES: dict[str, "matches_core.Matches"] = {}
+_MAX_MATCHES = 8
+
+
+def matches() -> "matches_core.Matches":
+    """The one ranked Matches population (core/matches.py) under the current
+    answers, confirmed preferences and CV: curated roles and synthetic postings,
+    each posting once, one formula (D-051). Outside onboarding, every screen
+    that shows a role's Priority score reads it here."""
+    from core import clock  # clock reads the store
+
+    d = data()
+    cv = candidate()
+    roles = [r.raw for r in available()]
+    now = clock.now()
+    key = json.dumps({
+        "candidate": eligibility.candidate_key(d.profile, answers()),
+        "preferences": preferences(),
+        "cv": [s.value for s in cv.skills] if cv else None,
+        "roles": [r["id"] for r in roles],
+        "now": now.isoformat(),
+    }, sort_keys=True, default=str)
+    if key not in _MATCHES:
+        if len(_MATCHES) >= _MAX_MATCHES:
+            _MATCHES.pop(next(iter(_MATCHES)))
+        _MATCHES[key] = matches_core.build(roles, d.profile, answers(), preferences(), cv,
+                                           now if now.tzinfo else now.replace(tzinfo=timezone.utc))
+    return _MATCHES[key]
+
+
+def priority(role_id: str) -> Optional[int]:
+    """A role's raw Priority score (0-100) as the Matches ranking gives it, or
+    None when it is not ranked (excluded). A curated copy of a synthetic posting
+    reads that posting's score: one posting, one number."""
+    found = matches().get(role_id)
+    return found.shown if found else None
+
+
+def ordering(role_id: str) -> float:
+    """Where a role sorts in the Matches ranking: its raw Priority score, 15
+    lower while it is to verify; unranked roles sort last."""
+    found = matches().get(role_id)
+    return found.ordering if found and found.ordering is not None else float("-inf")
+
+
 def top_matches() -> list[RoleView]:
     """The dashboard strip: ranked roles in the cities the user asked for,
     today's new ones included, so nothing good hides behind a review step."""
@@ -906,5 +956,7 @@ def save_application(role_id: str, stage: str = "progress") -> None:
 
 
 def nav_counts() -> dict[str, int]:
-    """Badges for the top bar."""
-    return {"matches": counts()["eligible"], "applications": len(st.session_state.get(APPS, []))}
+    """Badges for the top bar. Matches counts the eligible roles the Matches
+    page ranks (the one population, core/matches.py)."""
+    eligible = sum(o.status == "eligible" for o in matches().ordered)
+    return {"matches": eligible, "applications": len(st.session_state.get(APPS, []))}
