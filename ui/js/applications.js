@@ -88,6 +88,25 @@
     if (d.card.isConnected) d.card.classList.remove('ap-src', 'ap-gone');
   }
 
+  // The moved card's old copy stays in its old lane until the rerun ends
+  // (Streamlit keeps it, faded, as a stale element) and React may reset its
+  // classes meanwhile. A rule on its place keeps it hidden until it is gone.
+  function bury(d) {
+    const sel = `.st-key-gl-lane-${d.from} .st-key-hit-app-${d.role}`;
+    const css = document.createElement('style');
+    css.textContent = sel + '{opacity:0!important;transition:none!important}';
+    document.head.appendChild(css);
+    let obs = null;
+    const lift = () => { if (obs) obs.disconnect(); clearTimeout(cap); css.remove(); };
+    const cap = setTimeout(lift, WAIT + 2000);
+    d.unbury = lift;
+    return () => {
+      if (!document.querySelector(sel)) { lift(); return; }
+      obs = new MutationObserver(() => { if (!document.querySelector(sel)) lift(); });
+      obs.observe(document.body, { childList: true, subtree: true });
+    };
+  }
+
   function finish(d, real) {
     d.g.remove();
     release(d);
@@ -113,7 +132,7 @@
       d.g.style.width = tile.offsetWidth + 'px';
       const r = tile.getBoundingClientRect();
       place(d.g, r.left * d.k, r.top * d.k, false, true);
-      setTimeout(() => finish(d, real), GLIDE + 20);
+      setTimeout(() => { finish(d, real); if (d.settle) d.settle(); }, GLIDE + 20);
     };
     const timer = setTimeout(() => {
       // No rerun came back: put the card back where it was.
@@ -127,6 +146,7 @@
 
   // Glide back to the card's own place (dropped where nothing changes).
   function home(d) {
+    if (d.unbury) d.unbury();
     const r = d.tile.isConnected ? d.tile.getBoundingClientRect() : null;
     if (!r) { finish(d); return; }
     place(d.g, r.left * d.k, r.top * d.k, false, true);
@@ -187,6 +207,7 @@
     // The card has left its lane; the ghost takes the free slot in the new
     // one while Streamlit runs the move.
     d.card.classList.add('ap-gone');
+    d.settle = bury(d);
     const lane = laneOf(over.stage) || over.el;
     const s = slotIn(lane);
     place(d.g, s.x * d.k, s.y * d.k, false, true);
