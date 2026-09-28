@@ -6,13 +6,24 @@ and prioritise career opportunities.
 
 ## Current status
 
-This repository contains only the initial application foundation: a Streamlit
-shell with Candidate Profile and Top Opportunities placeholders, empty Python
-modules, provisional configuration, and prompt placeholders.
+The Streamlit app reproduces the approved mockups (`00_Onboarding` to
+`05_Ranking`) in the product's orange palette, running end to end on the
+synthetic demo data in `data/demo.json` (persona: Pierpaolo Filippelli, fictional
+companies only). No real LLM is called yet.
 
-No AI pipeline, LLM calls, eligibility checks, ranking logic, or generated AI
-outputs are implemented. There is no database, authentication, Docker setup,
-vector database, or ATS integration.
+- **Home**: this week's carousel, a two-week timeline, top matches and the
+  applications wallet.
+- **Matches**: the top five, each score broken down into four factors with
+  fixed weights (40/25/20/15).
+- **Role**: eligibility against eight fixed criteria: permission to work by
+  the canonical `HC_WORK_AUTH` rule (`core/eligibility.py`), the other seven
+  by `core/rules.py`.
+- **One quick question**: the UK work question. Saving the answer recomputes
+  eligibility and ranking everywhere.
+- **Profile**: review and correct what was read from the CV.
+- **Onboarding**: six steps, from uploading the CV to the updated ranking.
+- **Applications** and **Explore**: no mockup; built in the same visual
+  language.
 
 ## Setup
 
@@ -39,33 +50,12 @@ Install the initial dependencies:
 pip install -r requirements.txt
 ```
 
-### System dependencies for OCR
+### PDF input
 
-Scanned, image-based PDFs are read with OCR. That path needs two programs
-installed on the system itself, alongside the Python packages above:
-
-- **Tesseract** — the OCR engine.
-- **Poppler** — provides `pdftoppm`, used to render PDF pages as images.
-
-On macOS with Homebrew:
-
-```bash
-brew install tesseract poppler
-```
-
-On Debian or Ubuntu:
-
-```bash
-sudo apt-get install tesseract-ocr poppler-utils
-```
-
-On Windows, install the
-[Tesseract installer](https://github.com/UB-Mannheim/tesseract/wiki) and the
-[Poppler binaries](https://github.com/oschwartz10612/poppler-windows/releases),
-then add both `bin` directories to `PATH`.
-
-Text-based PDFs work without these; only the OCR fallback requires them.
-Verify an installation with `tesseract --version` and `pdftoppm -v`.
+Only text-bearing PDFs are supported: the CV's text is read with `pypdf`, and
+no system programs are needed. OCR is out of MVP scope, so a scanned or
+image-only PDF is rejected with a clear "no usable text" error instead of
+being read.
 
 Optionally copy the environment template for future development:
 
@@ -76,7 +66,7 @@ cp .env.example .env
 On Windows PowerShell, use `Copy-Item .env.example .env`.
 The template contains `KIMI_API_KEY=` and `KIMI_MODEL=`. Candidate extraction
 calls the Kimi API and requires a valid `KIMI_API_KEY`; the rest of the
-application (PDF and OCR ingestion) runs without one. Keep real secrets out of
+application (including PDF text extraction) runs without one. Keep real secrets out of
 version control; `.env` files are ignored.
 
 ## Run the application
@@ -110,12 +100,24 @@ streamlit run app.py
 pytest
 ```
 
-The `tests/` package is a placeholder with no tests yet. Pytest will report no
-tests collected and return exit code 5 until tests are added.
+The tests cover the deterministic rules (the eight criteria, the Swiss
+permit table) and the ranking arithmetic. The expected orders are the ones
+the mockups show.
 
 ## Structure
 
-- `app.py`: Streamlit application shell.
+- `app.py`: Streamlit entry point, with hidden navigation. The capsule in the
+  top bar is the navigation.
+- `views/`: one file per screen.
+- `core/rules.py`: eligibility, decided only by deterministic rules.
+  `core/ranking.py` holds the priority score, and `core/store.py` the demo
+  data, session state and everything derived from them.
+- `ui/css/`: mockup CSS, one file per screen. `ui/palette.py` maps the
+  mockups' blues to the orange scale at publish time, and `ui/theme.py`
+  publishes the stylesheets to `static/`.
+- `ui/html.py`, `ui/shell.py`, `ui/parts.py`: markup that only displays (icons,
+  top bar, score bars). Every action is a native Streamlit widget, often an
+  invisible button placed over the mockup element.
 - `package.json` and `scripts/dev.cjs`: npm development launcher for Streamlit.
 - `config/`: development-only hard constraint and ranking factor definitions.
 - `data/synthetic/`: reserved for future synthetic data; currently empty.
@@ -126,7 +128,7 @@ tests collected and return exit code 5 until tests are added.
   generic interface, `kimi.py` implements it for the Kimi API.
 - `src/oi/intelligence/`: reserved for future intelligence modules.
 - `src/oi/ui/`: reserved for reusable interface components.
-- `tests/`: reserved for future tests.
+- `tests/`: rules and ranking tests.
 
 Both configuration files use version `development-0.1` and contain provisional
 development values. The three hard constraints are marked `development` and

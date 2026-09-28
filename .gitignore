@@ -1,11 +1,34 @@
+# Local environment files and secrets
 .env
-venv/
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Virtual environments
 .venv/
+venv/
+
+# Python and test artifacts
 __pycache__/
+*.py[cod]
 .pytest_cache/
+.coverage
+htmlcov/
+
+# Editor files
 .vscode/
-.DS_Store
+
+# Node artifacts (npm scripts here only wrap Python commands)
 node_modules/
+package-lock.json
+# The launch film (trailer/) is a real npm project: its lockfile pins the Remotion toolchain.
+!trailer/package-lock.json
+
+# Operating system files
+.DS_Store
 
 # Stylesheets generated at runtime by ui/theme.py from the design system.
 static/applicable-*.css
+
+# Stylesheets published at runtime by ui/theme.py from ui/css/.
+static/aa-*.css

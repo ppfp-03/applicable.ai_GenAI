@@ -1,99 +1,1735 @@
-"""Set up — the three steps between a CV and a first week.
+"""Onboarding — six steps from CV to a first shortlist (00_Onboarding.html).
 
-Step 2 is the one that matters and the one most products skip: showing what
-was read before anything is built on it. Only the two or three fields we are
-unsure about are put to the user; confirming twenty correct ones would teach
-them to click through without looking.
+Upload CV → Profile → Preferences (explore by swiping, then fine-tune) →
+Shortlist → Clarify → Updated ranking.
 
-Nothing is asked here that a posting has not yet needed. Visas, languages and
-licences become a single question later, when a real role depends on the
-answer.
+Every step renders the mockup's own markup (ui/onboarding_markup.py) with the
+live values filled in; native buttons sit invisibly over each interactive
+element at the position it has on the mockup's stage. The ranking shown is
+the real one: the shortlist is ranked from the roles known on the day of
+onboarding with the UK question unanswered, and the answer given in step 5
+is saved and recomputes everything.
+
+Uploading the CV in step 1 gives the data processing consent, as the note
+under the drop zone says. Matching (step 4 on) does not start without it.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
+import math
+import re
+from pathlib import Path
+
 import streamlit as st
 
-from core import demo, state
-from ui.components import source_line
-from oi.contracts import Source
+from core import clock, explore, jd_match, ranking, store
+from oi.intelligence.eligibility.catalogue import LANGUAGE_CONSTRAINT_ID, LanguageLevel
+from oi.intelligence.extraction import extract_candidate
+from oi.io.pdf import PdfExtractionError, extract_pdf_text
+from oi.providers.kimi import KimiClient
+from oi.providers.model_client import ExtractionError
+from ui import onboarding_markup as M
+from ui import guide, parts, tabs
+from ui.html import CK12, CK_WHITE, NEXT, PREV, WN12, XR, esc, html, lockup, squash
+from ui.palette import orange
+from ui.theme import page_css
 
-data = demo.load()
-state.init(data)
+d = store.data()
+page_css("onboarding")
+page_css("guide")
+STORIES = json.loads((Path(__file__).resolve().parent.parent / "data" / "stories.json").read_text("utf-8"))
+SWIPE_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "swipe.js").read_text(encoding="utf-8")
+EXPAND_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "expand.js").read_text(encoding="utf-8")
+SHORTLIST_JS = (Path(__file__).resolve().parents[1] / "ui" / "js" / "shortlist.js").read_text(encoding="utf-8")
 
-profile = data.profile
-step = st.session_state.setdefault("setup-step", 2)
+#: (key, step number, call to action) — the mockup's own list. The footer's
+#: line beside the call to action comes from ui/guide.py.
+FLOW = [
+    ("1", 1, "Continue"),
+    ("2", 2, "Confirm profile"),
+    ("3b", 3, "Continue"),
+    ("3a", 3, "Find my roles"),
+    ("4", 4, "Answer 1 question"),
+    ("5", 5, "Save answer"),
+    ("6", 6, "Start application"),
+]
+KEYS = [f[0] for f in FLOW]
+STEP_NAMES = ["Upload CV", "Profile", "Preferences", "Shortlist", "Clarify", "Updated ranking"]
 
-st.html(
-    f'<div class="aa aa-steps" style="justify-content:center">'
-    f'<span class="{"done" if step > 1 else "on"}"><i>✓</i>Upload</span>'
-    f'<span class="sep"></span>'
-    f'<span class="{"on" if step == 2 else ""}"><i>2</i>What we understood</span>'
-    f'<span class="sep"></span>'
-    f'<span class="{"on" if step == 3 else ""}"><i>3</i>Essentials</span></div>'
+#: Positions of interactive elements on the mockup stage, relative to the
+#: step body (x, y, w, h). Measured from 00_Onboarding.html.
+TOP = [(409, 6, 119, 36), (530, 6, 93, 36), (624, 6, 128, 36),
+       (754, 6, 104, 36), (861, 6, 93, 36), (956, 6, 156, 36)]
+SEG_3A = [(33, 27, 95, 28), (130, 27, 112, 28)]
+#: The Fine-tune table: first row's segment top, row pitch, segment lefts.
+IMP_Y0, IMP_DY = 189, 48
+IMP_X = [588, 697, 806, 915]
+ACTS_3B = [(422, 645, 61, 104), (505, 652, 49, 90), (576, 645, 72, 104)]
+#: The Undo button, left of "Not for me" (see UNDO).
+UNDO_3B = (354, 652, 46, 90)
+SEG_3B = [(24, 4, 95, 26), (121, 4, 111, 26)]
+OPTS_5 = [(230, 375, 600, 68), (230, 453, 600, 68), (230, 531, 600, 68)]
+FILT_6 = [(33, 107, 56, 26), (91, 107, 157, 26), (249, 107, 75, 26)]
+#: Where a CV reading error sits: in the file card's place, below the drop zone.
+CV_STATUS = (428, 458, 664)
+#: The ✕ in the file card's top right corner, which removes the CV read.
+CV_REMOVE = (1058, 468, 24, 24)
+#: Step 2's panel has a fixed width and is centred on the stage, so its
+#: controls are placed from the stage's middle: (dx, y, w, h).
+#: The "Edit profile" chip beside the title.
+EDIT_2 = (453, 35, 130, 35)
+#: The call to action on each empty required card: Work authorization in the
+#: left column, Sponsorship in the right one.
+CTA_2 = {"wa": (-559, 726, 201, 33), "sp": (32, 726, 158, 33)}
+
+IMPORTANCE = ["Must have", "Important", "Nice to have", "Don’t mind"]
+
+# ───────────────────────── State ─────────────────────────
+
+S = st.session_state
+S.setdefault("ob_step", "1")
+S.setdefault("ob_prefs", None)  # the Fine-tune rows being edited (see pref_rows)
+S.setdefault("ob_swipes", [])  # one verdict per story seen, in story order: "r" | "l" | "u"
+S.setdefault("ob_tick", 0)
+S.setdefault("ob_uk", "unsure")  # the answer picked in step 5, for the country in ob_ask
+S.setdefault("ob_filter", 0)
+S.setdefault("ob_file", None)  # (name, size in bytes) of the CV read
+S.setdefault("ob_cv", None)
+S.setdefault("ob_cv_n", 0)  # bumped to give the uploader a new key, emptying it
+S.setdefault("ob_taught", False)  # the Explore practice card was swiped
+
+#: The work authorization question must be answered in step 2 before any
+#: later step opens. Sponsorship may stay unknown (D-050).
+GATE = KEYS.index("2")
+NEEDS_WORK_AUTH = "Add your work authorization in Edit profile to continue."
+#: The data processing consent, given by uploading a CV, must be in place
+#: before matching starts in step 4.
+MATCHING = KEYS.index("4")
+NEEDS_CONSENT = "Upload your CV in step 1 to continue: uploading it gives your consent to data processing."
+#: Shown under "Choose file": pressing it and uploading gives the consent.
+CONSENT_NOTE = (
+    '<div class="u-consent">By uploading your CV you consent to Applicable.ai processing your data '
+    "to check and rank opportunities. Nothing is sent to employers.</div>"
+)
+#: The error notice's icon: a red warning triangle.
+WARNING = (
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.6a2 2 0 0 1 3.4 0l8.1 14.1A2 2 0 0 1 20.1 21H3.9a2 2 0 0 1-1.7-3.3z" '
+    'fill="#E5392F"/><path d="M12 8.5v5.2" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>'
+    '<circle cx="12" cy="17.1" r="1.3" fill="#fff"/></svg>'
+)
+#: Shown when "Confirm profile" is pressed with a required card still empty.
+MISSING_INFO = "Complete the missing information to continue: work authorization."
+
+
+def refusal(k: str) -> str | None:
+    """Why step `k` cannot open yet: past step 2 without the declaration, or
+    at matching without the consent. None when it can."""
+    if KEYS.index(k) > GATE and not store.work_auth_complete():
+        return NEEDS_WORK_AUTH
+    if KEYS.index(k) >= MATCHING and not store.consent_given():
+        return NEEDS_CONSENT
+    return None
+
+
+def blocked(k: str) -> bool:
+    """Whether step `k` cannot open yet (see refusal)."""
+    return refusal(k) is not None
+
+
+def to_ask() -> str | None:
+    """The country step 5 asks about: the work question the shortlist (step 4)
+    still waits on, or else the one already answered there, so it can be changed."""
+    shortlist = store.ranked(store.answers(), d.profile["onboarded"])[:5]
+    return store.pending_work_question(shortlist) or S.get("ob_asked")
+
+
+def settled() -> bool:
+    """Whether step 2's declaration leaves nothing to ask: step 5 is skipped."""
+    return store.work_auth_complete() and to_ask() is None
+
+
+def resolve_step(k: str) -> str:
+    """The step `k` leads to: step 5 is skipped when there is nothing to ask."""
+    return "6" if k == "5" and settled() else k
+
+
+def place(country: str) -> str:
+    """A country as the question names it: "the UK", else its name."""
+    return "the UK" if country == "GB" else store.country_name(country)
+
+
+def field_label(country: str) -> str:
+    """A country as its profile field names it: "UK", else its name."""
+    return "UK" if country == "GB" else store.country_name(country)
+
+
+def said(country: str) -> str | None:
+    """The answer the declaration gives for `country`: "yes", "no", "unsure", or None."""
+    return store.work_answer(country) or ("unsure" if store.work_auth() is not None else None)
+
+
+def open_question() -> None:
+    """Step 5 opens on the question to ask, with the answer the profile holds now."""
+    S["ob_ask"] = country = to_ask() or "GB"
+    S["ob_uk"] = said(country) or "unsure"
+
+
+qs = st.query_params.get("step")
+if qs in KEYS and S.get("_ob_qs") != qs:
+    S["_ob_qs"] = qs
+    why = refusal(qs)
+    S["ob_step"] = resolve_step(qs) if why is None else "2" if why == NEEDS_WORK_AUTH else "1"
+    if S["ob_step"] == "5":
+        open_question()
+
+step = S["ob_step"]
+idx = KEYS.index(step)
+key, num, cta = FLOW[idx]
+info = guide.line(step, num, len(STEP_NAMES))
+
+
+def finish() -> None:
+    """Leaving the wizard for the first time: the guided tour comes next."""
+    if store.stage() == "onboarding":
+        store.set_stage("tour")
+        S["tour_step"] = 0
+
+
+def go(k: str) -> None:
+    if why := refusal(k):
+        S["ob_notice"] = why
+        return
+    S["ob_step"] = k = resolve_step(k)
+    if k == "4":
+        S["ob_tick"] = 0
+    if k == "5":
+        open_question()
+
+
+def explored() -> bool:
+    """Whether every Explore story has a verdict: Fine-tune waits for it."""
+    return len(S["ob_swipes"]) >= len(STORIES["stories"])
+
+
+def to_fine_tune() -> None:
+    """From Explore to Fine-tune, with the rows the swipes now suggest."""
+    S["ob_prefs"] = pref_rows()
+    go("3a")
+
+
+#: The answers the shortlist is first ranked with. A UK answer declared in
+#: step 2 is used as given; without a declaration the UK starts unanswered.
+BEFORE = store.answers() if store.work_auth_complete() else {**store.answers(), "uk_work": None}
+AS_OF = d.profile["onboarded"]
+
+
+#: Shown when a PDF has no usable text. Only text-based PDFs are read: there
+#: is no OCR, so a scan fails here rather than reaching the model.
+NO_PDF_TEXT = "No usable text was found in this PDF. Scanned PDFs/OCR are not supported in this MVP."
+
+
+def read_cv(pdf_bytes: bytes) -> None:
+    """Extract a profile from an uploaded CV and store it, or store why not.
+
+    The same file uploaded again reuses the stored profile rather than
+    calling the model a second time. Failures are stored, never papered over
+    with the demo profile.
+    """
+    # Same hash extract_pdf_text puts on the SourceDocument, so it can be
+    # checked before any reading or model call happens.
+    content_hash = hashlib.sha256(pdf_bytes).hexdigest()
+    if store.has_candidate_for(content_hash):
+        return
+    try:
+        document = extract_pdf_text(pdf_bytes, f"cv-{content_hash[:12]}")
+    except PdfExtractionError:
+        store.set_extraction_error(NO_PDF_TEXT)
+        return
+    try:
+        store.set_candidate(extract_candidate(document, KimiClient()))
+    except (ValueError, RuntimeError, ExtractionError) as exc:
+        store.set_extraction_error(str(exc))
+
+
+def overlay(name: str, box, label: str, on_click=None, args=None, shortcut=None) -> bool:
+    """A native button covering one element of the mockup at `box`."""
+    x, y, w, h = box
+    st.markdown(
+        f"<style>.stApp .st-key-oo-{name}{{left:{x}px;top:{y}px}}"
+        f".stApp .st-key-oo-{name} button{{width:{w}px;height:{h}px}}</style>",
+        unsafe_allow_html=True,
+    )
+    return st.button(label, key=f"oo-{name}", on_click=on_click, args=args, shortcut=shortcut)
+
+
+# ───────────────────────── Step markup ─────────────────────────
+
+
+REMOVE_X = (
+    '<span class="u-x"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" '
+    'stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>'
 )
 
-_, middle, _ = st.columns([1, 2.4, 1])
 
-with middle:
-    st.html(
-        '<div class="aa" style="margin-top:30px">'
-        '<p class="aa-label">Step 2 of 3 · about a minute</p>'
-        '<h1 class="aa-h-title" style="margin-top:8px">This is what we '
-        "understood</h1>"
-        '<p class="aa-lead" style="margin-top:7px">We read your CV once. Correct '
-        "anything that is wrong — every verdict later rests on it.</p></div>"
+def remove_cv() -> None:
+    """Forget the CV shown in the file card and empty the uploader, so another can be uploaded."""
+    S["ob_file"] = None
+    S["ob_cv"] = None
+    S["ob_cv_n"] += 1
+
+
+def step1(reading: tuple[str, int] | None = None) -> str:
+    """The upload screen. Its file card shows the CV being read (`reading`) or the one read."""
+    body = M.S_1
+    shown = reading or S["ob_file"]
+    card = ""
+    if shown:
+        name, size = shown
+        status, bar = ("Reading your CV…", '<div class="u-pb run"><i></i></div>') if reading else (
+            "Read · 100%", '<div class="u-pb"><i style="width:100%"></i></div>')
+        card = (
+            f'<div class="w-card u-file{"" if reading else " rm"}"><span class="u-pdf">PDF</span><div style="flex:1">'
+            f'<div style="display:flex;justify-content:space-between"><span class="u-fn">{esc(name)}</span>'
+            f'<span class="u-fm">{status}</span></div><div class="u-fm">{max(1, round(size / 1024))} KB</div>{bar}'
+            f'</div>{"" if reading else REMOVE_X}</div>'
+        )
+    body = body.replace("Choose file</div>", f"Choose file</div>{CONSENT_NOTE}", 1)
+    body = body.replace("<!-- CV_FILE_CARD -->", card)
+    return body
+
+
+#: Profile sections read from the CV: card title and CandidateProfile field.
+CV_SECTIONS = [("Skills", "skills"), ("Education", "education"), ("Experience", "experience")]
+#: The languages card: its title and the pseudo-field its answers are read
+#: under (the HC_LANGUAGE eligibility answers, not a CandidateProfile section).
+LANGUAGES = ("Languages", "languages")
+#: How the languages card names the languages the rule catalogue knows, by
+#: ISO 639-1 code. Any other code is shown as the code itself.
+LANGUAGE_NAMES = {
+    "en": "English", "it": "Italian", "de": "German", "fr": "French",
+    "es": "Spanish", "nl": "Dutch", "zh": "Mandarin", "ja": "Japanese",
+}
+#: How many skills a card lists before summarising the rest as "+N".
+SKILL_CHIPS = 8
+#: How many entries an education or experience card lists before "+N more".
+CARD_LINES = 3
+
+#: The mockup's own icons, by card title, and its source-line document icon.
+ICONS = {title: icon for icon, title in re.findall(r'<div class="ic">(.*?)</div><b>(.*?)</b>', M.S_2)}
+DOC_ICON = re.search(r'<div class="p-src">(<svg.*?</svg>)', M.S_2).group(1)
+FOUND = '<span class="w-b ok"><i></i>Found</span>'
+NOT_FOUND = '<span class="w-b ne"><i></i>Not found</span>'
+NOT_READ = '<span class="w-b ne"><i></i>Not read</span>'
+DECLARED = '<span class="w-b ok"><i></i>Declared</span>'
+NOT_DECLARED = '<span class="w-b ne"><i></i>Not declared</span>'
+REQUIRED = '<span class="w-b am"><i></i>Required</span>'
+#: The same badge once "Confirm profile" was pressed without it.
+MISSING = '<span class="w-b rd"><i></i>Required</span>'
+#: Each work authorization card's call to action, by card title: it opens the
+#: editor. Only the first is required; sponsorship may stay unknown (D-050).
+REQUIRED_CTA = {"Work authorization": "+ Add work authorization", "Sponsorship": "+ Add sponsorship"}
+#: Hover text of a value the user edited, which no CV quote backs.
+EDITED = "Edited by you"
+PENCIL = (
+    '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M10.5 2.5l3 3L6 13H3v-3z" stroke="currentColor" '
+    'stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>'
+)
+#: The corner glyph of a card that opens: two arrows pointing apart.
+EXPAND = (
+    '<span class="xp-ic" aria-hidden="true"><svg width="11" height="11" viewBox="0 0 16 16">'
+    '<path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9" stroke="currentColor" '
+    'stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+)
+
+
+#: The editor tab each card's own edit button opens on its own.
+SECTION_TAB = {"Skills": "Skills", "Education": "Education", "Experience": "Experience",
+               "Languages": "Languages", "Work authorization": "Work authorization", "Sponsorship": "Work authorization"}
+
+
+def edit_key(title: str) -> str:
+    """The hidden button that opens a card's section alone in the editor."""
+    return f"xe-{title.split()[0].lower()}"
+
+
+def profile_card(title: str, badge: str, body: str, src: str = "", cls: str = "", full: str = "",
+                 edit: bool = False) -> str:
+    """One section card. `full` is everything the card holds, uncut: pressing
+    the card opens it in place (ui/js/expand.js). It defaults to `body`.
+    With `edit`, the opened card offers to edit this section alone."""
+    source = f'<div class="p-src">{DOC_ICON}{src}</div>' if src else ""
+    data = f' data-edit="{edit_key(title)}"' if edit else ""
+    return (
+        f'<div class="w-card xp p-s{cls}"{data} role="button" tabindex="0" aria-haspopup="dialog" '
+        f'aria-label="Open {title}"><div class="p-h"><div class="ic">{ICONS[title]}</div>'
+        f"<b>{title}</b>{badge}</div>{body}{source}"
+        f'<div class="xp-full">{full or body}</div>{EXPAND}</div>'
     )
 
-    st.write("")
-    summary = st.columns(4)
-    cells = [
-        (len(profile["experience"]), "roles"),
-        (14, "months of work"),
-        (len(profile["skills"]), "skills we can quote"),
-        (len(profile["languages"]), "languages"),
+
+def fact_quote(profile, fact) -> str:
+    """The CV text a fact rests on, for hovering over the fact."""
+    if store.is_edited(profile, fact):
+        return EDITED
+    quotes = {e.evidence_id: e.quote for e in profile.provenance.evidence}
+    return " … ".join(" ".join(quotes[i].split()) for i in fact.evidence_ids)
+
+
+def section_facts(profile, field: str) -> list:
+    """What one card shows: a CandidateProfile section, or for "languages"
+    the HC_LANGUAGE answers the CV stated."""
+    if field == LANGUAGES[1]:
+        return list(profile.eligibility_answers.get(LANGUAGE_CONSTRAINT_ID, []))
+    return getattr(profile, field)
+
+
+def section_quotes(profile, field: str) -> list[str]:
+    """The distinct CV quotes behind one section, in order. Several facts
+    often rest on the same line of the CV; that line counts once. Values the
+    user edited rest on no CV quote and are left out."""
+    facts = [f for f in section_facts(profile, field) if not store.is_edited(profile, f)]
+    return list(dict.fromkeys(fact_quote(profile, f) for f in facts))
+
+
+def language_label(answer) -> str:
+    """The language and its level on the scale the CV stated it on, e.g.
+    "English · C1" or "Mandarin · HSK 4", or that no level could be read."""
+    code = answer.answer_key.removeprefix("level_")
+    level = LanguageLevel.parse(answer.value)
+    return f"{LANGUAGE_NAMES.get(code, code.upper())} · {level.label if level else 'level not stated'}"
+
+
+def quote_count(n: int) -> str:
+    return f"{n} quote{'s' if n != 1 else ''}"
+
+
+def swap(body: str, pattern: str, new: str) -> str:
+    """Replace the one fragment of mockup markup `pattern` matches.
+
+    Raises:
+        RuntimeError: If the fragment is missing. The mockup's own content is
+            the demo candidate's, so a silent miss would show it as extracted.
+    """
+    # A function, so backslashes in CV text are never read as group references.
+    out, n = re.subn(pattern, lambda _m: new, body, count=1, flags=re.S)
+    if n != 1:
+        raise RuntimeError(f"Step 2 mockup markup has changed: nothing matches {pattern!r}.")
+    return out
+
+
+def cv_card(profile, title: str, field: str) -> str:
+    """A card for one section read from the CV: its facts, or why there are none."""
+    if profile is None:
+        return profile_card(title, NOT_READ, '<div class="p-v">Upload your CV in step 1</div>')
+    facts = section_facts(profile, field)
+    if not facts:
+        return profile_card(title, NOT_FOUND, '<div class="p-v">Not stated in your CV</div>', edit=True)
+    text = language_label if field == LANGUAGES[1] else (lambda fact: fact.value)
+
+    def item(fact, tag: str, cls: str = "") -> str:
+        return f'<{tag}{cls} title="{esc(fact_quote(profile, fact))}">{esc(text(fact))}</{tag}>'
+
+    if field in ("skills", LANGUAGES[1]):
+        chips = "".join(item(f, "span", ' class="w-chip"') for f in facts[:SKILL_CHIPS])
+        if len(facts) > SKILL_CHIPS:
+            chips += f'<span class="w-chip">+{len(facts) - SKILL_CHIPS}</span>'
+        body = f'<div class="p-chips">{chips}</div>'
+        # Opened: every chip, then each CV line they were read from, once.
+        full = "".join(item(f, "span", ' class="w-chip"') for f in facts)
+        full = f'<div class="p-chips">{full}</div>'
+        full += "".join(f'<div class="xp-q">{esc(q)}</div>' for q in section_quotes(profile, field))
+    else:  # one line per entry, so three roles read as three roles
+        body = "".join(item(f, "div", ' class="p-v p-e"') for f in facts[:CARD_LINES])
+        if len(facts) > CARD_LINES:
+            body += f'<div class="p-m">+{len(facts) - CARD_LINES} more</div>'
+        # Opened: every entry in full, each above the CV line it rests on.
+        full = "".join(
+            f'<div class="xp-it"><div class="p-v">{esc(text(f))}</div>'
+            f'<div class="xp-q">{esc(fact_quote(profile, f))}</div></div>'
+            for f in facts
+        )
+    quotes = len(section_quotes(profile, field))
+    edited = sum(store.is_edited(profile, f) for f in facts)
+    src = [f"From your CV · {quote_count(quotes)}"] if quotes else []
+    src += [f"{edited} edited by you"] if edited else []
+    return profile_card(title, FOUND, body, " · ".join(src), full=full, edit=True)
+
+
+def country_list(codes: list[str]) -> str:
+    """Declared countries as the user chose them: the EU as one entry."""
+    eu = store.eu_codes()
+    names = ["EU"] if set(eu) <= set(codes) else []
+    names += [store.country_name(c) for c in codes if not (names and c in eu)]
+    return ", ".join(names)
+
+
+def work_auth_cards() -> list[str]:
+    """The work authorization and sponsorship cards: the user's declaration,
+    or, before it, a note that work authorization is required to continue.
+    Sponsorship is never required, and unknown sponsorship shows as such."""
+    decl = store.work_auth()
+    if not store.work_auth_complete():
+        # A clarification answered before step 2 (e.g. on a role page) is
+        # shown as it is; step 2's question stays required all the same.
+        missing = S.get("ob_missing", False)
+        badges = {"Work authorization": (MISSING, " miss") if missing else (REQUIRED, ""),
+                  "Sponsorship": (NOT_DECLARED, "")}
+        so_far = authorization_value(decl) if decl is not None else "Not declared yet"
+        notes = {"Work authorization": f'<div class="p-m">Declared so far: {esc(so_far)}</div>'
+                 if so_far != "Not declared yet" else "", "Sponsorship": ""}
+        return [
+            sponsorship_card(decl) if t == "Sponsorship" and decl is not None else profile_card(
+                t, badges[t][0],
+                f'{notes[t]}<div class="p-act"><span class="w-chip add p-cta {key}">{cta}</span></div>',
+                cls=badges[t][1],
+                # Opened, the call to action would press nothing: it is left
+                # out, and the panel's own edit button opens the declaration.
+                full=f'<div class="p-v">Not added yet</div>{notes[t]}',
+                edit=True,
+            )
+            for key, (t, cta) in zip(CTA_2, REQUIRED_CTA.items())
+        ]
+    return [authorization_card(decl), sponsorship_card(decl)]
+
+
+def declared_lists(decl: dict, true: str, false: str) -> tuple[list[str], list[str], list[str]]:
+    """The platform countries where one fact is true, false, and not declared."""
+    codes = [c["code"] for c in store.markets()]
+    yes, no = decl.get(true, []), decl.get(false, [])
+    return yes, no, [c for c in codes if c not in yes and c not in no]
+
+
+def authorization_value(decl: dict) -> str:
+    """Where the user can work, as declared. "None of these" says so."""
+    yes, no, unknown = declared_lists(decl, "authorized", "not_authorized")
+    if yes:
+        return country_list(yes)
+    if not unknown:
+        return "None of our countries"
+    return f"Not in {country_list(no)}" if no else "Not declared yet"
+
+
+def authorization_card(decl: dict) -> str:
+    return profile_card("Work authorization", DECLARED, f'<div class="p-v">{esc(authorization_value(decl))}</div>',
+                        "Declared by you", edit=True)
+
+
+def sponsorship_card(decl: dict) -> str:
+    """Where sponsorship is needed and where not, as declared. A country left
+    out, or "None of these", declares nothing: it shows as not declared yet."""
+    yes, no, unknown = declared_lists(decl, "sponsorship", "no_sponsorship")
+    if not unknown and not yes:
+        return profile_card("Sponsorship", DECLARED, '<div class="p-v">Not needed anywhere</div>', "Declared by you",
+                            edit=True)
+    parts = [f"Needed in {country_list(yes)}"] * bool(yes) + [f"Not needed in {country_list(no)}"] * bool(no)
+    if not parts:
+        return profile_card("Sponsorship", NOT_DECLARED, '<div class="p-v">Not declared yet</div>'
+                            '<div class="p-m">We’ll ask if a role needs it</div>', edit=True)
+    note = '<div class="p-m">Not declared yet for other countries</div>' if unknown else ""
+    return profile_card("Sponsorship", DECLARED, f'<div class="p-v">{esc(" · ".join(parts))}</div>{note}', "Declared by you",
+                        edit=True)
+
+
+def languages_card(profile) -> str:
+    """The languages the CV stated, each with its level and the quote it came
+    from. A read CV that states none says so, like any other CV section."""
+    if profile is None:
+        return profile_card(LANGUAGES[0], NOT_READ, '<div class="p-v">Not read from your CV</div>')
+    return cv_card(profile, *LANGUAGES)
+
+
+def step2() -> str:
+    """What was read from the CV, each value backed by the quote it came from.
+
+    Nothing here comes from the demo profile. Sections the CV extraction does
+    not read are marked as such rather than filled in.
+    """
+    profile = store.candidate()
+    body = M.S_2
+    if profile is None:
+        sub = "No CV read yet. <b>Upload your CV in step 1</b> to fill in your profile."
+    else:
+        found = sum(bool(getattr(profile, field)) for _, field in CV_SECTIONS)
+        sub = f"{found} of {len(CV_SECTIONS)} sections found in your CV. <b>Each value is backed by a quote from it.</b>"
+    # The two cards the user fills in share the last row.
+    cards = [cv_card(profile, title, field) for title, field in CV_SECTIONS] + [languages_card(profile)] + work_auth_cards()
+    # The mockup's CV panel is left out: each card shows its quotes when opened.
+    body = swap(body, r'\n<div class="p-r">.*', "")
+    # Always offered: without a CV the editor still takes the mandatory declaration.
+    body = swap(
+        body, re.escape('<div class="w-h1">Here’s what we found</div>'),
+        f'<div class="p-top"><div class="w-h1">Here’s what we found</div>'
+        f'<span class="w-chip p-edit">{PENCIL}Edit profile</span></div>',
+    )
+    body = swap(body, r'<div class="w-sub">.*?</div>', f'<div class="w-sub">{sub}</div>')
+    return swap(body, r'<div class="p-grid">.*</div></div>$', f'<div class="p-grid">{"".join(cards)}</div></div>')
+
+
+#: The editor's tabs: title, CandidateProfile field, entry icon and add button
+#: label. Skills are chips; the other entries have one field per part.
+EDIT_TABS = [
+    ("Experience", "experience", ":material/work:", "Add experience"),
+    ("Education", "education", ":material/school:", "Add education"),
+    ("Skills", "skills", None, None),
+]
+#: Sections whose entries have their own fields, with the label of each part
+#: of the value (store.split_entry).
+EDIT_PARTS = {
+    "experience": ("Role", "Company", "Dates"),
+    "education": ("Degree", "Institution", "Dates"),
+}
+
+
+#: Placeholder examples for each part of an entry.
+EDIT_EXAMPLES = {
+    "experience": ("Strategy Consultant", "Accenture", "Jun 2026 – Aug 2026"),
+    "education": ("MSc in International Management", "Fudan University", "Sep 2025 – Jul 2027"),
+}
+
+
+#: The work authorization tab: its title, the "none" choice, and the switch
+#: that answers the EU country by country instead of as one choice.
+WORK_TAB = "Work authorization"
+NONE = "NONE"
+EU_SPLIT = "ed-eu-split"
+
+
+def work_auth_choices() -> list[str]:
+    """Pill options: the EU as one choice (or, once split, each EU country),
+    then the other countries, then "none"."""
+    eu = list(store.eu_codes()) if S.get(EU_SPLIT) else ["EU"]
+    return [*eu, *(c["code"] for c in store.markets() if not c["eu"]), NONE]
+
+
+def authorized_codes(chosen: list[str]) -> list[str]:
+    """The countries an answer covers, the EU expanded, in market order."""
+    covered = set(chosen) | (set(store.eu_codes()) if "EU" in chosen else set())
+    return [c["code"] for c in store.markets() if c["code"] in covered]
+
+
+def on_eu_split() -> None:
+    """Carry the answer across the switch: "EU" becomes its countries, and
+    all of them together become "EU" again; a partial EU answer is dropped."""
+    clear_error()
+    eu = store.eu_codes()
+    chosen = list(S.get("ed-wa-auth") or [])
+    if S[EU_SPLIT]:
+        chosen = authorized_codes(chosen) + ([NONE] if NONE in chosen else [])
+    else:
+        whole = set(eu) <= set(chosen)
+        chosen = (["EU"] if whole else []) + [c for c in chosen if c not in eu]
+    S["ed-wa-auth"] = chosen
+
+
+def work_auth_label(value: str) -> str:
+    if value == "EU":
+        return "EU · all EU countries"
+    return "None of these" if value == NONE else store.country_name(value)
+
+
+def draft_work_auth() -> None:
+    """Fill the question from the saved declaration, or leave it blank. An
+    answer covering only part of the EU opens with the EU split; "None of
+    these" when every platform country is declared not authorized."""
+    decl = store.work_auth() or {}
+    authorized = decl.get("authorized", [])
+    eu = store.eu_codes()
+    part = set(eu) & set(authorized)
+    S[EU_SPLIT] = bool(part) and part != set(eu)
+    auth = list(authorized) if S[EU_SPLIT] else (["EU"] if part else []) + [c for c in authorized if c not in eu]
+    everywhere_not = {c["code"] for c in store.markets()} <= set(decl.get("not_authorized", []))
+    S["ed-wa-auth"] = auth or ([NONE] if everywhere_not else [])
+
+
+def read_work_auth() -> list[str] | None:
+    """The countries chosen, the EU expanded, or None for "None of these".
+    What the answer declares is store.answer_work_question's (D-050).
+
+    Raises:
+        ValueError: If the question is unanswered or mixes "none" with countries.
+    """
+    chosen = list(S.get("ed-wa-auth") or [])
+    if not chosen:
+        raise ValueError("Tell us where you can work without employer sponsorship, or choose “None of these”.")
+    if NONE in chosen and len(chosen) > 1:
+        raise ValueError("“None of these” can’t be combined with countries.")
+    return None if chosen == [NONE] else authorized_codes(chosen)
+
+
+def open_editor(tab: str | None = None, only: bool = False) -> None:
+    """Start a draft of the CV sections, the languages and the work
+    authorization answers, and open the editor on `tab` (or its first tab);
+    with `only`, on that section alone, from a card's own edit button.
+    The editor changes the draft only; the profile changes on "Save changes",
+    so Cancel or closing loses nothing."""
+    profile = store.candidate()
+    S["ed_draft"] = (
+        {field: [f.value for f in getattr(profile, field)] for _, field in CV_SECTIONS}
+        | {store.LANGUAGES: [[a.answer_key.removeprefix("level_"), a.value] for a in section_facts(profile, LANGUAGES[1])]}
+        if profile else {}
+    )
+    S["ed_tab"] = tab
+    S["ed_only"] = only and tab is not None
+    S["ed_open"] = S.get("ed_open", 0) + 1
+    S["ed_rev"] = S.get("ed_rev", 0) + 1
+    S["ed-skill-new"] = ""
+    S.pop("ed_error", None)
+    draft_work_auth()
+
+
+def entry_key(field: str, i: int, part: int) -> str:
+    # The revision renumbers every field after a removal, so no field keeps
+    # the text of the entry that was above it.
+    return f"ed-{field}-{S['ed_rev']}-{i}-{part}"
+
+
+def sync_draft() -> None:
+    """Copy what was typed into the draft, before the draft changes shape."""
+    if not S["ed_draft"]:  # no CV: only the work authorization tab
+        return
+    for field in EDIT_PARTS:
+        S["ed_draft"][field] = [
+            store.join_entry(*(S.get(entry_key(field, i, n), part) for n, part in enumerate(store.split_entry(v))))
+            for i, v in enumerate(S["ed_draft"][field])
+        ]
+    S["ed_draft"][store.LANGUAGES] = [
+        [S.get(lang_key("lang", i), code), S.get(lang_key("lvl", i), level)]
+        for i, (code, level) in enumerate(S["ed_draft"][store.LANGUAGES])
     ]
-    for column, (value, label) in zip(summary, cells):
-        with column:
-            st.html(
-                f'<div class="aa aa-well" style="padding:16px">'
-                f'<span style="font:800 26px/1 var(--font-display)">{value}</span>'
-                f'<p class="aa-small" style="margin-top:6px">{label}</p></div>'
-            )
 
-    st.write("")
-    with st.container(border=True, key="understood-card"):
-        st.html(
-            f'<p class="aa aa-label" style="color:var(--clarify)">'
-            f'{len(profile["to_confirm"])} things we could not read with '
-            f"confidence</p>"
+
+def lang_key(part: str, i: int) -> str:
+    """The language ("lang") or level ("lvl") field of language row `i`."""
+    return f"ed-{part}-{S['ed_rev']}-{i}"
+
+
+def add_language() -> None:
+    sync_draft()
+    S["ed_draft"][store.LANGUAGES].append([None, None])
+
+
+def remove_language(i: int) -> None:
+    sync_draft()
+    del S["ed_draft"][store.LANGUAGES][i]
+    S["ed_rev"] += 1
+
+
+def language_changed(i: int) -> None:
+    """A level belongs to its language's scale: another language starts without one."""
+    if S.get(lang_key("lvl", i)) not in store.language_levels().get(S.get(lang_key("lang", i)), []):
+        S[lang_key("lvl", i)] = None
+
+
+def read_languages() -> list[tuple[str, str | None]]:
+    """The languages to save, each with its level. Rows without a language
+    are dropped. A level may stay unstated only where the CV left it so.
+
+    Raises:
+        ValueError: If a language added or changed here has no level.
+    """
+    stated = {(a.answer_key.removeprefix("level_"), a.value) for a in section_facts(store.candidate(), LANGUAGES[1])}
+    kept = [(code, level) for code, level in S["ed_draft"][store.LANGUAGES] if code]
+    for code, level in kept:
+        if level is None and (code, None) not in stated:
+            raise ValueError(f"Choose a level for {LANGUAGE_NAMES.get(code, code.upper())}.")
+    return kept
+
+
+def level_label(value: str) -> str:
+    """A level as the user reads it: "C1", "HSK 4", "JLPT N2", "Fluent"."""
+    label = LanguageLevel.parse(value).label
+    return label[:1].upper() + label[1:]
+
+
+def add_entry(field: str) -> None:
+    sync_draft()
+    S["ed_draft"][field].append("")
+
+
+def remove_entry(field: str, i: int) -> None:
+    sync_draft()
+    del S["ed_draft"][field][i]
+    S["ed_rev"] += 1
+
+
+def remove_skill(i: int) -> None:
+    sync_draft()
+    del S["ed_draft"]["skills"][i]
+    S["ed_rev"] += 1
+
+
+def take_skill() -> None:
+    """Add the skill typed in the skill field to the draft, once."""
+    value = " ".join(S.get("ed-skill-new", "").split())
+    if value and value not in S["ed_draft"]["skills"]:
+        S["ed_draft"]["skills"].append(value)
+
+
+def add_skill() -> None:
+    take_skill()
+    S["ed-skill-new"] = ""  # allowed here: callbacks run before the field is drawn
+
+
+def save_editor() -> None:
+    """Save everything, or nothing: the work authorization answers are
+    mandatory, so an incomplete tab keeps the editor open with the reason."""
+    # A section edited alone saves that section only: a CV section never
+    # needs the work authorization answered, and that answer never saves the CV.
+    alone = S["ed_tab"] if S.get("ed_only") else None
+    cv = bool(S["ed_draft"]) and alone != WORK_TAB
+    try:
+        if cv:
+            sync_draft()
+            languages = read_languages()
+        if alone in (None, WORK_TAB):
+            store.answer_work_question(read_work_auth())
+            S["ob_uk"] = store.uk() or "unsure"  # step 5 opens on it (see open_question)
+    except ValueError as exc:
+        S["ed_error"] = str(exc)
+        return
+    S.pop("ed_error", None)
+    if cv:
+        take_skill()  # one typed but not yet added with Enter
+        store.save_edits({**S["ed_draft"], store.LANGUAGES: languages})
+    S.pop("ed_draft")
+
+
+def cancel_editor() -> None:
+    S.pop("ed_draft", None)
+    S.pop("ed_error", None)
+
+
+def clear_error() -> None:
+    """An answer changed: the last save's error no longer applies."""
+    S.pop("ed_error", None)
+
+
+def work_auth_tab() -> None:
+    """The mandatory question. Declared by the user, never read from the CV
+    or inferred from citizenship. A country chosen needs no sponsorship; one
+    left out is not declared, and sponsorship is asked later if it matters."""
+    st.markdown(
+        '<div class="ed-sub">Required to continue. Countries you leave out stay undeclared: '
+        "we’ll ask about them if a role there needs it.</div>",
+        unsafe_allow_html=True,
+    )
+    st.pills("Where can you work without employer sponsorship?", work_auth_choices(), selection_mode="multi",
+             key="ed-wa-auth", format_func=work_auth_label, help="Choosing EU selects every EU country we cover.",
+             on_change=clear_error)
+    st.checkbox("Answer EU countries one by one", key=EU_SPLIT, on_change=on_eu_split)
+
+
+def languages_tab(rows: list) -> None:
+    """One card per language: which language, and the level on its own scale."""
+    levels = store.language_levels()
+    if not rows:
+        st.markdown('<div class="ed-none">No languages yet.</div>', unsafe_allow_html=True)
+    for i, (code, level) in enumerate(rows):
+        others = {c for j, (c, _) in enumerate(rows) if j != i}
+        choices = [c for c in levels if c not in others]
+        chosen = S.get(lang_key("lang", i), code)
+        with st.container(key=f"ed-row-languages-{i}"):
+            with st.container(horizontal=True, vertical_alignment="bottom"):
+                st.selectbox("Language", choices, index=None if lang_key("lang", i) in S or code not in choices else choices.index(code),
+                             key=lang_key("lang", i), format_func=lambda c: LANGUAGE_NAMES.get(c, c.upper()),
+                             placeholder="Choose a language", on_change=language_changed, args=(i,))
+                allowed = levels.get(chosen, [])
+                st.selectbox("Level", allowed, index=None if lang_key("lvl", i) in S or level not in allowed else allowed.index(level),
+                             key=lang_key("lvl", i), format_func=level_label, disabled=not chosen,
+                             placeholder="Choose a level" if chosen else "Choose a language first")
+                st.button("", icon=":material/delete:", key=f"ed-del-languages-{S['ed_rev']}-{i}",
+                          type="tertiary", on_click=remove_language, args=(i,), help="Remove")
+    st.button("Add language", icon=":material/add:", key="ed-add-languages", on_click=add_language,
+              disabled=len(rows) >= len(levels))
+
+
+def cv_tab(title: str, field: str, icon: str | None, add: str | None, draft: dict) -> None:
+    """One CV section of the editor: skill chips, or one row per entry."""
+    if icon is None:  # skills
+        with st.container(key="ed-chips", horizontal=True, gap="small"):
+            for i, skill in enumerate(draft["skills"]):
+                st.button(skill, icon=":material/close:", key=f"ed-chip-{S['ed_rev']}-{i}",
+                          on_click=remove_skill, args=(i,), help="Remove")
+        st.text_input("Add a skill", key="ed-skill-new", placeholder="Add a skill and press Enter",
+                      label_visibility="collapsed", on_change=add_skill, icon=":material/add:")
+        return
+    if not draft[field]:
+        st.markdown(f'<div class="ed-none">No {title.lower()} yet.</div>', unsafe_allow_html=True)
+    labels = EDIT_PARTS[field]
+    for i, value in enumerate(draft[field]):
+        parts = store.split_entry(value)
+        with st.container(key=f"ed-row-{field}-{i}"):
+            with st.container(horizontal=True, vertical_alignment="bottom"):
+                st.text_input(labels[0], value=parts[0], key=entry_key(field, i, 0), icon=icon,
+                              placeholder=f"e.g. {EDIT_EXAMPLES[field][0]}")
+                st.button("", icon=":material/delete:", key=f"ed-del-{field}-{S['ed_rev']}-{i}",
+                          type="tertiary", on_click=remove_entry, args=(field, i), help="Remove")
+            with st.container(horizontal=True):
+                for n in (1, 2):
+                    st.text_input(labels[n], value=parts[n], key=entry_key(field, i, n),
+                                  placeholder=f"e.g. {EDIT_EXAMPLES[field][n]}")
+    st.button(add, icon=":material/add:", key=f"ed-add-{field}", on_click=add_entry, args=(field,))
+
+
+def editor_section(name: str, draft: dict) -> None:
+    """The editor's section `name`, as a tab or on its own."""
+    if name == WORK_TAB:
+        work_auth_tab()
+    elif name == LANGUAGES[0]:
+        languages_tab(draft[store.LANGUAGES])
+    else:
+        cv_tab(*next(t for t in EDIT_TABS if t[0] == name), draft)
+
+
+def editor() -> None:
+    """Change what was read from the CV: edit, add or remove entries.
+
+    Values the CV does not say are saved as the user's own statements, apart
+    from the CV quotes (store.apply_edits). Opened from a card's own edit
+    button, it holds that card's section alone."""
+    if "ed_draft" not in S:  # saved or cancelled: close
+        st.rerun()
+    draft = S["ed_draft"]
+    alone = S["ed_tab"] if S.get("ed_only") else None
+    sub = (
+        "Review what we read from your CV. What you change is saved as your own statement, not as read from your CV."
+        if draft and alone != WORK_TAB else "Tell us where you can work. Your answers are saved as your own statement."
+    )
+    st.markdown(f'<div class="ed-sub">{sub}</div>', unsafe_allow_html=True)
+    if alone:
+        editor_section(alone, draft)
+    else:
+        names = ([t for t, *_ in EDIT_TABS] + [LANGUAGES[0]] if draft else []) + [WORK_TAB]
+        tab = S.get("ed_tab") or (None if store.work_auth_complete() else WORK_TAB)
+        # Keyed by opening, so each opening starts on the tab asked for.
+        shown = st.tabs(names, key=f"ed-tabs-{S['ed_open']}", default=tab if tab in names else None)
+        for name, pane in zip(names, shown):
+            with pane:
+                editor_section(name, draft)
+    if S.get("ed_error"):
+        st.error(S["ed_error"], icon=":material/error:")
+    with st.container(key="ed-foot", horizontal=True, horizontal_alignment="right", vertical_alignment="center"):
+        st.button("Cancel", key="ed-cancel", type="tertiary", on_click=cancel_editor)
+        st.button("Save changes", key="ed-save", type="primary", on_click=save_editor)
+
+
+#: The whole profile editor (the "Edit profile" chip, the required cards' calls
+#: to action), and one editor per section, titled after it (each card's own
+#: edit button). Only one opens at a time.
+edit_profile = st.dialog("Edit your profile", width="large")(editor)
+EDIT_SECTION = {
+    tab: st.dialog(f"Edit {tab.lower()}", width="large")(editor) for tab in dict.fromkeys(SECTION_TAB.values())
+}
+
+
+#: Fine-tune weight bar shades, strongest first: (fill, ink). Mockup blues,
+#: mapped to the palette on the way out like every other colour.
+SHADES = [("#0071E3", "#fff"), ("#5AA2F0", "#fff"), ("#A9CDF7", "#0B3F7A"),
+          ("#D6E7FB", "#0B3F7A"), ("#EEF4FC", "#0B3F7A"), ("#F7FAFF", "#0B3F7A")]
+SUGGESTED = "Suggested by your swipes"
+NO_MATCH = ('<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="#AEAEB2" '
+            'stroke-width="1.8" stroke-linecap="round"/></svg>')
+
+
+def pref_rows() -> list[dict]:
+    """The Fine-tune rows (D-045): the role families and industries the likes
+    suggest, then hybrid work. A row the candidate already set keeps its level."""
+    stories, verdicts = STORIES["stories"], S["ob_swipes"]
+    fams, _ = explore.direction(stories, verdicts)
+    rows = [{"field": "role_family", "values": [f], "label": f"{f} roles", "hint": SUGGESTED, "level": "important"} for f in fams]
+    rows += [{"field": "industry", "values": [i], "label": i, "hint": SUGGESTED, "level": "important"}
+             for i in explore.industries(stories, verdicts)]
+    rows.append({"field": "mode", "values": ["Hybrid"], "label": "Hybrid work", "hint": "Some days in the office", "level": "nice"})
+    before = {(r["field"], tuple(r["values"])): r["level"] for r in (S["ob_prefs"] or store.preferences() or [])}
+    return [dict(r, level=before.get((r["field"], tuple(r["values"])), r["level"])) for r in rows]
+
+
+def weight(r: dict) -> float:
+    return ranking.IMPORTANCE_WEIGHT[r["level"]]
+
+
+def pref_row(r: dict) -> str:
+    on = ranking.IMPORTANCE.index(r["level"])
+    spans = "".join(
+        f'<span class="{"on" + (" must" if i == 0 else " imp" if i == 1 else "") if i == on else ""}">{t}</span>'
+        for i, t in enumerate(IMPORTANCE)
+    )
+    return f'<div class="v3-r"><div class="k">{esc(r["label"])}</div><div class="v3-seg">{spans}</div></div>'
+
+
+def short(r: dict) -> str:
+    """A row's name in the two-column weight legend."""
+    return {"mode": "Hybrid work"}.get(r["field"], r["values"][0])
+
+
+def weights_box(rows: list[dict], total: float) -> str:
+    """How preference fit splits between the rows that carry weight."""
+    if not total:
+        return '<div class="v3-nt">Mark at least one preference to see how your fit is built.</div>'
+    held = [(r, 100 * weight(r) / total) for r in rows if weight(r)]
+    bar = "".join(
+        f'<i style="flex:{s:.1f};background:{SHADES[i][0]};color:{SHADES[i][1]}">{f"{s:.0f}%" if s >= 9 else ""}</i>'
+        for i, (_, s) in enumerate(held)
+    )
+    legend = "".join(
+        f'<span><i style="background:{SHADES[i][0]}{";border:1px solid #D6E7FB" if i >= 4 else ""}"></i>'
+        f'{esc(short(r))}<b>{s:.0f}%</b></span>'
+        for i, (r, s) in enumerate(held)
+    )
+    return f'<div class="v3-wb">{bar}</div>\n<div class="v3-wl">{legend}</div>'
+
+
+def example_box(rows: list[dict], total: float) -> str:
+    """The demo role these rows fit best, and which of them it meets."""
+    head = '<div class="v3-box"><div class="w-lab">Example · how a role reads you<span>Preference fit</span></div>'
+    if not total:
+        return head + '<div class="v3-nt">No preference carries weight yet.</div></div>'
+    roles = [v for v in store.views(None, AS_OF) if v.standing != "excluded"]
+    fit = {v.id: ranking.preference_fit(v.role.raw, rows)[0] for v in roles}
+    v = ranking.order(roles, lambda v: fit[v.id])[0]
+    checks = "".join(
+        f'<div>{CK12 if v.get(r["field"]) in r["values"] else NO_MATCH}{esc(r["label"])}'
+        f'<span>{100 * weight(r) / total:.0f}%</span></div>'
+        for r in rows if weight(r)
+    )
+    return (
+        head + '<div style="display:flex;align-items:center;gap:12px">'
+        f'<span class="w-logo" style="background:{v.bg};width:34px;height:34px">{v.mono}</span>'
+        f'<div style="flex:1"><div style="font-size:13.5px;font-weight:600">{esc(v.title)}</div>'
+        f'<div style="font-size:12px;color:var(--t2)">{esc(v.company)} · {esc(v.city)} · {esc(v.mode)}</div></div>'
+        f'<span style="font-size:24px;font-weight:700;letter-spacing:-0.03em">{fit[v.id]}</span></div>'
+        f'<div class="v3-ck">{checks}</div></div>'
+    )
+
+
+def step3a() -> str:
+    """Fine-tune: how much each suggested or declared preference matters."""
+    rows = S["ob_prefs"]
+    total = sum(weight(r) for r in rows)
+    body = M.S_3A
+    body = swap(
+        body, r'<span class="segm">.*?</span></span>',
+        '<span class="segm"><span data-go="3b" style="cursor:pointer">1 · Explore</span><span class="on">2 · Fine-tune</span></span>',
+    )
+    body = swap(
+        body, re.escape("Describe it in your own words. We turn it into preferences you can see and adjust."),
+        "Your swipes suggested the first rows. Set how much each one matters: only what you confirm here shapes your ranking.",
+    )
+    # The free-text description is gone: Explore is where preferences start.
+    body = swap(body, r'<div><div class="v3-sec"><span class="n">1</span>Your ideal internship.*?(?=<div><div class="v3-sec"><span class="n">2</span>)', "")
+    body = swap(
+        body, re.escape('<span class="n">2</span>How much each one matters<span>Must-haves filter roles · the rest shape your ranking</span>'),
+        '<span class="n">1</span>How much each one matters<span>Preferences order your roles · they never filter them</span>',
+    )
+    note = "" if any(r["hint"] == SUGGESTED for r in rows) else (
+        '<div class="v3-nt">Your swipes don’t point to a role type or industry yet. '
+        'Like a few stories in Explore to get suggestions.</div>'
+    )
+    body = swap(body, r'<div class="v3-tb">.*?(?=\n<div class="v3-el">)',
+                f'<div class="v3-tb">{"".join(pref_row(r) for r in rows)}</div>{note}</div>')
+    body = swap(
+        body, re.escape("<b>312</b><span>roles fit · 41 unpaid removed by your must-have</span>"),
+        f"<b>{len(store.views(None, AS_OF))}</b><span>demo roles · your preferences only change their order</span>",
+    )
+    body = swap(body, r'<div class="v3-wb">.*?</div>\n<div class="v3-wl">.*?</span></div>', weights_box(rows, total))
+    return swap(body, r'<div class="v3-box"><div class="w-lab">Example · how a role reads you.*?(?=\n<div style="flex:1"></div>)',
+                example_box(rows, total))
+
+
+def story_card(s: dict) -> str:
+    """The story on top of the stack. "Why" names the CV skills it uses, if any."""
+    tags = "".join(f'<span class="w-b ne">{esc(t)}</span>' for t in s["tags"])
+    sk = "".join(f'<span class="w-chip">{esc(t)}</span>' for t in s["sk"])
+    profile = store.candidate()
+    shared = explore.cv_overlap(s, [f.value for f in profile.skills]) if profile else []
+    why = (
+        "your CV mentions " + " and ".join(f"<b>{esc(k)}</b>" for k in shared[:2]) if shared
+        else f"it shows a day in <b>{esc(s['tags'][0])}</b>"
+    )
+    return (
+        f'<div class="sw-card"><span class="stamp">I’D ENJOY THIS</span><div class="cd-tags">{tags}</div>'
+        f'<div class="cd-time">{esc(s["time"])}</div><div class="cd-h">{esc(s["h"])}</div>'
+        f'<div class="cd-p">{esc(s["p"])}</div><div class="cd-viz">{s["viz"]}</div>'
+        f'<div class="cd-sk"><span class="k">You’d use</span>{sk}</div>'
+        '<div class="cd-why"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M8 2.2 9.3 6.7 13.8 8 9.3 9.3 8 '
+        '13.8 6.7 9.3 2.2 8 6.7 6.7z" fill="#0071E3"/></svg>'
+        f'<span>Why this story: {why}</span></div></div>'
+    )
+
+
+def practice() -> bool:
+    """Whether the Explore stack still opens on its practice card."""
+    return not S["ob_taught"] and not S["ob_swipes"]
+
+
+def tutorial_card() -> str:
+    """The practice card on top of the stack: it shows the three swipes and
+    what they are for. Swiping it records no verdict (see `swipe`)."""
+    dirs = "".join(
+        f'<div class="tut-d {d}"><span class="o">{arrow}</span><b>{label}</b><small>{hint}</small></div>'
+        for d, arrow, label, hint in [
+            ("l", "←", "Not for me", "Swipe left"),
+            ("u", "↑", "Not sure", "Swipe up"),
+            ("r", "→", "I’d enjoy this", "Swipe right"),
+        ]
+    )
+    return (
+        '<div class="sw-card tut"><span class="stamp">I’D ENJOY THIS</span>'
+        '<div class="cd-tags"><span class="w-b ne">How it works</span></div>'
+        '<div class="cd-time">Practice card · not counted</div>'
+        '<div class="cd-h">React to a day at work</div>'
+        '<div class="cd-p">Each card is a short story about real work. There are no right answers: '
+        'swipe the way you’d honestly react.</div>'
+        f'<div class="tut-dirs">{dirs}</div>'
+        '<div class="tut-go"><span class="tut-hand"></span>Try it: swipe this card to start</div>'
+        '<div class="cd-why"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M8 2.2 9.3 6.7 13.8 8 9.3 9.3 8 '
+        '13.8 6.7 9.3 2.2 8 6.7 6.7z" fill="#0071E3"/></svg>'
+        '<span>Your likes only suggest preferences. <b>You confirm them next.</b></span></div></div>'
+    )
+
+
+def done_card(verdicts: list[str]) -> str:
+    """What replaces the stack once every story has a verdict."""
+    n = {v: verdicts.count(v) for v in explore.VERDICTS}
+    return (
+        f'<div class="sw-card sw-done"><div class="cd-time">All {len(verdicts)} stories</div>'
+        '<div class="cd-h">That’s every story for now.</div>'
+        f'<div class="cd-p">You’d enjoy {n[explore.LIKE]}, passed on {n[explore.PASS]} and weren’t sure about '
+        f'{n[explore.UNSURE]}. What we learned is on the right. Continue to confirm what matters to you.</div></div>'
+    )
+
+
+#: The RIASEC radar: centre, radius and label anchors, as the mockup draws it.
+RADAR_C, RADAR_R = (190.0, 122.0), 92.0
+RADAR_LABELS = [(190.0, 18.0, "middle"), (283.5, 72.0, "start"), (283.5, 180.0, "start"),
+                (190.0, 234.0, "middle"), (96.5, 180.0, "end"), (96.5, 72.0, "end")]
+
+
+def radar_xy(i: int, r: float) -> tuple[float, float]:
+    a = math.radians(-90 + 60 * i)
+    return RADAR_C[0] + r * math.cos(a), RADAR_C[1] + r * math.sin(a)
+
+
+def radar(values: list[float]) -> str:
+    """The RIASEC hexagon for `values` (shares of the radius); the strongest two in bold."""
+
+    def ring(r: float) -> str:
+        return " ".join(f"{x:.1f},{y:.1f}" for x, y in (radar_xy(i, r) for i in range(6)))
+
+    grid = "".join(f'<polygon points="{ring(RADAR_R * k / 3)}" fill="none" stroke="#E5E5EA" stroke-width="1"/>' for k in (1, 2, 3))
+    spokes = "".join(
+        f'<line x1="{RADAR_C[0]:g}" y1="{RADAR_C[1]:g}" x2="{x:.1f}" y2="{y:.1f}" stroke="#EFEFF2"/>'
+        for x, y in (radar_xy(i, RADAR_R) for i in range(6))
+    )
+    pts = [radar_xy(i, RADAR_R * v) for i, v in enumerate(values)]
+    shape = (
+        f'<polygon points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in pts)}" fill="rgba(0,113,227,.12)" '
+        'stroke="#0071E3" stroke-width="1.8" stroke-linejoin="round"/>'
+        + "".join(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3" fill="#0071E3"/>' for x, y in pts)
+    )
+    top = explore.top_interests(values)
+    labels = "".join(
+        f'<text x="{x}" y="{y}" text-anchor="{anchor}" font-size="11.5" font-weight="{700 if i in top else 500}" '
+        f'fill="{"#1D1D1F" if i in top else "#6E6E73"}" font-family="-apple-system,Inter,sans-serif">{name}</text>'
+        for i, ((x, y, anchor), name) in enumerate(zip(RADAR_LABELS, explore.RIASEC))
+    )
+    return f'<svg width="370" height="246" viewBox="0 0 380 246">{grid}{spokes}{shape}{labels}</svg>'
+
+
+def role_count(match: str) -> str:
+    n = sum(match.lower() in v.title.lower() for v in store.views())
+    return f"{n} demo role{'s' if n != 1 else ''}" if n else "no demo roles yet"
+
+
+def direction_box(dirs: list[str], role: dict | None) -> str:
+    if not dirs:
+        return (
+            '<div style="font-size:14px;font-weight:620;color:var(--t3)">Not clear yet</div>'
+            '<div style="font-size:12px;color:var(--t2);margin-top:3px">Swipe right on stories you’d enjoy to see where they point.</div>'
         )
-        for i, item in enumerate(profile["to_confirm"]):
-            st.html(
-                f'<div class="aa" style="margin-top:16px">'
-                f'<p style="margin:0;font-weight:600">{item["label"]} '
-                f'<span class="aa-hl">{item["value"]}</span></p>'
-                f'<p style="margin-top:5px">{source_line(Source(**item["source"]))}'
-                f' · {item["note"]}</p></div>'
-            )
-            st.pills(
-                item["label"],
-                ["That is right", "Let me correct it"],
-                key=f"setup-confirm-{i}",
-                label_visibility="collapsed",
-            )
+    return (
+        f'<div style="font-size:14px;font-weight:620">{" · ".join(esc(d) for d in dirs)}</div>'
+        f'<div style="font-size:12px;color:var(--t2);margin-top:3px">Role type to consider: '
+        f'<b style="color:var(--blue);font-weight:600">{esc(role["role"])}</b> · {role_count(role["match"])}</div>'
+    )
 
-    st.write("")
-    with st.container(border=True):
-        st.html(
-            '<p class="aa aa-small" style="margin:0">✦ We will not ask about '
-            "visas, languages or driving licences now. Each becomes one question "
-            "only when a real posting needs the answer.</p>"
+
+#: Roughly how long one story takes to read and swipe, in seconds.
+STORY_SECONDS = 8
+
+
+def time_left(remaining: int) -> str:
+    if remaining <= 0:
+        return "all done"
+    secs = remaining * STORY_SECONDS
+    return "less than a minute left" if secs < 60 else f"about {round(secs / 60)} minute{'s' if secs >= 90 else ''} left"
+
+
+#: Beside "Not for me": takes the last verdict back, so its story is on top again.
+UNDO = (
+    '<div class="act sm undo"><span class="o"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M5.5 3.5 2.5 6.5l3 3M3 6.5h6.5'
+    'a4 4 0 0 1 0 8H7" stroke="#6E6E73" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+    'Undo<kbd>⌫</kbd></div>'
+)
+
+
+def step3b() -> str:
+    """The story stack and, beside it, everything the verdicts so far say."""
+    stories, verdicts = STORIES["stories"], S["ob_swipes"]
+    total, seen = len(stories), len(verdicts)
+    done = seen >= total
+    body = M.S_3B
+    first = practice()
+    story_n = f"All {total} stories" if done else f"Story {seen + 1} of {total}"
+    count = f"<b>Practice card</b> · then {total} stories" if first else f"<b>{story_n}</b> · {time_left(total - seen)}"
+    body = swap(body, re.escape("<b>Story 8 of 12</b> · about 1 minute left"), count)
+    bars = "".join(f'<i class="{"d" if i < seen else "c" if i == seen and not first else ""}"></i>' for i in range(total))
+    body = swap(body, r'<div class="sw-pb">.*?</div>', f'<div class="sw-pb">{bars}</div>')
+    behind = total - seen - (0 if first else 1)  # cards still under the top one
+    backs = ('<div class="sw-cb b2"></div>' if behind >= 2 else "") + ('<div class="sw-cb b1"></div>' if behind >= 1 else "")
+    body = swap(
+        body, r'<div class="sw-stack">.*?</div></div>\s*<div class="acts">',
+        f'<div class="sw-stack">{backs}{done_card(verdicts) if done else tutorial_card() if first else story_card(stories[seen])}</div>\n'
+        f'<div class="acts{" off" if done else ""}">{UNDO if seen else ""}',
+    )
+    body = swap(body, re.escape("Live · from 7 swipes"), f"Live · from {seen} swipe{'s' if seen != 1 else ''}")
+    body = swap(body, r'<svg width="370" height="246".*?</svg>', radar(explore.interests(stories, verdicts)))
+
+    def bp(label: list[str], pos: float) -> str:
+        side = explore.leaning(pos)
+        lt = f"<b>{label[0]}</b>" if side == "l" else label[0]
+        rt = f"<b>{label[1]}</b>" if side == "r" else label[1]
+        return f'<div class="bp"><span>{lt}</span><span class="tr"><i style="left:{pos:.0f}%"></i></span><span>{rt}</span></div>'
+
+    rows = iter(zip(STORIES["sliders"], explore.sliders(stories, verdicts)))
+    body, n = re.subn(r'<div class="bp">.*?</span></div>', lambda _m: bp(*next(rows)), body, flags=re.S)
+    if n != len(STORIES["sliders"]):
+        raise RuntimeError(f"Step 3b mockup markup has changed: {n} work-design sliders, not {len(STORIES['sliders'])}.")
+    hist = "".join(f'<span class="{c}">{"✓" if c == "y" else "✕"} {esc(t)}</span>' for c, t in explore.history(stories, verdicts))
+    hist = hist or '<span class="e">Nothing yet</span>'
+    body = swap(body, r'<div class="hist">.*?</div>', f'<div class="hist">{hist}</div>')
+    lab = '<div class="w-lab">Emerging direction<span>Updates each swipe</span></div>'
+    body = swap(body, re.escape(lab) + r".*?</div></div>", lab + direction_box(*explore.direction(stories, verdicts)) + "</div>")
+    body = swap(body, r'<div class="w-tip">.*?</div></div>\n', "")
+    tune = ' data-go="3a" style="cursor:pointer"' if done else ' class="off"'
+    return swap(
+        body, re.escape('<span class="segm"><span data-go="3a" style="cursor:pointer">1 · Describe</span><span class="on">2 · Explore</span></span>'),
+        f'<span class="segm"><span class="on">1 · Explore</span><span{tune}>2 · Fine-tune</span></span>',
+    )
+
+
+def shortlist_roles():
+    return store.ranked(BEFORE, AS_OF)[:5]
+
+
+def cc_card(v, i: int, cls: str, first_verify: bool) -> str:
+    badge = '<span class="w-b ok"><i></i>Eligible</span>' if v.standing == "eligible" else '<span class="w-b am"><i></i>To verify</span>'
+    delta = f"{v.raw_shown} − {d.penalty:g} until verified" if v.standing == "verify" else ""
+    segs = "".join(f'<i style="flex:{p:.1f};background:{parts.COL[i]}"></i>' for i, p in enumerate(v.parts))
+    segs += f'<i style="flex:{max(0, 100 - v.score):.1f}"></i>'
+    checks = "".join(
+        f'<div>{CK12 if k == "ok" else WN12}<span>{esc(t)}</span></div>' for k, t in v.card_checks
+    )
+    kind, auth = parts.work_auth_check(v)
+    if kind != "ok":
+        checks += f'<div>{WN12}<span>{esc(auth)}</span></div>'
+    n = clock.days_until(v.closes)
+    close = (
+        f'<div class="cc-pill u">Closes in {n} days<small>{esc(" ".join(v.closes_label.split()[-2:]))}</small></div>'
+        if n <= 9 else f'<div class="cc-pill">Closes {esc(v.closes_label)}<small></small></div>'
+    )
+    need = ""
+    if v.standing == "verify":
+        text = "One answer from you could make this your #1" if first_verify else "Same answer unlocks this role"
+        need = f'<div class="cc-need">{WN12}{text}</div>'
+    return (
+        f'<div class="cc {cls}" data-i="{i}"><div class="cc-scan"><i></i></div><div class="cc-top">'
+        f'<span class="w-logo" style="background:{v.bg};width:44px;height:44px">{v.mono}</span>'
+        f'<div style="flex:1"><div class="cc-t">{esc(v.title)}</div><div class="cc-m">{esc(v.company)} · {esc(v.city)} · {esc(v.mode)}</div></div>{badge}</div>'
+        f'<div class="cc-sc"><b>{v.shown}<small>/100</small></b><span style="font-size:12px;color:var(--amber);font-weight:600">{delta}</span></div>'
+        f'<div class="cc-bar">{segs}</div><div class="cc-ck">{checks}</div>'
+        f'<div class="cc-ft">{close}<div class="cc-pill">Demo data<small>No source date</small></div></div>{need}</div>'
+    )
+
+
+def step4(cur: int, done: bool) -> str:
+    """The shortlist, checked one role at a time, then browsable.
+
+    Args:
+        cur: Role at the centre: the one being checked, then the #1 once done.
+        done: All five checked. The row then moves in the browser
+            (ui/js/shortlist.js): drag, scroll, arrows, a card or a slot.
+    """
+    roles = shortlist_roles()
+    pos = {-2: "l2", -1: "l1", 0: "c0", 1: "r1", 2: "r2"}
+    first_v = next((i for i, v in enumerate(roles) if v.standing == "verify"), None)
+    cards = []
+    for i, v in enumerate(roles):
+        o = i - cur
+        cls = pos.get(o, "hl" if o < 0 else "hr")
+        if done:
+            cls += " doneck"
+        elif i == cur:
+            cls += " run"
+        cards.append(cc_card(v, i, cls, i == first_v))
+    slots = []
+    for i, v in enumerate(roles):
+        fin = done or i < cur
+        now = not done and i == cur
+        if not fin and not now:
+            slots.append(f'<div class="slot wait">{i + 1} · waiting</div>')
+            continue
+        state = "Eligible" if v.standing == "eligible" else "Needs 1 answer"
+        color = "color:var(--amber)" if fin and v.standing != "eligible" else ""
+        slots.append(
+            f'<div class="slot{" cur" if now or (done and i == cur) else ""}" data-i="{i}">'
+            f'<span class="w-logo" style="background:{v.bg};width:28px;height:28px">{v.mono}</span>'
+            f'<div><div class="t">{esc(v.company.replace(" Group", ""))}</div><div class="s" style="{color}">'
+            f'{"Checking…" if now else state}</div></div><b>{"…" if now else v.shown}</b></div>'
         )
+    n_verify = sum(v.standing == "verify" for v in roles)
+    sub = (
+        f'All 5 checked · <b style="color:var(--amber)">{n_verify} need one answer from you</b>' if done
+        else f"Checking your top matches one by one · <b>{cur + 1} of 5</b>"
+    )
+    row, nav = f'id="cr-row" data-cur="{cur}"', ("", "")
+    if done:
+        row += " data-done"
+        nav = (
+            f'<button type="button" class="cr-nav prev{" off" if cur == 0 else ""}" aria-label="Previous">{PREV}</button>',
+            f'<button type="button" class="cr-nav next{" off" if cur == len(roles) - 1 else ""}" aria-label="Next">{NEXT}</button>',
+        )
+    return (
+        f'<div class="cr"><div class="cr-h"><div class="w-h1">Building your shortlist</div><div class="w-sub" id="cr-sub">{sub}</div></div>'
+        f'<div class="cr-row" {row}>{"".join(cards)}</div>'
+        f'<div class="slots" id="cr-slots">{nav[0]}{"".join(slots)}{nav[1]}</div></div>'
+    )
 
-    st.write("")
-    back, forward = st.columns([1, 1])
-    with back:
-        st.button("Back", use_container_width=True)
-    with forward:
-        st.button("Looks right", type="primary", use_container_width=True)
+
+def preview_rows(ans: dict) -> str:
+    moves = store.movement(BEFORE, ans, as_of=AS_OF)
+    rows = []
+    for i, v in enumerate(store.ranked(ans, AS_OF)[:5], start=1):
+        mv = moves.get(v.id, "—")
+        up = mv == "New" or mv.startswith("↑")
+        rows.append(
+            f'<div class="mr{" nw" if up else ""}"><span class="p">{i}</span>'
+            f'<span class="w-logo" style="background:{v.bg};width:28px;height:28px">{v.mono}</span>'
+            f'<div><div class="nm">{esc(v.title)}</div><div class="co">{esc(v.company)} · {esc(v.city)}</div></div>'
+            f'<span class="mv" style="color:{"var(--green)" if up else "var(--t3)"}">{mv}</span></div>'
+        )
+    return "".join(rows)
+
+
+def step5(country: str) -> str:
+    """The one work question still open, for `country` (see to_ask)."""
+    body = M.S_5
+    choice = S["ob_uk"]
+    ks = ["yes", "no", "unsure"]
+    opts = re.findall(r'<div class="o6[^"]*">', body)
+    for k, o in zip(ks, opts):
+        body = body.replace(o, f'<div class="o6{" on" if k == choice else ""}" data-k="{k}">', 1)
+    # The country's roles and what each answer does, by the same rules saving runs.
+    before = store.tally(store.answers())
+    after, yes, no = (store.tally(store.answers_with(country, k)) for k in (choice, "yes", "no"))
+    roles = store.country_roles(country)
+    more = f" and {len(roles) - 3} more" if len(roles) > 3 else ""
+    where = esc(place(country))
+    body = swap(body, re.escape("Can you work in the UK without"), f"Can you work in {where} without")
+    body = swap(body, re.escape("Yes, I can work in the UK"), f"Yes, I can work in {where}")
+    if country != "GB":
+        body = swap(body, re.escape("UK/Irish citizen, settled status or a valid work visa"),
+                    "Citizenship, permanent residence or a valid work visa")
+    body = swap(body, re.escape("Work authorization · UK"), f"Work authorization · {esc(field_label(country))}")
+    body = swap(body, "<b>14 roles in London</b>", f"<b>{len(roles)} role{'s' if len(roles) != 1 else ''} in {where}</b>")
+    logos = "".join(
+        f'<span class="w-logo" style="background:{v.bg};width:26px;height:26px">{v.mono}</span>' for v in roles[:4]
+    )
+    body = re.sub(r'(<div class="c6-lg">).*?(<span class="m">)', rf"\g<1>{logos}\g<2>", body, count=1, flags=re.S)
+    body = swap(
+        body, re.escape("Replai, Bolton Consulting Group, Lazarde &amp; Co. and 11 more"),
+        esc(", ".join(v.company for v in roles[:3])) + more,
+    )
+    body = swap(body, re.escape(">+11 roles<"), f">+{yes['eligible'] - before['eligible']} roles<")
+    body = swap(body, re.escape(">4 roles stay<"), f">{no['eligible'] - before['eligible']} roles stay<")
+    label = {"yes": "Yes", "no": "No", "unsure": "I’m not sure"}[choice]
+    body = body.replace("<h3>If you answer “Yes”</h3>", f"<h3>If you answer “{label}”</h3>")
+
+    def v(old: int, new: int) -> str:
+        if old == new:
+            return str(new)
+        dlt = new - old
+        return f"<s>{old}</s>{new}" + (f"<small>+{dlt}</small>" if dlt > 0 else "")
+
+    body = re.sub(
+        r'<div class="st6">.*?</div></div></div>',
+        f'<div class="st6"><div><div class="l">Eligible roles</div><div class="v">{v(before["eligible"], after["eligible"])}</div></div>'
+        f'<div><div class="l">To verify</div><div class="v">{v(before["verify"], after["verify"])}</div></div></div>',
+        body, count=1, flags=re.S,
+    )
+    body = re.sub(
+        r'<div class="mini">.*?</div></div></div>\s*<div style="flex:1">',
+        f'<div class="mini">{preview_rows(store.answers_with(country, choice))}</div></div>\n<div style="flex:1">',
+        body, count=1, flags=re.S,
+    )
+    return body
+
+
+def ring(score: int) -> str:
+    return (
+        '<svg width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" stroke="#EDEDF0" stroke-width="5" fill="none"/>'
+        f'<circle cx="32" cy="32" r="27" stroke="#0071E3" stroke-width="5" fill="none" stroke-linecap="round" '
+        f'stroke-dasharray="{169.6 * score / 100:.1f} 169.6" transform="rotate(-90 32 32)"/></svg>'
+    )
+
+
+#: Filled alert glyphs, after SF Symbols xmark.circle.fill and
+#: exclamationmark.triangle.fill, for the lines that need attention.
+JD_GAP = (
+    '<svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#C4302B"/>'
+    '<path d="M7 7l6 6M13 7l-6 6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>'
+)
+JD_VERIFY = (
+    '<svg width="18" height="18" viewBox="0 0 20 20"><path d="M8.27 2.99a2 2 0 0 1 3.46 0l6.93 12a2 2 0 0 1'
+    '-1.73 3H3.07a2 2 0 0 1-1.73-3z" fill="#B25E09"/><path d="M10 7.4v4.2" stroke="#fff" stroke-width="1.8" '
+    'stroke-linecap="round"/><circle cx="10" cy="14.6" r="1.05" fill="#fff"/></svg>'
+)
+#: How a job description line is marked, by status (core/jd_match.py).
+JD_MARK = {jd_match.MET: CK12, jd_match.GAP: JD_GAP, jd_match.VERIFY: JD_VERIFY}
+#: The label under a line that needs attention; a covered line needs none.
+JD_STATUS = {jd_match.GAP: "Not in your CV", jd_match.VERIFY: "To verify"}
+
+
+def cv_items() -> list[str] | None:
+    """The skills and experience read from the CV, or None before one is."""
+    profile = store.candidate()
+    return [f.value for f in [*profile.skills, *profile.experience]] if profile else None
+
+
+def apply_key(i: int) -> str:
+    """The hidden button that starts an application from the opened role i."""
+    return f"ap{i}"
+
+
+def jd_panel(v, i: int, cv: list[str] | None) -> str:
+    """What an opened role shows (ui/js/expand.js): its job description, each
+    requirement against the CV with advice on the ones not covered, and the
+    button that starts the application."""
+    unchecked = [lim.name.removesuffix(" level") for lim in v.limitations]
+    lines = jd_match.lines(v.role.raw, v.criteria, d.profile, cv, unchecked)
+    todo = sum(ln.status != jd_match.MET for ln in lines)
+    desc = v.get("description") or {}
+    badge = '<span class="w-b ok"><i></i>Eligible</span>' if v.standing == "eligible" else '<span class="w-b am"><i></i>To verify</span>'
+    head = (
+        f'<div class="p-h xp-head"><span class="w-logo" style="background:{v.bg};width:40px;height:40px">{v.mono}</span>'
+        f'<div class="jd-ti"><b>{esc(v.title)}</b><small>{esc(v.company)} · {esc(v.city)} · {esc(v.mode)}</small></div>{badge}</div>'
+    )
+    tally = (
+        f'<div class="jd-tally gap">{WN12}<span><b>{todo} {"point" if todo == 1 else "points"} to cover</b>'
+        " · each one says how</span></div>" if todo else
+        f'<div class="jd-tally ok">{CK12}<span><b>Your CV covers every requirement</b></span></div>'
+    )
+    about = f'<div class="jd-sec"><h4>About the role</h4><p>{esc(desc["summary"])}</p></div>' if desc else ""
+    tasks = (
+        '<div class="jd-sec"><h4>What you’ll do</h4><ul class="jd-do">'
+        + "".join(f"<li>{esc(t)}</li>" for t in desc["responsibilities"]) + "</ul></div>"
+    ) if desc else ""
+    reqs = "".join(
+        f'<li class="{ln.status}">{JD_MARK[ln.status]}<div><span>{esc(ln.text)}</span>'
+        + (f'<em>{JD_STATUS[ln.status]}</em>' if ln.status in JD_STATUS else "")
+        + (f'<div class="xp-q">{esc(ln.advice)}</div>' if ln.advice else "") + "</div></li>"
+        for ln in lines
+    )
+    return (
+        f'{head}<div class="jd">{tally}{about}{tasks}'
+        f'<div class="jd-sec"><h4>Requirements</h4><ul class="jd-req">{reqs}</ul></div>'
+        f'<div class="jd-act"><button type="button" class="btn p" data-apply="{apply_key(i)}">Start application</button></div></div>'
+    )
+
+
+def step6() -> str:
+    ans = store.answers()
+    top = store.ranked(ans, AS_OF)[:5]
+    cv = cv_items()
+    moves = store.movement(BEFORE, ans, as_of=AS_OF)
+    c, c0 = store.counts(), store.counts(None)
+    items = []
+    for i, v in enumerate(top):
+        mv = moves.get(v.id, "—")
+        up = mv == "New" or mv.startswith("↑")
+        n = clock.days_until(v.closes)
+        urgent = n <= 9
+        month, day = ("SEP", v.closes[-2:].lstrip("0")) if v.closes[5:7] == "09" else ("OCT", v.closes[-2:].lstrip("0"))
+        gap = (
+            f'<span class="ix">{WN12}{esc(v.gaps[0])}</span>' if v.gaps else '<span class="in">No gaps found</span>'
+        )
+        first_ok = next((t for k, t in v.card_checks if k == "ok"), v.highlight)
+        show = S["ob_filter"] == 0 or (S["ob_filter"] == 1 and urgent) or (S["ob_filter"] == 2 and mv == "New")
+        items.append(
+            f'<div class="it xp{" top" if i == 0 else ""}" data-xp-width="720" role="button" tabindex="0" '
+            f'aria-haspopup="dialog" aria-label="Open {esc(v.title)}, {esc(v.company)}" style="{"" if show else "display:none"}">'
+            f'<div class="it-rk">{i + 1}<small style="color:{"var(--green)" if up else "var(--t3)"}">{mv}</small></div>'
+            f'<div class="it-sc">{ring(v.shown)}<b>{v.shown}</b></div>'
+            f'<div class="it-main"><span class="w-logo" style="background:{v.bg};width:40px;height:40px">{v.mono}</span>'
+            f'<div style="min-width:0"><div class="it-t">{esc(v.title)}</div>'
+            f'<div class="it-m">{esc(v.company)} · {esc(v.city)} · {esc(v.mode)} · {"Eligible" if v.standing == "eligible" else "To verify"}</div></div></div>'
+            f'<div class="it-ln"><span class="ig">{CK12}{esc(first_ok)}</span>{gap}</div>'
+            f'<div class="dt"><span class="cal{" u" if urgent else ""}"><i>{month}</i><b>{day}</b></span><div>'
+            f'<div class="k{" u" if urgent else ""}">{"Closes in %d days" % n if urgent else "Closes " + esc(v.closes_label)}</div>'
+            f'<small>{"Apply this week" if urgent else "%d days left" % n}</small></div></div>'
+            f'<div class="fs"><span class="d" style="background:#C7C7CC"></span><div>Demo data<small>No source date</small></div></div>'
+            f'<div class="btn">Open</div><div class="xp-full">{jd_panel(v, i, cv)}</div></div>'
+        )
+    closing = sum(clock.days_until(v.closes) <= 9 for v in top)
+    new = sum(moves.get(v.id) == "New" for v in top)
+    f = S["ob_filter"]
+    seg = (
+        f'<span class="segm"><span class="{"on" if f == 0 else ""}">All 5</span>'
+        f'<span class="{"on" if f == 1 else ""}">Closing this week · {closing}</span>'
+        f'<span class="{"on" if f == 2 else ""}">New · {new}</span></span>'
+    )
+    gained = c["eligible"] - c0["eligible"]
+    lead = top[0]
+    lead_n = clock.days_until(lead.closes)
+    sub = (
+        f"Your answer unlocked {gained} roles. " if gained > 0 else "Your shortlist is ready. "
+    ) + f"<b>Start with {esc(lead.company)} — it closes in {lead_n} days.</b>"
+    delta = f"<small>+{gained}</small>" if gained > 0 else ""
+    return (
+        f'<div class="f7"><div class="f7-top"><div><div class="w-h1">Your priorities</div><div class="w-sub">{sub}</div></div>'
+        f'<div class="s5-sum"><div class="s5-k"><div class="l">Eligible</div><div class="v">{c["eligible"]}{delta}</div></div>'
+        f'<div class="s5-k"><div class="l">To verify</div><div class="v" style="color:var(--amber)">{c["verify"]}</div></div>'
+        f'<div class="s5-k"><div class="l">Excluded</div><div class="v" style="color:var(--t3)">{c["excluded"]}</div></div></div></div>'
+        f'<div class="f7-flt">{seg}</div>'
+        f'<div class="f7-list">{"".join(items)}</div></div>'
+    )
+
+
+# ───────────────────────── Frame ─────────────────────────
+
+html(
+    '<div class="bgx"><i style="width:620px;height:420px;left:-120px;top:-140px;background:#CFE3FB"></i>'
+    '<i style="width:560px;height:380px;right:-100px;top:60px;background:#E4DDF7"></i>'
+    '<i style="width:640px;height:360px;left:420px;bottom:-200px;background:#DDF0E6"></i>'
+    '<i style="width:420px;height:300px;right:260px;bottom:-120px;background:#FBEBD5;opacity:.7"></i></div>'
+)
+
+with st.container(key="otop"):
+    html(
+        f'<div class="w-brand">{lockup()}</div>'
+    )
+    pills = []
+    for n, name in enumerate(STEP_NAMES, start=1):
+        cls = " done" if n < num else " cur" if n == num else ""
+        mark = CK_WHITE if n < num else str(n)
+        pills.append(f'<span class="w-st{cls}"><span class="c">{mark}</span>{name}</span>')
+        if n < len(STEP_NAMES):
+            pills.append(f'<span class="w-ln{" done" if n + 1 <= num else ""}"></span>')
+    with st.container(key="osteps"):
+        html(f'<div class="w-steps gl">{"".join(pills)}</div>')
+    for n, box in enumerate(TOP, start=1):
+        if n > 3 and not (explored() or store.preferences()):
+            continue  # Explore is not optional: no jumping past it
+        target = next(k for k, s, _ in FLOW if s == n)
+        overlay(f"st{n}", box, f"Go to step {n}: {STEP_NAMES[n - 1]}", on_click=go, args=(target,))
+    with st.container(key="oexit"):
+        if st.button("Save and exit", key="exit"):
+            finish()
+            tabs.go("home")
+        html(f'<span class="av">{esc(store.initials(store.user()["name"]))}</span>')
+
+with st.container(key="obody"):
+    if notice := S.pop("ob_notice", None):  # once, on the press that was refused
+        S["ob_notice_n"] = S.get("ob_notice_n", 0) + 1
+        html(
+            f'<div class="ob-notice f{S["ob_notice_n"] % 2}" role="alert">{WARNING}'
+            f'<span><b>You can’t continue yet</b><span>{notice}</span></span></div>'
+        )
+    if step == "1":
+        # The screen is a placeholder so the file card itself can show the CV being read.
+        screen = st.empty()
+
+        def draw(reading: tuple[str, int] | None = None) -> None:
+            markup = squash(f'<section class="w-sec">{step1(reading)}</section>')
+            screen.markdown(f'<div class="x">{orange(markup)}</div>', unsafe_allow_html=True)
+
+        draw()
+        with st.container(key="oup"):
+            n = S["ob_cv_n"]
+            key = f"ob-cv-{n}" if n else "ob-cv"
+            up = st.file_uploader("Drop your CV here", type=["pdf"], key=key, label_visibility="collapsed")
+        if S["ob_file"]:
+            overlay("cvx", CV_REMOVE, "Remove CV", on_click=remove_cv)
+        x, y, w = CV_STATUS
+        st.markdown(
+            f"<style>.stApp .st-key-ocv{{position:absolute!important;z-index:7;left:{x}px;top:{y}px;width:{w}px!important}}</style>",
+            unsafe_allow_html=True,
+        )
+        with st.container(key="ocv"):
+            # Emptied first, so an earlier error never sits over the card while a new CV is read.
+            status = st.empty()
+            if up is not None and S["ob_cv"] != up.file_id:
+                S["ob_cv"] = up.file_id
+                store.give_consent()  # uploading is consenting, as the note says: before any reading
+                draw((up.name, up.size))
+                read_cv(up.getvalue())
+                S["ob_file"] = (up.name, up.size) if store.candidate() else None
+                st.rerun()
+            if store.extraction_error():
+                status.error(f"We couldn’t read your CV. {store.extraction_error()}")
+    elif step == "2":
+        html(f'<section class="w-sec">{step2()}</section>')
+        # Pressing a card opens it in full: it flips over as it grows.
+        with st.container(key="aa-js-expand"):
+            st.html(f"<script>{EXPAND_JS}</script>", unsafe_allow_javascript=True)
+        def centred(name: str, box, label: str, **kw) -> bool:
+            dx, y, w, h = box
+            st.markdown(f"<style>.stApp .st-key-oo-{name}{{left:calc(50% + {dx}px)!important}}</style>", unsafe_allow_html=True)
+            return overlay(name, (0, y, w, h), label, **kw)
+
+        opened = centred("edit", EDIT_2, "Edit profile", on_click=open_editor)
+        if not store.work_auth_complete():
+            placeholders = 2 if store.work_auth() is None else 1
+            for name, label in list(zip(CTA_2, REQUIRED_CTA.values()))[:placeholders]:
+                opened |= centred(name, CTA_2[name], label, on_click=open_editor, args=(WORK_TAB,))
+        # Each opened card's own edit button (ui/js/expand.js) presses one of
+        # these: the card's section, alone in the editor.
+        alone = None
+        with st.container(key="xp-edits"):
+            for title, tab in SECTION_TAB.items():
+                if st.button(f"Edit {title}", key=edit_key(title), on_click=open_editor, args=(tab, True)):
+                    alone = tab
+        if alone:
+            EDIT_SECTION[alone]()
+        elif opened:
+            edit_profile()
+    elif step == "3a":
+        if S["ob_prefs"] is None:  # reached without Explore, e.g. "Adjust preferences"
+            S["ob_prefs"] = pref_rows()
+        html(f'<section class="w-sec">{step3a()}</section>')
+        overlay("to3b", SEG_3A[0], "1 · Explore", on_click=go, args=("3b",))
+
+        def set_level(r: int, i: int) -> None:
+            S["ob_prefs"] = [dict(p, level=ranking.IMPORTANCE[i]) if j == r else p for j, p in enumerate(S["ob_prefs"])]
+
+        for r in range(len(S["ob_prefs"])):
+            for i, x in enumerate(IMP_X):
+                overlay(f"imp{r}{i}", (x, IMP_Y0 + r * IMP_DY, 107, 25), IMPORTANCE[i], on_click=set_level, args=(r, i))
+    elif step == "3b":
+        html(f'<section class="w-sec">{step3b()}</section>')
+        if explored():
+            overlay("to3a", SEG_3B[1], "2 · Fine-tune", on_click=to_fine_tune)
+
+
+        def swipe(verdict: str) -> None:
+            if practice():  # the practice card teaches the gesture; it records nothing
+                S["ob_taught"] = True
+            elif len(S["ob_swipes"]) < len(STORIES["stories"]):
+                S["ob_swipes"] = [*S["ob_swipes"], verdict]
+
+        if len(S["ob_swipes"]) < len(STORIES["stories"]):
+            for i, (dirn, label, sc) in enumerate(
+                [("l", "Not for me", "ArrowLeft"), ("u", "Not sure", "ArrowUp"), ("r", "I’d enjoy this", "ArrowRight")]
+            ):
+                overlay(f"sw{dirn}", ACTS_3B[i], label, on_click=swipe, args=(dirn,), shortcut=sc)
+        if S["ob_swipes"]:
+            # A wrong verdict is taken back: the story returns to the top of the stack.
+            overlay("undo3b", UNDO_3B, "Undo", on_click=S.__setitem__, args=("ob_swipes", S["ob_swipes"][:-1]),
+                    shortcut="Backspace")
+        # Dragging the card: animates in the browser, then presses the button above.
+        with st.container(key="aa-js-swipe"):
+            st.html(f"<script>{SWIPE_JS}</script>", unsafe_allow_javascript=True)
+    elif step == "4":
+        done_now = S["ob_tick"] >= 5
+
+        # Held while the intro sheet is up, so the shortlist is built in view.
+        @st.fragment(run_every=None if done_now or guide.is_open(step) else 1.7)
+        def shortlist() -> None:
+            tick = S["ob_tick"]
+            done = tick >= 5
+            cur = 0 if done else tick  # once built, the #1 role leads
+            html(f'<section class="w-sec">{step4(cur, done)}</section>')
+            if not done:
+                S["ob_tick"] = tick + 1
+                if S["ob_tick"] >= 6:
+                    st.rerun()
+            elif not done_now:
+                st.rerun()
+
+        shortlist()
+        # Browsing the built shortlist: drag, scroll, arrows, cards and slots.
+        with st.container(key="aa-js-shortlist"):
+            st.html(f"<script>{SHORTLIST_JS}</script>", unsafe_allow_javascript=True)
+    elif step == "5":
+        html(f'<section class="w-sec">{step5(S.get("ob_ask") or to_ask() or "GB")}</section>')
+        for i, k in enumerate(["yes", "no", "unsure"]):
+            overlay(f"o6{k}", OPTS_5[i], k, on_click=S.__setitem__, args=("ob_uk", k), shortcut=str(i + 1))
+    elif step == "6":
+        html(f'<section class="w-sec">{step6()}</section>')
+        for i, box in enumerate(FILT_6):
+            overlay(f"flt{i}", box, ["All", "Closing this week", "New"][i], on_click=S.__setitem__, args=("ob_filter", i))
+        # Pressing a role opens its job description in full: it flips over as it grows.
+        with st.container(key="aa-js-expand"):
+            st.html(f"<script>{EXPAND_JS}</script>", unsafe_allow_javascript=True)
+        # The opened role's "Start application" (ui/js/expand.js) presses one of these.
+        with st.container(key="xp-apply"):
+            for i, v in enumerate(store.ranked(store.answers(), AS_OF)[:5]):
+                if st.button(f"Start application · {v.company}", key=apply_key(i)):
+                    store.save_application(v.id)
+                    S["flash"] = f"Application started · {v.company}"
+                    finish()
+                    tabs.go("applications", id=v.id)
+
+total = len(STEP_NAMES)
+if step == "3b" and not explored():
+    info = f"<b>Step 3 of {total}</b> · Swipe every story to continue — or use ← ↑ → on your keyboard"
+unweighted = step == "3a" and not any(weight(r) for r in S["ob_prefs"])
+if unweighted:
+    info = f"<b>Step 3 of {total}</b> · Mark at least one preference to continue"
+if step == "3a" and not unweighted and not store.consent_given():
+    info = f"<b>Step 3 of {total}</b> · {NEEDS_CONSENT}"
+gated = step == "2" and not store.work_auth_complete()
+if gated:
+    info = f"<b>Step 2 of {total}</b> · {NEEDS_WORK_AUTH}"
+if step == "4" and settled():
+    info, cta = f"<b>Step 4 of {total}</b> · Your work authorization is already declared", "View shortlist"
+
+
+def flag_missing() -> None:
+    """Mark the empty required cards, before they are drawn, and say why."""
+    S["ob_missing"] = True
+    S["ob_notice"] = MISSING_INFO
+
+
+with st.container(key="ofoot"):
+    html(f'<span class="i">{info}</span>')
+    guide.help_button(step)
+    if idx > 0:
+        if st.button("Back", key="back"):
+            back = KEYS[idx - 1]
+            go("4" if back == "5" and settled() else back)  # step 5 is skipped both ways
+            st.rerun()
+    waiting = (step == "4" and S["ob_tick"] < 5) or (step == "3b" and not explored()) or unweighted
+    # With a required card still empty, pressing it says what is missing.
+    if st.button(cta, type="primary", key="next", disabled=waiting, on_click=flag_missing if gated else None) and not gated:
+        if step == "3b":
+            S["ob_prefs"] = pref_rows()
+        if step == "3a":
+            store.set_preferences(S["ob_prefs"])
+        if step == "5":
+            country = S.get("ob_ask") or to_ask() or "GB"
+            store.set_work_answer(country, S["ob_uk"])
+            S["ob_asked"] = country
+            st.toast(f"Answer saved · Work authorization · {field_label(country)} = {store.UK_LABELS[S['ob_uk']]}")
+        if step == "6":
+            v = store.ranked(store.answers(), AS_OF)[0]
+            store.save_application(v.id)
+            S["flash"] = f"Application started · {v.company}"
+            finish()
+            tabs.go("applications", id=v.id)
+        go(KEYS[idx + 1])
+        st.rerun()
+
+guide.sheet(step, num, len(STEP_NAMES))

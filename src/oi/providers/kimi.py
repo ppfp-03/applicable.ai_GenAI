@@ -14,13 +14,20 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
-from typing import Optional
+from typing import Any, Optional, TypeVar
 
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
-from oi.contracts import CandidateProfile
-from oi.providers.model_client import ExtractedFields, ExtractionError
+from oi.providers.model_client import (
+    ExtractedFields,
+    ExtractedJobFields,
+    ExtractionError,
+    Prompt,
+    load_candidate_prompt,
+    load_job_prompt,
+)
+
+_Output = TypeVar("_Output", bound=BaseModel)
 
 #: NVIDIA's OpenAI-compatible inference endpoint.
 DEFAULT_BASE_URL = "https://integrate.api.nvidia.com/v1"
@@ -28,15 +35,20 @@ DEFAULT_BASE_URL = "https://integrate.api.nvidia.com/v1"
 #: Kimi K3 as served by NVIDIA. Override per-instance or via KIMI_MODEL.
 DEFAULT_MODEL = "moonshotai/kimi-k3"
 
-#: Extraction instructions live in version control as a reviewable file,
-#: not inline, so prompt changes show up in diffs.
-PROMPT_PATH = (
-    Path(__file__).resolve().parents[3] / "prompts" / "candidate_extraction.md"
-)
+#: Seconds before a single HTTP request is abandoned. Extraction of a
+#: one-page CV has been observed to take 60-90s, occasionally longer.
+REQUEST_TIMEOUT_SECONDS = 120.0
+
+#: How many times a reply with no content is requested before giving up.
+#: The NVIDIA endpoint sometimes returns HTTP 200 with finish_reason "stop"
+#: and content null (a degenerate generation); asking again usually works.
+#: Only that case is retried here -- HTTP errors are left to the SDK's own
+#: retries, so the two never multiply.
+MAX_ATTEMPTS = 3
 
 
 class KimiClient:
-    """Thin client for candidate extraction via the Kimi API.
+    """Thin client for candidate and job extraction via the Kimi API.
 
     Credentials are read from the environment at construction time. The caller
     loads any .env file beforehand; this class does not read one and keeps no
@@ -81,65 +93,93 @@ class KimiClient:
         self.base_url = (
             base_url or os.environ.get("KIMI_BASE_URL") or DEFAULT_BASE_URL
         )
-        self._client = OpenAI(api_key=key, base_url=self.base_url)
+        self._client = OpenAI(
+            api_key=key, base_url=self.base_url, timeout=REQUEST_TIMEOUT_SECONDS
+        )
 
-    def _load_prompt(self) -> str:
-        """Read the extraction instructions from the prompts directory."""
-        try:
-            return PROMPT_PATH.read_text(encoding="utf-8")
-        except OSError as exc:
-            raise ExtractionError(
-                f"Could not read the extraction prompt at {PROMPT_PATH}."
-            ) from exc
-
-    def extract_candidate_profile(self, document_text: str) -> CandidateProfile:
-        """Ask Kimi to extract candidate facts from CV text.
+    def extract_candidate_fields(self, document_text: str) -> ExtractedFields:
+        """Ask Kimi to extract candidate facts, with quotes, from CV text.
 
         Args:
             document_text: The plain text of the candidate's CV.
 
         Returns:
-            A CandidateProfile carrying the extracted fields. `candidate_id` is
-            left empty and `extraction` is unset -- the caller assigns both.
+            The model's facts, each paired with the quote it claims supports
+            it. Quotes are unverified here; the caller checks them.
 
         Raises:
             ValueError: If `document_text` is empty.
-            ExtractionError: If the request fails, or the reply cannot be
-                parsed into the expected structure.
+            ExtractionError: If the request fails, every attempt comes back
+                empty, or the reply cannot be parsed into the expected
+                structure.
         """
         if not document_text.strip():
             raise ValueError("Cannot extract a profile from empty document text.")
+        return self._extract(
+            load_candidate_prompt(), "candidate_fields", document_text, ExtractedFields
+        )
 
+    def extract_job_fields(self, description_text: str) -> ExtractedJobFields:
+        """Ask Kimi to extract job facts and requirements from a posting.
+
+        Args:
+            description_text: The plain text of the job description.
+
+        Returns:
+            The model's facts and requirements, each paired with the quote it
+            claims supports it. Quotes and proposed hard constraints are
+            unverified here; the caller checks them.
+
+        Raises:
+            ValueError: If `description_text` is empty.
+            ExtractionError: As for `extract_candidate_fields`.
+        """
+        if not description_text.strip():
+            raise ValueError("Cannot extract job facts from empty description text.")
+        return self._extract(
+            load_job_prompt(), "job_fields", description_text, ExtractedJobFields
+        )
+
+    def _extract(
+        self, prompt: Prompt, schema_name: str, text: str, output: type[_Output]
+    ) -> _Output:
+        """Send one strict structured-output request and parse the reply."""
         from openai import OpenAIError
 
-        try:
-            response = self._client.chat.completions.create(
-                model=self.model_id,
-                messages=[
-                    {"role": "system", "content": self._load_prompt()},
-                    {"role": "user", "content": document_text},
-                ],
-                response_format={
-                    "type": "json_schema",
-                    "json_schema": {
-                        "name": "candidate_fields",
-                        "schema": ExtractedFields.model_json_schema(),
-                        "strict": True,
+        for _ in range(MAX_ATTEMPTS):
+            try:
+                response = self._client.chat.completions.create(
+                    model=self.model_id,
+                    messages=[
+                        {"role": "system", "content": prompt.text},
+                        {"role": "user", "content": text},
+                    ],
+                    response_format={
+                        "type": "json_schema",
+                        "json_schema": {
+                            "name": schema_name,
+                            "schema": prompt.schema,
+                            "strict": True,
+                        },
                     },
-                },
-                temperature=0.0,
-            )
-        except OpenAIError as exc:
+                    temperature=0.0,
+                )
+            except OpenAIError as exc:
+                raise ExtractionError(
+                    f"Kimi request failed for model '{self.model_id}': {exc}"
+                ) from exc
+
+            if not response.choices:
+                raise ExtractionError("Kimi returned a response with no choices.")
+
+            content = response.choices[0].message.content
+            if content and content.strip():
+                break
+        else:
             raise ExtractionError(
-                f"Kimi request failed for model '{self.model_id}': {exc}"
-            ) from exc
-
-        if not response.choices:
-            raise ExtractionError("Kimi returned a response with no choices.")
-
-        content = response.choices[0].message.content
-        if not content or not content.strip():
-            raise ExtractionError("Kimi returned an empty response body.")
+                f"Kimi returned an empty response body on all {MAX_ATTEMPTS} "
+                f"attempts ({_empty_reply_diagnostics(response)})."
+            )
 
         try:
             payload = json.loads(content)
@@ -149,10 +189,25 @@ class KimiClient:
             ) from exc
 
         try:
-            fields = ExtractedFields.model_validate(payload)
+            return output.model_validate(payload)
         except ValidationError as exc:
             raise ExtractionError(
                 f"Kimi response did not match the expected schema: {exc}"
             ) from exc
 
-        return fields.to_profile()
+
+def _empty_reply_diagnostics(response: Any) -> str:
+    """Describe an empty reply without repeating any model output.
+
+    Reports only metadata -- never the content or reasoning text, which could
+    echo the CV back into logs and error messages.
+    """
+    choice = response.choices[0]
+    usage = getattr(response, "usage", None)
+    tokens = getattr(usage, "completion_tokens", None)
+    reasoning = getattr(choice.message, "reasoning_content", None)
+    return (
+        f"last attempt: finish_reason={getattr(choice, 'finish_reason', None)!r}, "
+        f"completion_tokens={'unknown' if tokens is None else tokens}, "
+        f"reasoning_content={'present' if reasoning else 'absent'}"
+    )

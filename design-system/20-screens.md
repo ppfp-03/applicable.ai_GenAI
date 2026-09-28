@@ -9,7 +9,7 @@ Una colonna (max 820px), nessun rail.
 ```
 ┌ sidebar ┐┌──────────── main (max 820) ────────────┐
 │ logo    ││ TUESDAY 22 SEPTEMBER                   │
-│ ● Your  ││ Good morning, Giulia                   │
+│ ● Your  ││ Good morning, Pierpaolo                   │
 │   week 1││ 3 applications fit your 5 hours.       │
 │ Explore ││ • UniCreda invited you… · See changes  │  ← solo se qualcosa è cambiato
 │ Tracker ││                                        │

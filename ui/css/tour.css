@@ -1,0 +1,26 @@
+/* The guided tour (ui/tour.py, ui/js/tour.js). */
+
+.aa-tour-mark{display:none}
+.aa-tour-veil{position:fixed;inset:0;z-index:9990;background:transparent}
+.aa-tour-hole{position:fixed;z-index:9991;pointer-events:none;border-radius:22px;
+ box-shadow:0 0 0 9999px rgba(22,24,32,.46),0 0 0 2px rgba(255,255,255,.9);
+ transition:left .45s cubic-bezier(.2,.8,.2,1),top .45s cubic-bezier(.2,.8,.2,1),width .45s cubic-bezier(.2,.8,.2,1),height .45s cubic-bezier(.2,.8,.2,1),opacity .2s}
+
+.st-key-tour{position:fixed!important;z-index:9995;width:380px!important;padding:20px 20px 16px!important;border-radius:22px;gap:0!important;opacity:0;
+ background:rgba(255,255,255,.94);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
+ border:1px solid rgba(255,255,255,.85);box-shadow:0 18px 50px rgba(20,24,40,.22),0 0 0 .5px rgba(0,0,0,.06);
+ transition:left .45s cubic-bezier(.2,.8,.2,1),top .45s cubic-bezier(.2,.8,.2,1),opacity .25s}
+.st-key-tour.aa-placed{opacity:1}
+.tr-k{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:620;color:var(--t3)}
+.tr-dots{display:flex;gap:5px}
+.tr-dots i{width:6px;height:6px;border-radius:3px;background:#D1D1D6;display:block;transition:width .25s}
+.tr-dots i.on{width:16px;background:var(--blue)}
+.tr-h{font-size:19px;font-weight:690;letter-spacing:-0.025em;color:var(--t1);margin-top:10px;line-height:1.2}
+.tr-p{font-size:13.5px;color:var(--t2);line-height:1.5;margin-top:6px}
+.tr-tip{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--blueBg);font-size:12.5px;line-height:1.45;color:var(--t1)}
+.tr-tip b{display:block;font-size:11px;font-weight:650;letter-spacing:.02em;color:var(--blue);margin-bottom:2px}
+.st-key-tour-acts{display:flex!important;flex-direction:row!important;align-items:center;justify-content:flex-end;gap:8px!important;margin-top:14px;flex-wrap:nowrap!important}
+.st-key-tour-acts > *{width:auto!important;flex:none}
+.st-key-tour-acts > :first-child:has(button[data-testid="stBaseButton-tertiary"]){margin-right:auto}
+.st-key-tour-acts button[data-testid="stBaseButton-tertiary"]{color:var(--t3);font-size:12.5px}
+.st-key-tour-js{display:none!important}

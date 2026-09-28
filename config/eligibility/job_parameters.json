@@ -1,0 +1,1330 @@
+{
+  "layer_version": "0.1-temporary",
+  "entries": [
+    {
+      "job_id": "synthetic:SYN-JOB-001",
+      "requirement_id": "synthetic:SYN-JOB-001:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-001:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Economics master's OR PhD student."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-001",
+      "requirement_id": "synthetic:SYN-JOB-001:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "master",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-001:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Master's OR PhD in progress: minimum master, in progress counts. Source: • Master's OR PhD in progress."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-001",
+      "requirement_id": "synthetic:SYN-JOB-001:req-004",
+      "constraint_id": "HC_FIELD_OF_STUDY",
+      "parameters": {
+        "kind": "field_of_study",
+        "accepted": [
+          "economics"
+        ],
+        "related_accepted": false
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-001:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Economics. Source: • Economics."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-001",
+      "requirement_id": "synthetic:SYN-JOB-001:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-001:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-002",
+      "requirement_id": "synthetic:SYN-JOB-002:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-002:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Currently studying for an undergraduate OR graduate degree."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-002",
+      "requirement_id": "synthetic:SYN-JOB-002:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-002:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Undergraduate OR graduate in progress: minimum bachelor, in progress counts. Source: • Undergraduate OR graduate degree in progress."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-002",
+      "requirement_id": "synthetic:SYN-JOB-002:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-002:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English fluency."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-003",
+      "requirement_id": "synthetic:SYN-JOB-003:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-003:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English fluency."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-004",
+      "requirement_id": "synthetic:SYN-JOB-004:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-004:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-005",
+      "requirement_id": "synthetic:SYN-JOB-005:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-005:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Currently enrolled in a master's programme."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-005",
+      "requirement_id": "synthetic:SYN-JOB-005:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "master",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-005:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Master's in progress: minimum master, in progress counts. Source: • Master's degree in progress."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-005",
+      "requirement_id": "synthetic:SYN-JOB-005:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-005:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-006",
+      "requirement_id": "synthetic:SYN-JOB-006:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-006:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-007",
+      "requirement_id": "synthetic:SYN-JOB-007:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student",
+          "recent_graduate"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-007:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Enrolled OR recently graduated. Source: • University-enrolled OR recently graduated."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-007",
+      "requirement_id": "synthetic:SYN-JOB-007:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "de",
+        "scale": "CEFR",
+        "min_level": "C1"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-007:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: German: C1 -> CEFR:C1. Source: • German: C1."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-007",
+      "requirement_id": "synthetic:SYN-JOB-007:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-007:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-008",
+      "requirement_id": "synthetic:SYN-JOB-008:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-008:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-009",
+      "requirement_id": "synthetic:SYN-JOB-009:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-009:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Currently studying for a bachelor's OR master's degree."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-009",
+      "requirement_id": "synthetic:SYN-JOB-009:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-009:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Bachelor's OR master's in progress: minimum bachelor, in progress counts. Source: • Bachelor's OR master's degree in progress."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-009",
+      "requirement_id": "synthetic:SYN-JOB-009:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-009:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-010",
+      "requirement_id": "synthetic:SYN-JOB-010:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-010:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-011",
+      "requirement_id": "synthetic:SYN-JOB-011:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-011:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-012",
+      "requirement_id": "synthetic:SYN-JOB-012:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-012:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Currently enrolled at university."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-012",
+      "requirement_id": "synthetic:SYN-JOB-012:req-003",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2027-12-01",
+        "end": "2028-07-31"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-012:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Between Dec 2027 and Jul 2028, whole months. Source: • Expected graduation between Dec 2027 and Jul 2028."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-013",
+      "requirement_id": "synthetic:SYN-JOB-013:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-013:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-014",
+      "requirement_id": "synthetic:SYN-JOB-014:req-002",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "does_not_count"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-014:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Completed bachelor's: minimum bachelor, in progress does not count. Source: • Completed bachelor's degree."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-014",
+      "requirement_id": "synthetic:SYN-JOB-014:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-014:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-015",
+      "requirement_id": "synthetic:SYN-JOB-015:req-002",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-015:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-016",
+      "requirement_id": "synthetic:SYN-JOB-016:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-016:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-017",
+      "requirement_id": "synthetic:SYN-JOB-017:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-017:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Currently enrolled at university."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-017",
+      "requirement_id": "synthetic:SYN-JOB-017:req-003",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2027-12-01",
+        "end": "2028-07-31"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-017:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Between Dec 2027 and Jul 2028, whole months. Source: • Expected graduation between Dec 2027 and Jul 2028."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-018",
+      "requirement_id": "synthetic:SYN-JOB-018:req-002",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "CN",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-018:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Authorization for the Shanghai office (CN); sponsorship not stated. Source: • Approved work authorization for the employing Shanghai office."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-019",
+      "requirement_id": "synthetic:SYN-JOB-019:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-019:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English fluency."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-020",
+      "requirement_id": "synthetic:SYN-JOB-020:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-020:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Currently enrolled at university."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-020",
+      "requirement_id": "synthetic:SYN-JOB-020:req-003",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2026-12-01",
+        "end": "2027-07-31"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-020:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Between Dec 2026 and Jul 2027, whole months. Source: • Expected graduation between Dec 2026 and Jul 2027."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-021",
+      "requirement_id": "synthetic:SYN-JOB-021:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-021:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Currently pursuing a bachelor’s OR master’s degree."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-021",
+      "requirement_id": "synthetic:SYN-JOB-021:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-021:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Bachelor's OR master's in progress: minimum bachelor, in progress counts. Source: • Bachelor’s OR master’s degree in progress."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-021",
+      "requirement_id": "synthetic:SYN-JOB-021:req-006",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-021:requirement-006"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-022",
+      "requirement_id": "synthetic:SYN-JOB-022:req-002",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-022:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-023",
+      "requirement_id": "synthetic:SYN-JOB-023:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-023:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • University/business-school student seeking a 6-month internship."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-023",
+      "requirement_id": "synthetic:SYN-JOB-023:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-023:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-024",
+      "requirement_id": "synthetic:SYN-JOB-024:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-024:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-025",
+      "requirement_id": "synthetic:SYN-JOB-025:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-025:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-026",
+      "requirement_id": "synthetic:SYN-JOB-026:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-026:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-027",
+      "requirement_id": "synthetic:SYN-JOB-027:req-004",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-027:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Bachelor's OR master's in progress: minimum bachelor, in progress counts. Source: • Bachelor’s OR master’s degree in progress."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-027",
+      "requirement_id": "synthetic:SYN-JOB-027:req-006",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-027:requirement-006"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-028",
+      "requirement_id": "synthetic:SYN-JOB-028:req-002",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "fr",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-028:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: French: fluent -> SELF:fluent (D-046). Source: • French: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-029",
+      "requirement_id": "synthetic:SYN-JOB-029:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "fr",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-029:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: French: fluent -> SELF:fluent (D-046). Source: • French: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-030",
+      "requirement_id": "synthetic:SYN-JOB-030:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "fr",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-030:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: French: fluent -> SELF:fluent (D-046). Source: • French: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-030",
+      "requirement_id": "synthetic:SYN-JOB-030:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-030:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-032",
+      "requirement_id": "synthetic:SYN-JOB-032:req-002",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "es",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-032:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Spanish: fluent -> SELF:fluent (D-046). Source: • Spanish: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-033",
+      "requirement_id": "synthetic:SYN-JOB-033:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-033:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Currently enrolled in Business School OR Engineering School."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-033",
+      "requirement_id": "synthetic:SYN-JOB-033:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-033:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • Fluent English."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-034",
+      "requirement_id": "synthetic:SYN-JOB-034:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-034:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Current student."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-035",
+      "requirement_id": "synthetic:SYN-JOB-035:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-035:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-037",
+      "requirement_id": "synthetic:SYN-JOB-037:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-037:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-038",
+      "requirement_id": "synthetic:SYN-JOB-038:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-038:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-038",
+      "requirement_id": "synthetic:SYN-JOB-038:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "de",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-038:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: German: fluent -> SELF:fluent (D-046). Source: • German: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-039",
+      "requirement_id": "synthetic:SYN-JOB-039:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-039:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Currently studying."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-039",
+      "requirement_id": "synthetic:SYN-JOB-039:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "nl",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-039:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Dutch: fluent -> SELF:fluent (D-046). Source: • Dutch: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-039",
+      "requirement_id": "synthetic:SYN-JOB-039:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-039:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-040",
+      "requirement_id": "synthetic:SYN-JOB-040:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-040:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Undergraduate OR master's OR PhD in progress: minimum bachelor, in progress counts. Source: • Undergraduate OR master’s OR PhD study in progress."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-040",
+      "requirement_id": "synthetic:SYN-JOB-040:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-040:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-041",
+      "requirement_id": "synthetic:SYN-JOB-041:req-003",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2027-01-01",
+        "end": "2027-12-31"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-041:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Graduating in 2027, the whole year. Source: • Graduating in 2027."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-041",
+      "requirement_id": "synthetic:SYN-JOB-041:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-041:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-042",
+      "requirement_id": "synthetic:SYN-JOB-042:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-042:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-043",
+      "requirement_id": "synthetic:SYN-JOB-043:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-043:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-044",
+      "requirement_id": "synthetic:SYN-JOB-044:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-044:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • University student."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-044",
+      "requirement_id": "synthetic:SYN-JOB-044:req-003",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2027-01-01",
+        "end": "2028-12-31"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-044:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: 2027 OR 2028: contiguous years, the exact union. Source: • Graduating in 2027 OR 2028."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-044",
+      "requirement_id": "synthetic:SYN-JOB-044:req-004",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-044:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Bachelor's OR master's in progress: minimum bachelor, in progress counts. Source: • Bachelor’s OR master’s degree in progress."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-045",
+      "requirement_id": "synthetic:SYN-JOB-045:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-045:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Currently following higher education."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-045",
+      "requirement_id": "synthetic:SYN-JOB-045:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "fr",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-045:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: French: fluent -> SELF:fluent (D-046). Source: • French: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-046",
+      "requirement_id": "synthetic:SYN-JOB-046:req-002",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "DE",
+        "employer_sponsorship": "not_offered"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-046:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: EU/EEA authorization for the German office; 'visa sponsorship unavailable'. Source: • Existing EU/EEA work authorisation required; visa sponsorship unavailable."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-046",
+      "requirement_id": "synthetic:SYN-JOB-046:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-046:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-047",
+      "requirement_id": "synthetic:SYN-JOB-047:req-002",
+      "constraint_id": "HC_WORK_AUTH",
+      "parameters": {
+        "kind": "work_auth",
+        "country_code": "GB",
+        "employer_sponsorship": "not_stated"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-047:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: UK work authorisation required; sponsorship not stated. Source: • UK work authorisation required."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-047",
+      "requirement_id": "synthetic:SYN-JOB-047:req-003",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-047:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: University degree: minimum bachelor; in progress left to the catalogue default (undecided). Source: • University degree."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-047",
+      "requirement_id": "synthetic:SYN-JOB-047:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-047:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-048",
+      "requirement_id": "synthetic:SYN-JOB-048:req-004",
+      "constraint_id": "HC_GRAD_WINDOW",
+      "parameters": {
+        "kind": "grad_window",
+        "start": "2027-08-01",
+        "end": "2028-12-31"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-048:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Between Aug 2027 and Dec 2028, whole months. Source: • Graduating between Aug 2027 and Dec 2028."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-048",
+      "requirement_id": "synthetic:SYN-JOB-048:req-005",
+      "constraint_id": "HC_DEGREE_LEVEL",
+      "parameters": {
+        "kind": "degree_level",
+        "min_level": "bachelor",
+        "in_progress_policy": "counts"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-048:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Degree in progress: minimum bachelor, in progress counts. Source: • Degree in progress."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-048",
+      "requirement_id": "synthetic:SYN-JOB-048:req-007",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-048:requirement-007"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-049",
+      "requirement_id": "synthetic:SYN-JOB-049:req-003",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-049:requirement-003"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-050",
+      "requirement_id": "synthetic:SYN-JOB-050:req-002",
+      "constraint_id": "HC_STUDENT_STATUS",
+      "parameters": {
+        "kind": "student_status",
+        "accepted": [
+          "enrolled_student"
+        ]
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-050:requirement-002"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Currently a student: enrolled_student. Source: • Student seeking an internship."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-050",
+      "requirement_id": "synthetic:SYN-JOB-050:req-004",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "fr",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-050:requirement-004"
+      ],
+      "origin": "curated",
+      "note": "OI-50: French: fluent -> SELF:fluent (D-046). Source: • French: fluent."
+    },
+    {
+      "job_id": "synthetic:SYN-JOB-050",
+      "requirement_id": "synthetic:SYN-JOB-050:req-005",
+      "constraint_id": "HC_LANGUAGE",
+      "parameters": {
+        "kind": "language",
+        "language": "en",
+        "scale": "SELF",
+        "min_level": "fluent"
+      },
+      "evidence_ids": [
+        "synthetic:SYN-JOB-050:requirement-005"
+      ],
+      "origin": "curated",
+      "note": "OI-50: Fluent English: SELF:fluent (D-046). Source: • English: fluent."
+    }
+  ]
+}

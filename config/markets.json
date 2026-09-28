@@ -1,0 +1,19 @@
+{
+  "version": "0.1",
+  "source": "PROJECT_CONTEXT.md D-015 target geographies",
+  "countries": [
+    {"code": "IT", "name": "Italy", "eu": true},
+    {"code": "ES", "name": "Spain", "eu": true},
+    {"code": "FR", "name": "France", "eu": true},
+    {"code": "DE", "name": "Germany", "eu": true},
+    {"code": "NL", "name": "Netherlands", "eu": true},
+    {"code": "LU", "name": "Luxembourg", "eu": true},
+    {"code": "DK", "name": "Denmark", "eu": true},
+    {"code": "IE", "name": "Ireland", "eu": true},
+    {"code": "GB", "name": "United Kingdom", "eu": false},
+    {"code": "CH", "name": "Switzerland", "eu": false},
+    {"code": "CN", "name": "China", "eu": false},
+    {"code": "HK", "name": "Hong Kong", "eu": false},
+    {"code": "SG", "name": "Singapore", "eu": false}
+  ]
+}

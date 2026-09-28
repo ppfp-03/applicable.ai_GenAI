@@ -31,7 +31,7 @@ core/
   rules.py                  # eleggibilità deterministica (date, titolo di studio, permessi)
   ranking.py                # priority = somma pesata; penalità; nessun output del modello aggiunto
   llm.py                    # estrazione + spiegazioni, con obbligo di citazione
-data/demo.json              # persona Giulia Rossi + opportunità fittizie
+data/demo.json              # persona Pierpaolo Filippelli + opportunità fittizie
 ```
 
 ## Contratti dati (`core/models.py`)
