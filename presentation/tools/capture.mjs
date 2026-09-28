@@ -7,6 +7,8 @@
  *   node tools/capture.mjs video out/frames --fps 30             # every frame
  *   node tools/capture.mjs video out/sub --fps 30 --sub 4        # 4 sub-frames per frame across
  *                                                                  a 180° shutter, for motion blur
+ *   node tools/capture.mjs video out/sub --scale 1 --dsf 2        # supersample: 3840×2160 pixels,
+ *                                                                  reduced to 1080p by accumulate.py
  *   (tools/render-preview.sh does the whole chain: cues → music → frames → blur → MP4 with sound)
  *
  * Needs `playwright-core` (npm i -D playwright-core) and a Chromium; set CHROMIUM_PATH to
@@ -21,7 +23,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const page_url = pathToFileURL(resolve(here, '..', 'index.html')).href;
 const [mode, outDir, ...rest] = process.argv.slice(2);
 if (!mode || !outDir) {
-  console.error('usage: capture.mjs stills <outDir> <t…> | video <outDir> [--fps N] [--from s] [--to s] [--scale k]');
+  console.error('usage: capture.mjs stills <outDir> <t…> | video <outDir> [--fps N] [--from s] [--to s] [--scale k] [--dsf n]');
   process.exit(1);
 }
 const opt = (name, dflt) => {
@@ -31,11 +33,14 @@ const opt = (name, dflt) => {
 mkdirSync(outDir, { recursive: true });
 
 const scale = opt('scale', 0.5);
+// Device pixels per CSS pixel. Layers the camera zooms into are rasterised at their CSS size,
+// so 2 keeps them sharp once accumulate.py brings the frame back down to 1920×1080.
+const dsf = opt('dsf', 1);
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH || undefined,
   args: ['--force-color-profile=srgb', '--font-render-hinting=none'],
 });
-const page = await browser.newPage({ viewport: { width: Math.round(1920 * scale), height: Math.round(1080 * scale) }, deviceScaleFactor: 1 });
+const page = await browser.newPage({ viewport: { width: Math.round(1920 * scale), height: Math.round(1080 * scale) }, deviceScaleFactor: dsf });
 page.on('pageerror', (e) => console.error('page error:', e.message));
 await page.goto(page_url + '?t=0');
 await page.waitForFunction(() => document.documentElement.dataset.ready === '1');
@@ -62,7 +67,8 @@ if (mode === 'stills') {
   // Files are named by absolute frame number, so several captures can split one film.
   for (let f = Math.round(from * fps); f < Math.round(to * fps); f++, i++) {
     const name = String(f).padStart(5, '0');
-    if (sub === 1) await shoot(f / fps, join(outDir, name + '.png'));
+    if (sub === 1 && dsf === 1) await shoot(f / fps, join(outDir, name + '.png'));
+    else if (sub === 1) await shoot(f / fps, join(outDir, name + '_0.png')); // still to be reduced
     // Sub-frames centred on the frame time across a 180° shutter (half the frame interval).
     else for (let k = 0; k < sub; k++) await shoot(f / fps + ((k + 0.5) / sub - 0.5) * (0.5 / fps), join(outDir, `${name}_${k}.png`));
   }
