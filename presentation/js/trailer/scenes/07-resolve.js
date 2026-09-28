@@ -20,8 +20,13 @@
     // #1 comes to the centre and flips over (on X) into the full card.
     R.B.to(T.focus, 0.5, { y: 540, z: 60 }, 'inOutCubic');
     R.B.to(T.card, 0.4, { rx: 90 }, 'inCubic').set(T.card + 0.4, { o: 0 });
+    // Product and card share one group: once the card has landed they leave as a single
+    // layer, so the app's own card underneath can never show through a half-faded one.
+    const group = h('div.d3');
+    const groupA = place(group, world, { x: 0, y: 0 }, { anchor: 'none' }, 'productGroup');
     const card = C.nextBest(K.nextBest);
-    const cardA = place(card, world, { x: 960, y: 540, z: 60, rx: -90, s: 1.18, o: 0 }, null, 'nextBest');
+    card.classList.add('in-slot');
+    const cardA = place(card, group, { x: 960, y: 540, z: 60, rx: -90, s: 1.18, o: 0 }, null, 'nextBest');
     cardA.set(T.card + 0.4, { o: 1 }).to(T.card + 0.4, 0.8, { rx: 0 }, 'outBack');
     sfx(T.card, 'flip');
     sfx(T.card + 0.5, 'card');
@@ -35,7 +40,8 @@
     // Screenshot geometry (1600×1000 app stage): that card spans x 490–1110, y 160–478.
     const PS = 0.9;
     const product = C.product('assets/app-home.jpg');
-    const productA = place(product, world, { x: 960, y: 560, z: -1400, rx: 24, o: 0 }, null, 'product');
+    const productA = place(product, group, { x: 960, y: 560, z: -1400, rx: 24, o: 0 }, null, 'product');
+    group.insertBefore(product, card); // behind the card
     productA.to(T.product, 0.3, { o: 1 }).to(T.product, 1.4, { z: 0, rx: 0, y: 540, s: PS }, 'outCubic');
     const slotW = 620 * PS, slotY = 540 + (319 - 500) * PS;
     cardA.to(T.product + 0.35, 1.1, { y: slotY, z: 2, s: slotW / 780 }, 'inOutCubic');
@@ -46,12 +52,11 @@
 
     // Fold into the lockup.
     cam.to(T.toMark, 1.0, { rx: 0, ry: 0, s: 1 }, 'inOutCubic');
-    productA.to(T.toMark, 1.0, { z: -900, o: 0 }, 'inCubic');
-    cardA.to(T.toMark, 0.9, { z: -700, o: 0 }, 'inCubic');
+    groupA.to(T.toMark, 0.8, { z: -900, o: 0 }, 'inCubic');
     const L = shared.lockup;
     const S = 1.15, LY = 470;
-    L.groupA.to(T.toMark + 0.15, 1.0, { x: 960, y: LY, s: S }, 'inOutCubic');
-    sfx(T.toMark + 0.2, 'whoosh', { d: 1.0, gain: 0.5 });
+    L.groupA.to(T.toMark + 0.5, 0.85, { x: 960, y: LY, s: S }, 'inOutCubic');
+    sfx(T.toMark + 0.5, 'whoosh', { d: 1.0, gain: 0.5 });
 
     const tag = C.headline(K.tagline, 'center lg');
     tag.querySelectorAll('.hl-line')[1].innerHTML = 'this week, <span class="soft">and why.</span>';

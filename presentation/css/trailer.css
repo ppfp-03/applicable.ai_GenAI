@@ -233,7 +233,11 @@
 .delta { display: inline-block; white-space: nowrap; font: 700 15px/1 var(--font); padding: 9px 13px; border-radius: 999px; background: var(--t1); color: #fff; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
 
 /* ---------- Phase 7: the app's "next best action" card ---------- */
-.nba { width: 780px; padding: 32px 36px 30px; border-radius: 26px; }
+.nba { width: 780px; padding: 32px 36px 30px; border-radius: 26px; display: flex; flex-direction: column; }
+/* It lands on the app's own card in the product screenshot: opaque, and the slot's exact
+   proportions (620×318 there → 780×400 here), with the corner radius matched after scaling. */
+.nba.in-slot { height: 400px; background: #fff; border-radius: 33px; }
+.nba.in-slot .nba-foot { margin-top: auto; }
 .nba-top { display: flex; gap: 18px; align-items: center; margin-top: 18px; }
 .nba-title { font: 700 32px/1.1 var(--font); letter-spacing: -.035em; }
 .nba-sub { margin-top: 6px; font: 400 16px/1.3 var(--font); color: var(--t2); }
