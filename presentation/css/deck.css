@@ -42,3 +42,14 @@
   position: absolute; right: 64px; bottom: 56px;
   font: 500 16px/1 var(--font-mono); color: var(--ink-faint);
 }
+
+/* Start gate: browsers only allow sound after a gesture, so the presenter starts the film. */
+.gate {
+  position: absolute; inset: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  background: var(--stage);
+  font: 600 22px/1 var(--font); color: var(--t2);
+  cursor: pointer;
+}
+.gate[hidden] { display: none; }
+.gate .key { display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 18px; box-shadow: 0 10px 26px rgba(242,106,61,.35); }

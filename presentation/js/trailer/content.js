@@ -11,9 +11,9 @@
 
     // Phase 1 desk: the first three roles you find.
     firstJobs: [
-      { id: 'j-bolton', mono: 'BC', title: 'Strategy Analyst', company: 'Bolton Consulting Group', city: 'London', meta: 'Posted 2 days ago' },
-      { id: 'j-deutsch', mono: 'DB', title: 'Investment Banking Analyst', company: 'Deutsch Bank', city: 'Frankfurt', meta: 'Posted 5 days ago' },
-      { id: 'j-nestella', mono: 'NE', title: 'Business Analyst', company: 'Nestella', city: 'Milan', meta: 'Posted today' },
+      { id: 'j-bolton', mono: 'BC', title: 'Strategy Analyst', company: 'Bolton Consulting Group', city: 'London', priority: 88, bar: 72, closes: 'Closes in 6 d', hot: true },
+      { id: 'j-deutsch', mono: 'DB', title: 'Investment Banking Analyst', company: 'Deutsch Bank', city: 'Frankfurt', priority: 92, bar: 58, closes: 'Closes 14 Oct' },
+      { id: 'j-nestella', mono: 'NE', title: 'Business Analyst', company: 'Nestella', city: 'Milan', priority: 81, bar: 40, closes: 'Closes 20 Oct', grey: true },
     ],
     jd: {
       title: 'Investment Banking Analyst',
@@ -81,7 +81,7 @@
     harder: 'And then it gets harder.',
 
     // Phase 3
-    abroad: 'Now do it in another country.',
+    abroad: ['Now do it', 'in another country.'],
     hero: { id: 'j-deutsch' },
     constraints: [
       { key: 'WORK AUTHORIZATION', value: 'Right to work in Germany?' },
@@ -100,6 +100,7 @@
 
     // Phase 5
     profileTitle: 'Your profile',
+    profileSub: 'CV_final_FINAL.pdf · 2 pages',
     facts: [
       { key: 'Education', value: 'MSc Finance · Bocconi', src: 'CV' },
       { key: 'Experience', value: 'M&A internship · 6 months', src: 'CV' },
@@ -144,26 +145,34 @@
       'r-bolton': 'UK right to work',
     },
     notForNow: 'Not for now',
-    clarify: { label: 'One question', question: 'Are you authorised to work in the UK?', answers: ['Yes', 'No', 'Not sure'], chosen: 0 },
+    clarify: {
+      label: 'Question · about 10 seconds',
+      question: 'Are you authorised to work in the UK?',
+      sub: 'Not stated in your CV · it decides Strategy Analyst at Bolton',
+      answers: ['Yes', 'No', 'Not sure yet'],
+      chosen: 0,
+    },
     moved: '→ #1',
 
-    // Phase 7
-    finalCard: {
-      rank: '#1 this week',
-      verdict: 'Apply this week',
-      title: 'Strategy Analyst',
-      where: 'Bolton Consulting Group · London',
-      tiles: [
-        { k: 'Eligibility', v: 'Eligible under checked rules', tone: 'go' },
-        { k: 'Profile fit', v: 'Strong · 88', tone: 'ink' },
-        { k: 'Deadline', v: '⏱ Closes in 6 days', tone: 'ink' },
+    // Phase 7: the app's own "Next best action" card, and the app's own promise.
+    nextBest: {
+      kicker: 'Your #1 this week',
+      mono: 'BC',
+      title: 'Apply to Bolton Consulting Group',
+      sub: 'Strategy Analyst · London · Eligible under checked rules',
+      closes: 'Closes Fri 2 Oct, 23:59 BST',
+      count: [['6', 'd'], ['04', 'h'], ['12', 'm']],
+      checks: [
+        ['g', 'Right to work in the UK · you answered'],
+        ['g', 'Strong profile fit · 88'],
+        ['g', 'CV ready · 1 cover letter to write'],
       ],
-      whyBefore: 'Your ',
-      whyQuote: 'six-month M&A internship',
-      whyAfter: ' is exactly the analysis work they ask for.',
-      src: ['CV', 'p.1 · Experience'],
+      primary: 'Start application',
+      secondary: 'Not now',
+      whyQuote: 'M&A internship',
+      whyAfter: ' · closest deadline',
     },
-    tagline: 'Know which opportunity deserves your time.',
+    tagline: ['Know where to apply', 'this week, and why.'],
     continueHint: 'Press → to continue',
   };
 })(window.Applicable = window.Applicable || {});

@@ -4,8 +4,10 @@
  * seeking and screenshotting gives exactly what the audience sees at that instant.
  *
  *   node tools/capture.mjs stills out/ 0 4.5 12 20.5            # specific timestamps
- *   node tools/capture.mjs video out/frames --fps 30             # every frame, then:
- *   ffmpeg -framerate 30 -i out/frames/%05d.png -pix_fmt yuv420p -crf 18 out/trailer.mp4
+ *   node tools/capture.mjs video out/frames --fps 30             # every frame
+ *   node tools/capture.mjs video out/sub --fps 30 --sub 4        # 4 sub-frames per frame across
+ *                                                                  a 180° shutter, for motion blur
+ *   (tools/render-preview.sh does the whole chain: cues → music → frames → blur → MP4 with sound)
  *
  * Needs `playwright-core` (npm i -D playwright-core) and a Chromium; set CHROMIUM_PATH to
  * use a specific binary.
@@ -53,12 +55,16 @@ if (mode === 'stills') {
   }
 } else {
   const fps = opt('fps', 30);
+  const sub = opt('sub', 1);
   const duration = await page.evaluate(() => window.Applicable.player.duration);
   const from = opt('from', 0), to = opt('to', duration);
   let i = 0;
-  for (let f = Math.round(from * fps); f <= Math.round(to * fps); f++, i++) {
-    await shoot(f / fps, join(outDir, String(i).padStart(5, '0') + '.png'));
+  for (let f = Math.round(from * fps); f < Math.round(to * fps); f++, i++) {
+    const name = String(i).padStart(5, '0');
+    if (sub === 1) await shoot(f / fps, join(outDir, name + '.png'));
+    // Sub-frames centred on the frame time across a 180° shutter (half the frame interval).
+    else for (let k = 0; k < sub; k++) await shoot(f / fps + ((k + 0.5) / sub - 0.5) * (0.5 / fps), join(outDir, `${name}_${k}.png`));
   }
-  console.log(`${i} frames at ${fps} fps`);
+  console.log(`${i} frames at ${fps} fps` + (sub > 1 ? `, ${sub} sub-frames each` : ''));
 }
 await browser.close();

@@ -7,7 +7,12 @@
  *   state             current state: LOADING | TRAILER_AUTOPLAY | PRESENTATION_READY
  *   player            {play, pause, seek(t), duration} — for tooling and debugging
  *
- * URL parameters (development):
+ * Sound: the soundtrack (assets/soundtrack.js) is the master clock when it can play. Browsers
+ * allow sound only after a gesture, so unless the page is already allowed to play audio, a
+ * quiet start screen waits for one click (or key) from the presenter.
+ *
+ * URL parameters:
+ *   ?muted     no sound, no start screen: the film autoplays silently
  *   ?t=31.5    render that exact frame and hold (no autoplay) — used by tools/capture.mjs
  *   ?debug     show a timecode; Space pauses, , and . step ±1/30 s, [ and ] ±1 s, R replays
  *   ?skip      start directly in PRESENTATION_READY
@@ -19,11 +24,7 @@
   const $ = (s) => document.querySelector(s);
 
   async function preload() {
-    const faces = [
-      '800 40px "Bricolage Grotesque"', '600 40px "Bricolage Grotesque"',
-      '400 16px Figtree', '500 16px Figtree', '600 16px Figtree', '700 16px Figtree',
-      '400 16px "JetBrains Mono"', '500 16px "JetBrains Mono"',
-    ];
+    const faces = ['400 16px Inter', '500 16px Inter', '600 16px Inter', '700 16px Inter'];
     const fonts = Promise.all(faces.map((f) => document.fonts.load(f))).then(() => document.fonts.ready);
     // Never hang the room on a font: continue after 4 s with whatever has loaded.
     await Promise.race([fonts, new Promise((r) => setTimeout(r, 4000))]);
@@ -33,6 +34,8 @@
     const stage = $('#stage');
     A.fitStage(stage);
     const state = new A.PresentationState();
+    // Fonts first: some positions are measured from laid-out text when the film is built.
+    await preload();
     const { tl } = A.buildTrailer($('#trailer'));
 
     const deck = new A.Deck({ cover: $('#trailer'), root: $('#deck'), hint: $('#hint'), counter: $('#counter') });
@@ -41,6 +44,16 @@
       if (!state.is(A.STATES.PRESENTATION_READY)) state.set(A.STATES.PRESENTATION_READY);
     };
     const clock = new A.Clock({ duration: tl.duration, onFrame: (t) => tl.render(t), onEnd: toReady });
+    const capture = params.has('t');
+    const wantSound = !capture && !params.has('muted') && !params.has('skip') && A.soundtrackData;
+    if (wantSound) {
+      const track = new A.Soundtrack(A.soundtrackData);
+      try {
+        if (await track.load()) clock.audio = track;
+      } catch (e) {
+        console.warn('Soundtrack could not be decoded; playing silently.', e);
+      }
+    }
 
     document.addEventListener('applicable:statechange', ({ detail }) => {
       if (detail.to === A.STATES.PRESENTATION_READY) deck.enable();
@@ -60,10 +73,11 @@
         },
         duration: tl.duration,
       },
-      replayTrailer() {
+      async replayTrailer() {
         clock.pause();
         deck.go(0, { instant: true });
         if (!state.is(A.STATES.TRAILER_AUTOPLAY)) state.set(A.STATES.TRAILER_AUTOPLAY);
+        if (clock.audio) await clock.audio.unlock(); // called from a click: sound is allowed
         clock.seek(0);
         clock.play();
       },
@@ -83,7 +97,6 @@
       if (e.key === 'Escape' && state.is(A.STATES.TRAILER_AUTOPLAY)) api.skipTrailer();
     });
 
-    await preload();
     // Draw frame 0 and let the browser composite it before the clock starts.
     clock.seek(0);
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
@@ -96,11 +109,34 @@
       clock.seek(tl.duration);
       state.set(A.STATES.PRESENTATION_READY);
     } else {
+      // With sound, start at once if the browser already allows audio; otherwise wait for
+      // the presenter's first click or key on a quiet start screen.
+      if (clock.audio && !(await clock.audio.unlock())) await gate(() => clock.audio.unlock());
       state.set(A.STATES.TRAILER_AUTOPLAY);
       clock.play();
     }
     if (params.has('debug')) A.debugOverlay(clock, api);
     document.documentElement.dataset.ready = '1';
+  }
+
+  /** Show the start screen until a click or key; `onGesture` runs inside the gesture. */
+  function gate(onGesture) {
+    const el = $('#gate');
+    el.hidden = false;
+    return new Promise((resolve) => {
+      const go = async (e) => {
+        if (e.type === 'keydown' && ['Shift', 'Meta', 'Control', 'Alt'].includes(e.key)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        window.removeEventListener('keydown', go, true);
+        el.removeEventListener('click', go);
+        await onGesture();
+        el.hidden = true;
+        resolve();
+      };
+      window.addEventListener('keydown', go, true);
+      el.addEventListener('click', go);
+    });
   }
 
   /** Timecode + scrubbing for rehearsal and review. */

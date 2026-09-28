@@ -79,7 +79,7 @@
   }
 
   const DEFAULTS = {
-    x: 0, y: 0, s: 1, sx: 1, sy: 1, r: 0, o: 1, blur: 0,
+    x: 0, y: 0, z: 0, s: 1, sx: 1, sy: 1, r: 0, rx: 0, ry: 0, o: 1, blur: 0,
     // Clip insets in %, for masks and reveals.
     ct: 0, cr: 0, cb: 0, cl: 0,
     // Generic numeric channels for hooks (counters, progress bars…).
@@ -160,10 +160,13 @@
       if (c.vis !== vis) style.visibility = c.vis = vis;
       if (vis) return; // invisible: skip the rest of the work
 
-      const x = g('x'), y = g('y'), s = g('s'), sx = g('sx'), sy = g('sy'), r = g('r');
+      const x = g('x'), y = g('y'), z = g('z'), s = g('s'), sx = g('sx'), sy = g('sy');
+      const r = g('r'), rx = g('rx'), ry = g('ry');
       const anchor = ANCHORS[this.anchor] || '';
       const tf =
-        `translate3d(${round(x, 100)}px,${round(y, 100)}px,0)${anchor}` +
+        `translate3d(${round(x, 100)}px,${round(y, 100)}px,${round(z, 100)}px)${anchor}` +
+        (rx ? ` rotateX(${round(rx, 1000)}deg)` : '') +
+        (ry ? ` rotateY(${round(ry, 1000)}deg)` : '') +
         (r ? ` rotate(${round(r, 1000)}deg)` : '') +
         (s !== 1 || sx !== 1 || sy !== 1 ? ` scale(${round(s * sx, 10000)},${round(s * sy, 10000)})` : '');
       if (c.tf !== tf) style.transform = c.tf = tf;

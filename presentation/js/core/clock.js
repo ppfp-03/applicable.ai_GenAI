@@ -1,6 +1,7 @@
 /*
- * Playback clock. Maps wall time to playhead time and calls onFrame(t) once per display
- * frame. Pauses itself while the tab is hidden so the film never "jumps ahead" unseen.
+ * Playback clock. Maps wall time (or, with sound, the audio being heard) to playhead time and
+ * calls onFrame(t) once per display frame. Pauses itself while the tab is hidden so the film
+ * never "plays unseen".
  */
 (function (A) {
   'use strict';
@@ -12,7 +13,7 @@
       this.onEnd = onEnd;
       this.t = 0;
       this.playing = false;
-      this.rate = 1;
+      this.audio = null; // a ready Soundtrack becomes the master clock
       this._raf = 0;
       this._origin = 0; // performance.now() at which t would have been 0
       this._tick = this._tick.bind(this);
@@ -27,25 +28,33 @@
         }
       });
     }
+    get synced() {
+      return !!(this.audio && this.audio.ready);
+    }
     play() {
       if (this.playing) return;
       if (this.t >= this.duration) this.t = 0;
       this.playing = true;
-      this._origin = performance.now() - (this.t * 1000) / this.rate;
+      this._origin = performance.now() - this.t * 1000;
+      if (this.synced) this.audio.play(this.t);
       this._raf = requestAnimationFrame(this._tick);
     }
     pause() {
       this.playing = false;
       cancelAnimationFrame(this._raf);
+      if (this.audio) this.audio.stop();
     }
     seek(t) {
       this.t = Math.max(0, Math.min(this.duration, t));
-      this._origin = performance.now() - (this.t * 1000) / this.rate;
+      this._origin = performance.now() - this.t * 1000;
+      if (this.playing && this.synced) this.audio.play(this.t);
       this.onFrame(this.t);
     }
     _tick(now) {
       if (!this.playing) return;
-      this.t = Math.min(this.duration, ((now - this._origin) / 1000) * this.rate);
+      // Audio time is only trusted forwards: never step the picture back by a latency jitter.
+      const t = this.synced ? Math.max(this.t, this.audio.time()) : (now - this._origin) / 1000;
+      this.t = Math.min(this.duration, Math.max(0, t));
       this.onFrame(this.t);
       if (this.t >= this.duration) {
         this.playing = false;
