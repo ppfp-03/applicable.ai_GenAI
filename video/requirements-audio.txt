@@ -1,0 +1,8 @@
+# Python tools for the video pipeline: soundtrack synthesis, loudness,
+# optical-flow motion blur and frame accumulation.
+numpy
+scipy
+soundfile
+pyloudnorm
+opencv-python-headless
+Pillow
