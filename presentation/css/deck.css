@@ -1,0 +1,44 @@
+/* Placeholder deck and the presenter hint. The real deck replaces the slides only. */
+.deck { pointer-events: none; }
+.deck .slide {
+  position: absolute; inset: 0;
+  box-sizing: border-box;
+  padding: 180px 160px;
+  background: var(--canvas);
+  opacity: 0;
+  pointer-events: none;
+}
+.deck .slide.is-current { opacity: 1; pointer-events: auto; }
+.trailer:not(.is-current) { pointer-events: none; }
+
+.slide-kicker { font: 600 20px/1 var(--font-sans); color: var(--brand-ink); letter-spacing: .02em; margin: 0 0 28px; }
+.slide h1 { font: 800 96px/1.02 var(--font-display); letter-spacing: -.035em; margin: 0; max-width: 1400px; }
+.slide-lead { font: 500 30px/1.4 var(--font-sans); color: var(--ink-muted); margin: 36px 0 0; }
+.replay {
+  font: 600 20px/1 var(--font-sans); color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line-control); border-radius: 12px; padding: 12px 18px; margin-left: 12px; cursor: pointer;
+}
+.replay:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.hint {
+  position: absolute; right: 64px; bottom: 56px;
+  display: flex; align-items: center; gap: 12px;
+  font: 600 18px/1 var(--font-sans); color: var(--ink-muted);
+  opacity: 0; transform: translateY(8px);
+  transition: opacity .8s ease, transform .8s ease;
+  pointer-events: none;
+}
+.hint.is-visible { opacity: 1; transform: none; animation: hint-breathe 3.2s ease-in-out 1s infinite; }
+.hint .key {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 34px; border-radius: 8px;
+  border: 1px solid var(--line-control); background: var(--surface);
+  color: var(--ink); font: 700 18px/1 var(--font-sans);
+  box-shadow: 0 2px 0 var(--line);
+}
+@keyframes hint-breathe { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+
+.counter-badge {
+  position: absolute; right: 64px; bottom: 56px;
+  font: 500 16px/1 var(--font-mono); color: var(--ink-faint);
+}
