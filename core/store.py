@@ -36,7 +36,7 @@ from typing import Any, Optional
 
 import streamlit as st
 
-from core import eligibility, eligibility_view, ranking, rules
+from core import clock, eligibility, eligibility_view, ranking, rules
 from core import matches as matches_core
 from oi.contracts import AnswerState, AnswerType, CandidateProfile
 from oi.intelligence.eligibility.catalogue import LANGUAGE_CONSTRAINT_ID, language_level_key
@@ -717,7 +717,9 @@ def run_simulated_event() -> None:
 
 def available() -> list[RoleDef]:
     """The roles the product knows about right now: the baseline snapshot,
-    plus the scenario's postings once the simulated event has run."""
+    plus the scenario's postings once the simulated event has run. A role
+    whose closing date has passed stays known, shown as closed (clock.closes_line);
+    rankings and counts take the open ones only (open_views)."""
     ran = simulated_event_ran()
     return [r for r in data().roles if ran or not is_simulated(r)]
 
@@ -758,6 +760,16 @@ def views(ans: Optional[dict] = None, as_of: Optional[str] = None) -> list[RoleV
     return [view(r, ans) for r in available() if as_of is None or r.found <= as_of]
 
 
+def open_views(ans: Optional[dict] = None, as_of: Optional[str] = None) -> list[RoleView]:
+    """The roles of `views` still open today: a closed one can no longer be applied to."""
+    return [v for v in views(ans, as_of) if not clock.is_closed(v)]
+
+
+def closed_views() -> list[RoleView]:
+    """The roles whose closing date has passed, most recently closed first."""
+    return sorted((v for v in views() if clock.is_closed(v)), key=lambda v: v.closes, reverse=True)
+
+
 def reviewed() -> bool:
     """Whether the user has reviewed today's new matches."""
     return bool(st.session_state.get(REVIEWED, False))
@@ -766,7 +778,7 @@ def reviewed() -> bool:
 def ranked(
     ans: Optional[dict] = None, as_of: Optional[str] = None, include_new: Optional[bool] = None
 ) -> list[RoleView]:
-    """Eligible and to-verify roles, highest priority first.
+    """Eligible and to-verify open roles, highest priority first.
 
     Args:
         ans: Answers to use instead of the current ones.
@@ -776,7 +788,7 @@ def ranked(
     """
     if include_new is None:
         include_new = _reviewed_safe()
-    pool = [v for v in views(ans, as_of) if v.standing != "excluded"]
+    pool = [v for v in open_views(ans, as_of) if v.standing != "excluded"]
     if not include_new:
         pool = [v for v in pool if not v.get("new")]
     return ranking.order(pool, lambda v: v.score)
@@ -801,8 +813,6 @@ def matches() -> "matches_core.Matches":
     answers, confirmed preferences and CV: curated roles and synthetic postings,
     each posting once, one formula (D-051). Outside onboarding, every screen
     that shows a role's Priority score reads it here."""
-    from core import clock  # clock reads the store
-
     d = data()
     cv = candidate()
     roles = [r.raw for r in available()]
@@ -871,9 +881,9 @@ def counts(choice: Any = "current", as_of: Optional[str] = None) -> dict[str, in
 
 
 def tally(ans: dict, as_of: Optional[str] = None) -> dict[str, int]:
-    """Eligible / to verify / excluded among the roles available under `ans`."""
+    """Eligible / to verify / excluded among the open roles available under `ans`."""
     out = {"eligible": 0, "verify": 0, "excluded": 0}
-    for v in views(ans, as_of):
+    for v in open_views(ans, as_of):
         out[v.standing] += 1
     return out
 
@@ -884,8 +894,8 @@ def uk_roles() -> list[RoleView]:
 
 
 def country_roles(country: str, as_of: Optional[str] = None) -> list[RoleView]:
-    """The available roles in `country`, the ones its work question can settle."""
-    return [v for v in views(as_of=as_of) if v.country == country]
+    """The open roles in `country`, the ones its work question can settle."""
+    return [v for v in open_views(as_of=as_of) if v.country == country]
 
 
 def answers_with(country: str, choice: Optional[str]) -> dict:
@@ -936,9 +946,21 @@ def applications() -> list[dict]:
     return [{**a, "r": d.role(a["role"])} for a in st.session_state.get(APPS, d.applications)]
 
 
-def stage_counts() -> dict[str, int]:
+def application_live(a: dict) -> bool:
+    """Whether an application still leads somewhere: sent (applied, interview),
+    or not sent yet with its role still open."""
+    return a["stage"] in ("applied", "interview") or not clock.is_closed(a["r"])
+
+
+def live_applications() -> list[dict]:
+    """The applications that still lead somewhere (application_live)."""
+    return [a for a in applications() if application_live(a)]
+
+
+def stage_counts(apps: Optional[list[dict]] = None) -> dict[str, int]:
+    """How many of `apps` (default: every application) are at each stage."""
     out = {"saved": 0, "progress": 0, "applied": 0, "interview": 0}
-    for a in st.session_state.get(APPS, data().applications):
+    for a in applications() if apps is None else apps:
         out[a["stage"]] += 1
     return out
 

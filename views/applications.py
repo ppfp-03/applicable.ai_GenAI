@@ -54,11 +54,13 @@ sc = store.stage_counts()
 total = sum(sc.values())
 
 shell.topbar("applications", store.nav_counts())
-urgent = min(apps, key=lambda a: clock.days_until(a["r"].closes) if a["stage"] in ("saved", "progress") else 999)
+#: The unsent application closing soonest, among those whose role is still open.
+pending = [a for a in apps if a["stage"] in ("saved", "progress") and not clock.is_closed(a["r"])]
+urgent = min(pending, key=lambda a: clock.days_until(a["r"].closes), default=None)
 with shell.header(
     "Your applications",
-    f"<b>{total} applications</b> · {sc['interview']} interview today · "
-    f"{esc(urgent['r'].company)} closes in {clock.days_until(urgent['r'].closes)} days",
+    f"<b>{total} applications</b> · {sc['interview']} interview today"
+    + (f" · {esc(urgent['r'].company)} {esc(clock.closes_line(urgent['r'])[0].lower())}" if urgent else ""),
 ):
     if st.button("Explore roles", key="explore"):
         tabs.go("explore")

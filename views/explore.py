@@ -31,7 +31,8 @@ if qf == "new" and st.session_state.get("_x_qf") != qf:
     st.session_state["_x_qf"] = qf
     st.session_state["x-filter"] = NEW
 
-allv = sorted(store.views(), key=lambda v: (v.standing == "excluded", -v.score))
+# Closed roles stay listed, after the open ones, so they read as gone.
+allv = sorted(store.views(), key=lambda v: (clock.is_closed(v), v.standing == "excluded", -v.score))
 new_n = sum(1 for v in allv if store.is_simulated(v))
 ran = store.simulated_event_ran()
 

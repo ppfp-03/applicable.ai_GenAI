@@ -20,6 +20,7 @@ import hashlib
 import json
 import math
 import re
+from datetime import date
 from pathlib import Path
 
 import streamlit as st
@@ -986,7 +987,7 @@ def example_box(rows: list[dict], total: float) -> str:
     head = '<div class="v3-box"><div class="w-lab">Example · how a role reads you<span>Preference fit</span></div>'
     if not total:
         return head + '<div class="v3-nt">No preference carries weight yet.</div></div>'
-    roles = [v for v in store.views(None, AS_OF) if v.standing != "excluded"]
+    roles = [v for v in store.open_views(None, AS_OF) if v.standing != "excluded"]
     fit = {v.id: ranking.preference_fit(v.role.raw, rows)[0] for v in roles}
     v = ranking.order(roles, lambda v: fit[v.id])[0]
     checks = "".join(
@@ -1031,7 +1032,7 @@ def step3a() -> str:
                 f'<div class="v3-tb">{"".join(pref_row(r) for r in rows)}</div>{note}</div>')
     body = swap(
         body, re.escape("<b>312</b><span>roles fit · 41 unpaid removed by your must-have</span>"),
-        f"<b>{len(store.views(None, AS_OF))}</b><span>demo roles · your preferences only change their order</span>",
+        f"<b>{len(store.open_views(None, AS_OF))}</b><span>demo roles · your preferences only change their order</span>",
     )
     body = swap(body, r'<div class="v3-wb">.*?</div>\n<div class="v3-wl">.*?</span></div>', weights_box(rows, total))
     return swap(body, r'<div class="v3-box"><div class="w-lab">Example · how a role reads you.*?(?=\n<div style="flex:1"></div>)',
@@ -1237,7 +1238,7 @@ def cc_card(v, i: int, cls: str, first_verify: bool) -> str:
         checks += f'<div>{WN12}<span>{esc(auth)}</span></div>'
     n = clock.days_until(v.closes)
     close = (
-        f'<div class="cc-pill u">Closes in {n} days<small>{esc(" ".join(v.closes_label.split()[-2:]))}</small></div>'
+        f'<div class="cc-pill u">Closes {clock.in_days(n)}<small>{esc(" ".join(v.closes_label.split()[-2:]))}</small></div>'
         if n <= 9 else f'<div class="cc-pill">Closes {esc(v.closes_label)}<small></small></div>'
     )
     need = ""
@@ -1461,7 +1462,8 @@ def step6() -> str:
         up = mv == "New" or mv.startswith("↑")
         n = clock.days_until(v.closes)
         urgent = n <= 9
-        month, day = ("SEP", v.closes[-2:].lstrip("0")) if v.closes[5:7] == "09" else ("OCT", v.closes[-2:].lstrip("0"))
+        closes = date.fromisoformat(v.closes)
+        month, day = f"{closes:%b}".upper(), str(closes.day)
         gap = (
             f'<span class="ix">{WN12}{esc(v.gaps[0])}</span>' if v.gaps else '<span class="in">No gaps found</span>'
         )
@@ -1477,7 +1479,7 @@ def step6() -> str:
             f'<div class="it-m">{esc(v.company)} · {esc(v.city)} · {esc(v.mode)} · {"Eligible" if v.standing == "eligible" else "To verify"}</div></div></div>'
             f'<div class="it-ln"><span class="ig">{CK12}{esc(first_ok)}</span>{gap}</div>'
             f'<div class="dt"><span class="cal{" u" if urgent else ""}"><i>{month}</i><b>{day}</b></span><div>'
-            f'<div class="k{" u" if urgent else ""}">{"Closes in %d days" % n if urgent else "Closes " + esc(v.closes_label)}</div>'
+            f'<div class="k{" u" if urgent else ""}">{"Closes " + clock.in_days(n) if urgent else "Closes " + esc(v.closes_label)}</div>'
             f'<small>{"Apply this week" if urgent else "%d days left" % n}</small></div></div>'
             f'<div class="fs"><span class="d" style="background:#C7C7CC"></span><div>Demo data<small>No source date</small></div></div>'
             f'<div class="btn">Open</div><div class="xp-full">{jd_panel(v, i, cv)}</div></div>'
@@ -1495,7 +1497,7 @@ def step6() -> str:
     lead_n = clock.days_until(lead.closes)
     sub = (
         f"Your answer unlocked {gained} roles. " if gained > 0 else "Your shortlist is ready. "
-    ) + f"<b>Start with {esc(lead.company)} — it closes in {lead_n} days.</b>"
+    ) + f"<b>Start with {esc(lead.company)} — it closes {clock.in_days(lead_n)}.</b>"
     delta = f"<small>+{gained}</small>" if gained > 0 else ""
     return (
         f'<div class="f7"><div class="f7-top"><div><div class="w-h1">Your priorities</div><div class="w-sub">{sub}</div></div>'

@@ -57,7 +57,12 @@ def week_item(item: dict) -> dict:
     return item
 
 
-week = [week_item(w) for w in d.week]
+def still_open(item: dict) -> bool:
+    """A card about an application not sent yet goes once its role has closed."""
+    return item["kind"] in ("done", "interview") or not item.get("role") or not clock.is_closed(d.role(item["role"]))
+
+
+week = [week_item(w) for w in d.week if still_open(w)]
 N = len(week)
 
 
@@ -72,7 +77,7 @@ cur = st.session_state[CARD] % N
 
 with shell.header(
     f"Good morning, {d.profile['first_name']}",
-    f"Thursday 24 Sep · <b>{N} things</b> worth your time this week · ranking updated {d.updated}",
+    f"{clock.today():%A} {clock.today().day} {clock.today():%b} · <b>{N} things</b> worth your time this week · ranking updated {d.updated}",
 ):
     with st.container(key="dots"):
         for i in range(N):
@@ -237,7 +242,9 @@ with st.container(key="car"):
 tl = d.timeline
 DAY = 100 / tl["days"]
 names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-now_pct = (3 + 10 / 24 + 55 / 1440) * DAY
+#: Where now falls on the two weeks shown, kept on the line.
+since = clock.now() - datetime.fromisoformat(tl["start"])
+now_pct = min(100.0, max(0.0, since.total_seconds() / 86400 * DAY))
 
 with st.container(key="gl-tl"):
     evs, days = [], []
@@ -264,7 +271,7 @@ with st.container(key="gl-tl"):
         f'<div class="tl-h">Next two weeks<span>{esc(tl["label"])}</span></div>'
         f'<div class="tl-g"><div class="tl-ln"></div><div class="tl-past" style="width:{now_pct:.2f}%"></div>'
         + "".join(evs)
-        + f'<div class="now" style="left:{now_pct:.2f}%"><span data-now>Now {d.now}</span></div>'
+        + f'<div class="now" style="left:{now_pct:.2f}%"><span data-now>Now {clock.now():%H:%M}</span></div>'
         + "".join(days)
         + "</div>"
     )
@@ -365,9 +372,11 @@ def app_details(a: dict) -> str:
 with st.container(key="bt"):
     with st.container(key="gl-top"):
         with st.container(key="sh-top"):
+            closed = len(store.closed_views())
             html(
                 f'<div class="sh"><div><b>Your top matches</b><span>{store.nav_counts()["matches"]} eligible · '
-                "same rules for every role</span></div></div>"
+                + (f"{closed} closed, not shown · " if closed else "")
+                + "same rules for every role</span></div></div>"
             )
             with st.container(key="marr"):
                 # The strip scrolls in the browser; these only nudge it.
@@ -386,7 +395,10 @@ with st.container(key="bt"):
             st.markdown(f"<style>{''.join(css)}</style>", unsafe_allow_html=True)
 
     with st.container(key="gl-apps"):
-        sc = store.stage_counts()
+        # Only applications that still lead somewhere: one not sent before
+        # its role closed is left to the Applications tab.
+        live = store.live_applications()
+        sc = store.stage_counts(live)
         with st.container(key="sh-apps"):
             html(f'<div class="sh"><div><b>Applications</b><span>{sum(sc.values())} total</span></div></div>')
             with st.container(key="apps-r"):
@@ -424,7 +436,7 @@ with st.container(key="bt"):
         # Keyed by stage: a new filter draws new rows, so they drop in one after
         # another (home.css), while expanding a row keeps the others still.
         with st.container(key=f"al-{cur}"):
-            rows = [a for a in store.applications() if a["stage"] == cur]
+            rows = [a for a in live if a["stage"] == cur]
             if not rows:
                 name = dict((k, n) for k, n, _ in PIPELINE)[cur]
                 html(f'<div class="aempty">No applications in {esc(name)} yet.</div>')
@@ -450,11 +462,9 @@ with st.container(key="aa-js-clock"):
     st.html(
         f"""<script>
 (function(){{
-  if(!window.__aaT0) window.__aaT0=Date.now();
-  const base=new Date('{d.today}T{d.now}:00').getTime();
   const pad=n=>String(n).padStart(2,'0');
   function tick(){{
-    const now=base+(Date.now()-window.__aaT0);
+    const now=Date.now();
     document.querySelectorAll('[data-cd]').forEach(el=>{{
       let r=Math.max(0,new Date(el.dataset.cd+':00').getTime()-now);
       const dd=Math.floor(r/864e5),h=Math.floor(r/36e5)%24,m=Math.floor(r/6e4)%60,s=Math.floor(r/1e3)%60;

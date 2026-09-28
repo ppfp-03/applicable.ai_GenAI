@@ -353,6 +353,9 @@ with st.container(key="main"):
                 f'<div class="cl">{esc(clock.closes_line(role)[0])}</div></div>'
             )
             html(f'<div class="box">{parts.unified_factor_rows(ranked)}</div>')
+        elif clock.is_closed(role):
+            html(f'<div class="hero2"><div class="cl">{esc(clock.closes_line(role)[0])}</div></div>'
+                 '<div class="box" style="font-size:12.5px;color:var(--t2)">Not ranked · applications have closed.</div>')
         else:
             html('<div class="box" style="font-size:12.5px;color:var(--t2)">Not ranked · a fixed rule excludes this role. '
                  "Ranking never changes eligibility.</div>")
@@ -364,7 +367,7 @@ with st.container(key="main"):
                 if st.button("View application", type="primary", key="view-app", width="stretch"):
                     tabs.go("applications", id=role.id)
             elif st.button("Start application", type="primary", key="apply", width="stretch",
-                           disabled=v.standing == "excluded"):
+                           disabled=v.standing == "excluded" or clock.is_closed(role)):
                 store.save_application(role.id)
                 tabs.go("applications", id=role.id)
             if st.button("Open job posting", key="posting", width="stretch"):
