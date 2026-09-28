@@ -816,7 +816,9 @@ def matches() -> "matches_core.Matches":
     d = data()
     cv = candidate()
     roles = [r.raw for r in available()]
-    now = clock.now()
+    # To the minute: urgency and freshness count days, and a clock read to the
+    # microsecond would make every call a cache miss (one rebuild per role card).
+    now = clock.now().replace(second=0, microsecond=0)
     key = json.dumps({
         "candidate": eligibility.candidate_key(d.profile, answers()),
         "preferences": preferences(),
