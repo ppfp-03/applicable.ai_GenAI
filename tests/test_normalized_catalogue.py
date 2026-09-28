@@ -408,7 +408,16 @@ def test_every_job_has_a_future_deadline_anchored_to_the_demo_clock(jobs, faithf
                     for sid, job in jobs.items() if faithful[sid].deadline_at is None)
     buckets = Counter(next(n for n, (lo, hi) in enumerate([(1, 7), (8, 14), (15, 30), (31, 60), (61, 120)])
                            if lo <= d <= hi) for d in filled)
-    assert buckets == {0: 6, 1: 8, 2: 12, 3: 12, 4: 8}
+    # The quotas deal 6 deadlines into days 1-7; the five of them in September
+    # are moved to 31 October (day 37), leaving 1 October alone in the bucket.
+    assert buckets == {0: 1, 1: 8, 2: 12, 3: 17, 4: 8}
+
+
+def test_no_deadline_falls_in_september(jobs, values):
+    assert not [sid for sid, job in jobs.items() if job.deadline_at.month == 9]
+    moved = sorted(sid for sid in jobs if "moved_to:2026-10-31" in values[sid]["deadline_at"]["rule"])
+    assert moved == ["SYN-JOB-007", "SYN-JOB-015", "SYN-JOB-019", "SYN-JOB-026", "SYN-JOB-031"]
+    assert all(jobs[sid].deadline_at.date().isoformat() == "2026-10-31" for sid in moved)
 
 
 def test_freshness_is_simulated_and_never_in_the_future(cat):

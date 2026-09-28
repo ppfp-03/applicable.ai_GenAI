@@ -1,9 +1,13 @@
 /* Applications: drag a card to another lane to change its stage.
  *
- * The card follows the pointer in the browser; dropping it on another lane
- * presses that card's hidden "move" button (.st-key-mv-ROLE--STAGE), so
- * the change itself still goes through Streamlit and the store. A press
- * without movement stays an ordinary click that selects the card.
+ * While dragging, a copy of the card (the ghost) follows the pointer in a
+ * fixed layer above the page, and the card itself stays behind, faded, as a
+ * placeholder. Dropping on another lane presses that card's hidden "move"
+ * button (.st-key-mv-ROLE--STAGE), so the change itself still goes through
+ * Streamlit and the store. The ghost glides into the new lane and waits there
+ * until the rerun draws the real card, then lands on it and hands over: the
+ * card never jumps back to its old lane or disappears between the two.
+ * A press without movement stays an ordinary click that selects the card.
  *
  * Keep "less-than followed by a letter or slash" out of this file, comments
  * included: Streamlit sanitises st.html with DOMPurify, which drops a whole
@@ -17,15 +21,22 @@
   window.__aaApps = true;
 
   const H = document.documentElement;
-  const START = 6;  // px of movement before a press becomes a drag
+  const START = 6;      // px of movement before a press becomes a drag
+  const GLIDE = 220;    // ms for the ghost to settle into a slot
+  const WAIT = 8000;    // ms to wait for the rerun before giving the move up
+  const EASE = 'cubic-bezier(.2,.8,.2,1)';
 
-  // Page zoom: pointer deltas are in window px, layout in stage px.
+  // Page zoom: pointer deltas and rects are in window px, layout in stage px.
+  // The ghost layer carries the same zoom as the stage, so it is placed in
+  // stage px as well.
   const ratio = el => { const w = el.getBoundingClientRect().width; return w ? el.offsetWidth / w : 1; };
   const keyAfter = (el, prefix) => {
     const m = new RegExp(' st-key-' + prefix + '([\\w-]+)').exec(' ' + (el.className || ''));
     return m ? m[1] : null;
   };
   const lanes = () => document.querySelectorAll('[class*="st-key-gl-lane-"]');
+  const laneOf = stage => document.querySelector('.st-key-gl-lane-' + stage);
+  const cardIn = (stage, role) => document.querySelector(`.st-key-gl-lane-${stage} .st-key-hit-app-${role}`);
 
   function laneAt(x, y) {
     const el = document.elementsFromPoint(x, y).find(n => keyAfter(n, 'gl-lane-'));
@@ -36,14 +47,89 @@
     lanes().forEach(l => l.classList.toggle('ap-over', !!target && l === target.el));
   }
 
-  // Each lane is glass (backdrop-filter), which makes it its own stacking
-  // context: a card's z-index only counts inside its lane, so lanes painted
-  // later would cover it. The lane it comes from is raised for the drag.
-  function settle(d) {
-    d.card.classList.remove('ap-lift');
-    d.card.style.transform = '';
-    d.card.style.transition = '';
-    d.lane.classList.remove('ap-from');
+  // The ghost lives outside the lanes: each lane is glass (backdrop-filter),
+  // its own stacking context, so a card moved inside one would slide under
+  // the lanes painted after it.
+  let layer = null;
+  function ghostOf(tile) {
+    if (!layer || !layer.isConnected) {
+      layer = document.createElement('div');
+      layer.className = 'aa-ap-layer';
+      document.body.appendChild(layer);
+    }
+    const g = tile.cloneNode(true);
+    g.classList.add('ap-ghost');
+    g.style.width = tile.offsetWidth + 'px';
+    layer.appendChild(g);
+    return g;
+  }
+
+  function place(g, x, y, lifted, glide) {
+    g.style.transition = glide ? `transform ${GLIDE}ms ${EASE}, box-shadow ${GLIDE}ms` : 'box-shadow .2s';
+    g.style.transform = `translate(${x}px, ${y}px)` + (lifted ? ' rotate(1.5deg) scale(1.02)' : '');
+    g.classList.toggle('ap-up', lifted);
+  }
+
+  // Where the ghost waits for the rerun: under the last card of the lane, or
+  // under its header when the lane is empty. Window px.
+  function slotIn(lane) {
+    const cards = lane.querySelectorAll('[class*="st-key-hit-app-"]');
+    const last = cards[cards.length - 1];
+    const head = lane.querySelector('.lh');
+    const above = ((last && last.querySelector('.ac')) || head || lane).getBoundingClientRect();
+    const gap = parseFloat(getComputedStyle(lane).rowGap) || 8;
+    return { x: above.left, y: above.bottom + gap / ratio(lane) };
+  }
+
+  // Classes only on Streamlit's nodes (no inline styles): a rerun may reuse
+  // a node for another card, and resetting its class drops ours with it.
+  function release(d) {
+    if (d.card.isConnected) d.card.classList.remove('ap-src', 'ap-gone');
+  }
+
+  function finish(d, real) {
+    d.g.remove();
+    release(d);
+    if (real) real.classList.remove('ap-hold');
+  }
+
+  // Waits for the rerun to draw the card in its new lane, then lands the
+  // ghost on it and swaps them.
+  function arrive(d, stage) {
+    let over = false, obs = null;
+    const stop = () => { over = true; if (obs) obs.disconnect(); clearTimeout(timer); };
+    const check = () => {
+      if (over) return;
+      const real = cardIn(stage, d.role);
+      const tile = real && real.querySelector('.ac');
+      if (!tile || !tile.offsetWidth) return;
+      stop();
+      real.classList.add('ap-hold');
+      // The card may read differently in its new stage (footer, selection):
+      // land with what it will look like.
+      d.g.className = tile.className + ' ap-ghost';
+      d.g.innerHTML = tile.innerHTML;
+      d.g.style.width = tile.offsetWidth + 'px';
+      const r = tile.getBoundingClientRect();
+      place(d.g, r.left * d.k, r.top * d.k, false, true);
+      setTimeout(() => finish(d, real), GLIDE + 20);
+    };
+    const timer = setTimeout(() => {
+      // No rerun came back: put the card back where it was.
+      stop();
+      home(d);
+    }, WAIT);
+    obs = new MutationObserver(check);
+    obs.observe(document.body, { childList: true, subtree: true });
+    check();
+  }
+
+  // Glide back to the card's own place (dropped where nothing changes).
+  function home(d) {
+    const r = d.tile.isConnected ? d.tile.getBoundingClientRect() : null;
+    if (!r) { finish(d); return; }
+    place(d.g, r.left * d.k, r.top * d.k, false, true);
+    setTimeout(() => finish(d), GLIDE + 20);
   }
 
   let drag = null, swallow = false, bypass = false;
@@ -55,8 +141,9 @@
     if (e.button !== 0 || e.pointerType === 'touch') return;
     const card = e.target.closest('[class*="st-key-hit-app-"]');
     const lane = card && card.closest('[class*="st-key-gl-lane-"]');
-    if (!card || !lane) return;
-    drag = { card, lane, role: keyAfter(card, 'hit-app-'), from: keyAfter(lane, 'gl-lane-'),
+    const tile = card && card.querySelector('.ac');
+    if (!card || !lane || !tile) return;
+    drag = { card, lane, tile, role: keyAfter(card, 'hit-app-'), from: keyAfter(lane, 'gl-lane-'),
              x: e.clientX, y: e.clientY, k: ratio(card), on: false };
   }, true);
 
@@ -67,17 +154,20 @@
     if (!d.on) {
       if (Math.hypot(dx, dy) < START) return;
       d.on = true;
-      d.card.classList.add('ap-lift');
-      d.lane.classList.add('ap-from');
+      const r = d.tile.getBoundingClientRect();
+      d.gx = r.left * d.k;
+      d.gy = r.top * d.k;
+      d.g = ghostOf(d.tile);
+      d.card.classList.add('ap-src');
       H.classList.add('aa-ap-drag');
     }
     e.preventDefault();
-    d.card.style.transform = `translate(${dx * d.k}px, ${dy * d.k}px) rotate(1.5deg)`;
+    place(d.g, d.gx + dx * d.k, d.gy + dy * d.k, true, false);
     const over = laneAt(e.clientX, e.clientY);
     mark(over && over.stage !== d.from ? over : null);
   }, true);
 
-  function release(e) {
+  function drop(e) {
     const d = drag;
     drag = null;
     if (!d || !d.on) return;
@@ -91,18 +181,19 @@
     const btn = over && over.stage !== d.from
       ? document.querySelector(`.st-key-mv-${d.role}--${over.stage} button`)
       : null;
-    if (btn) {
-      settle(d);
-      press(btn);
-      return;
-    }
-    // Dropped where nothing changes: glide back.
-    d.card.style.transition = 'transform .22s cubic-bezier(.2,.8,.2,1)';
-    d.card.style.transform = '';
-    setTimeout(() => settle(d), 230);
+    if (!btn) { home(d); return; }
+
+    // The card has left its lane; the ghost takes the free slot in the new
+    // one while Streamlit runs the move.
+    d.card.classList.add('ap-gone');
+    const lane = laneOf(over.stage) || over.el;
+    const s = slotIn(lane);
+    place(d.g, s.x * d.k, s.y * d.k, false, true);
+    arrive(d, over.stage);
+    press(btn);
   }
-  window.addEventListener('pointerup', release, true);
-  window.addEventListener('pointercancel', release, true);
+  window.addEventListener('pointerup', drop, true);
+  window.addEventListener('pointercancel', drop, true);
 
   window.addEventListener('click', e => {
     if (bypass || !swallow) return;

@@ -1230,9 +1230,9 @@
           "evidence_id": "synthetic-normalized:SYN-JOB-007:norm-experience-months"
         },
         "deadline_at": {
-          "value": "2026-09-25T23:59:00Z",
+          "value": "2026-10-31T23:59:00Z",
           "class": "SYNTHETIC_FILL",
-          "rule": "deadline_days_quota:1",
+          "rule": "deadline_days_quota:1;moved_to:2026-10-31",
           "source_refs": [],
           "evidence_id": "synthetic-normalized:SYN-JOB-007:norm-deadline"
         },
@@ -2798,9 +2798,9 @@
           "evidence_id": "synthetic-normalized:SYN-JOB-015:norm-experience-months"
         },
         "deadline_at": {
-          "value": "2026-09-29T23:59:00Z",
+          "value": "2026-10-31T23:59:00Z",
           "class": "SYNTHETIC_FILL",
-          "rule": "deadline_days_quota:5",
+          "rule": "deadline_days_quota:5;moved_to:2026-10-31",
           "source_refs": [],
           "evidence_id": "synthetic-normalized:SYN-JOB-015:norm-deadline"
         },
@@ -3529,9 +3529,9 @@
           "evidence_id": "synthetic-normalized:SYN-JOB-019:norm-experience-months"
         },
         "deadline_at": {
-          "value": "2026-09-26T23:59:00Z",
+          "value": "2026-10-31T23:59:00Z",
           "class": "SYNTHETIC_FILL",
-          "rule": "deadline_days_quota:2",
+          "rule": "deadline_days_quota:2;moved_to:2026-10-31",
           "source_refs": [],
           "evidence_id": "synthetic-normalized:SYN-JOB-019:norm-deadline"
         },
@@ -4890,9 +4890,9 @@
           "evidence_id": "synthetic-normalized:SYN-JOB-026:norm-experience-months"
         },
         "deadline_at": {
-          "value": "2026-09-27T23:59:00Z",
+          "value": "2026-10-31T23:59:00Z",
           "class": "SYNTHETIC_FILL",
-          "rule": "deadline_days_quota:3",
+          "rule": "deadline_days_quota:3;moved_to:2026-10-31",
           "source_refs": [],
           "evidence_id": "synthetic-normalized:SYN-JOB-026:norm-deadline"
         },
@@ -5911,9 +5911,9 @@
           "evidence_id": "synthetic-normalized:SYN-JOB-031:norm-experience-months"
         },
         "deadline_at": {
-          "value": "2026-09-30T23:59:00Z",
+          "value": "2026-10-31T23:59:00Z",
           "class": "SYNTHETIC_FILL",
-          "rule": "deadline_days_quota:6",
+          "rule": "deadline_days_quota:6;moved_to:2026-10-31",
           "source_refs": [],
           "evidence_id": "synthetic-normalized:SYN-JOB-031:norm-deadline"
         },

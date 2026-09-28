@@ -757,16 +757,24 @@ def _experience(drafts: list[Draft], rules: dict, pending: list[Draft]) -> None:
 
 
 def _dates(drafts: list[Draft], rules: dict, anchor: datetime) -> None:
-    """Source deadlines stay; the rest and every first-seen time are filled."""
+    """Source deadlines stay; the rest and every first-seen time are filled.
+
+    A filled deadline earlier than `deadline_moves.before` is moved to
+    `deadline_moves.to`, and its rule says so.
+    """
     missing = [d.sid for d in drafts if d.faithful["deadline_at"] is None]
     days = spread("deadline_at", missing, rules["quotas"]["deadline_days"])
     seen = spread("first_seen_at", [d.sid for d in drafts], rules["quotas"]["first_seen_days"])
+    moves = rules["deadline_moves"]
+    before, moved_to = date.fromisoformat(moves["before"]), date.fromisoformat(moves["to"])
     for d in drafts:
         if d.sid in days:
-            moment = datetime.combine(anchor.date() + timedelta(days=days[d.sid]),
-                                      datetime.min.time().replace(hour=23, minute=59), timezone.utc)
+            day, rule = anchor.date() + timedelta(days=days[d.sid]), f"deadline_days_quota:{days[d.sid]}"
+            if day < before:
+                day, rule = moved_to, f"{rule};moved_to:{moved_to.isoformat()}"
+            moment = datetime.combine(day, datetime.min.time().replace(hour=23, minute=59), timezone.utc)
             ev = d.state("deadline", f"Application deadline: {_stamp(moment)}.", "deadline_at")
-            d.values["deadline_at"] = _value(_stamp(moment), FILL, f"deadline_days_quota:{days[d.sid]}")
+            d.values["deadline_at"] = _value(_stamp(moment), FILL, rule)
             d.values["deadline_at"]["evidence_id"] = ev
         else:
             refs = [e["evidence_id"] for e in d.faithful["evidence"] if e["field_path"] == "deadline_at"]

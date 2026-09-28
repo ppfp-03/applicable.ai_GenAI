@@ -3,6 +3,7 @@
   "description": "Rules that derive the normalized synthetic demo catalogue from the faithful OI-50 catalogue. Controlled synthetic demo data: never held-out evaluation data.",
   "evaluation_use": "excluded",
   "anchor": "2026-09-24T10:55:00Z",
+  "deadline_moves": {"before": "2026-10-01", "to": "2026-10-31", "why": "No demo posting closes in September: a filled deadline before `before` is moved to `to`."},
   "role_families": [
     "Strategy & Consulting",
     "Finance & Investment",

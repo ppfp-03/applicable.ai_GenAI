@@ -15,7 +15,7 @@ from oi.intelligence.extraction import extract_candidate
 from tests.test_candidate_extraction import FakeModelClient, make_cv, make_fields
 from tests.test_jd_match import REACHABLE
 from tests.test_onboarding_work_auth import ALL, EU, at_step, chosen, decl, page
-from ui import tabs
+from ui import tabs, tour
 
 
 def at_ranking(authorized=("GB",)):
@@ -63,11 +63,30 @@ def test_start_application_in_the_opened_role_applies_to_that_role(monkeypatch) 
     monkeypatch.setattr(tabs, "go", lambda name, **params: went.append((name, params)))
     at = at_ranking()
     ids = [v.id for v in store.ranked(at.session_state[store.ANSWERS] | {store.WORK_AUTH: at.session_state[store.WORK_AUTH]})[:5]]
+    at.session_state[store.STAGE] = "onboarding"
     at.button(key="ap2").click().run()
     assert not at.exception
     assert [a["role"] for a in at.session_state[store.APPS]] == [ids[2]]
     assert went == [("applications", {"id": ids[2]})]
     assert at.session_state["flash"].startswith("Application started")
+    # The tour that follows is about Applications only.
+    assert at.session_state[store.STAGE] == "tour"
+    assert at.session_state[tour.ONLY] == "applications"
+
+
+def test_continue_leaves_for_home_without_applying(monkeypatch) -> None:
+    went = []
+    monkeypatch.setattr(tabs, "go", lambda name, **params: went.append((name, params)))
+    at = at_ranking()
+    at.session_state[store.STAGE] = "onboarding"
+    at.run()
+    assert at.button(key="next").label == "Continue"
+    at.button(key="next").click().run()
+    assert not at.exception
+    assert at.session_state[store.APPS] == []  # applying is per role, from the opened role
+    assert went == [("home", {})]
+    assert at.session_state[store.STAGE] == "tour"
+    assert at.session_state[tour.ONLY] is None  # the whole tour
 
 
 def _top5_script():

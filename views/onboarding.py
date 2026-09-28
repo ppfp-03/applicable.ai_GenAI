@@ -32,7 +32,7 @@ from oi.io.pdf import PdfExtractionError, extract_pdf_text
 from oi.providers.kimi import KimiClient
 from oi.providers.model_client import ExtractionError
 from ui import onboarding_markup as M
-from ui import guide, parts, tabs
+from ui import guide, parts, tabs, tour
 from ui.html import CK12, CK_WHITE, NEXT, PREV, WN12, XR, esc, html, lockup, squash
 from ui.palette import orange
 from ui.theme import page_css
@@ -54,7 +54,7 @@ FLOW = [
     ("3a", 3, "Find my roles"),
     ("4", 4, "Answer 1 question"),
     ("5", 5, "Save answer"),
-    ("6", 6, "Start application"),
+    ("6", 6, "Continue"),
 ]
 KEYS = [f[0] for f in FLOW]
 STEP_NAMES = ["Upload CV", "Profile", "Preferences", "Shortlist", "Clarify", "Updated ranking"]
@@ -191,11 +191,16 @@ key, num, cta = FLOW[idx]
 info = guide.line(step, num, len(STEP_NAMES))
 
 
-def finish() -> None:
-    """Leaving the wizard for the first time: the guided tour comes next."""
+def finish(only: str | None = None) -> None:
+    """Leaving the wizard for the first time: the guided tour comes next.
+
+    Args:
+        only: The one tab the tour is about (ui/tour.py), or None for all of it.
+    """
     if store.stage() == "onboarding":
         store.set_stage("tour")
         S["tour_step"] = 0
+        S[tour.ONLY] = only
 
 
 def go(k: str) -> None:
@@ -1681,7 +1686,7 @@ with st.container(key="obody"):
                 if st.button(f"Start application · {v.company}", key=apply_key(i)):
                     store.save_application(v.id)
                     S["flash"] = f"Application started · {v.company}"
-                    finish()
+                    finish("applications")
                     tabs.go("applications", id=v.id)
 
 total = len(STEP_NAMES)
@@ -1726,12 +1731,11 @@ with st.container(key="ofoot"):
             S["ob_asked"] = country
             st.toast(f"Answer saved · Work authorization · {field_label(country)} = {store.UK_LABELS[S['ob_uk']]}")
         if step == "6":
-            v = store.ranked(store.answers(), AS_OF)[0]
-            store.save_application(v.id)
-            S["flash"] = f"Application started · {v.company}"
+            # Applying is per role, from the opened role; this only leaves the wizard.
             finish()
-            tabs.go("applications", id=v.id)
-        go(KEYS[idx + 1])
+            tabs.go("home")
+        else:
+            go(KEYS[idx + 1])
         st.rerun()
 
 guide.sheet(step, num, len(STEP_NAMES))

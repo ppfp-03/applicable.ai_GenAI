@@ -42,9 +42,12 @@
  * script only; the Stage menu is the visible, keyboard way to move a card. */
 .st-key-ap-moves{display:none!important}
 .st-key-lanes [class*="st-key-hit-app-"]{cursor:grab}
-.st-key-lanes [class*="st-key-hit-app-"].ap-lift{position:relative;z-index:50;cursor:grabbing;pointer-events:none}
-.st-key-lanes [class*="st-key-hit-app-"].ap-lift .ac{background:rgba(255,255,255,.97);box-shadow:0 14px 34px rgba(28,40,64,.18),0 0 0 .5px rgba(0,0,0,.06)}
+.st-key-lanes [class*="st-key-hit-app-"].ap-src{opacity:.35;transition:opacity .15s}
+.st-key-lanes [class*="st-key-hit-app-"].ap-gone,.st-key-lanes [class*="st-key-hit-app-"].ap-hold{opacity:0;transition:none}
 html.aa-ap-drag,html.aa-ap-drag *{cursor:grabbing!important;user-select:none}
 [class*="st-key-gl-lane-"]{transition:box-shadow .15s,background-color .15s}
 [class*="st-key-gl-lane-"].ap-over{box-shadow:0 0 0 2px var(--blue),0 8px 28px rgba(0,113,227,.12)!important}
-[class*="st-key-gl-lane-"].ap-from{position:relative;z-index:60}
+/* The ghost: a copy of the dragged card in a fixed layer with the stage's zoom. */
+.aa-ap-layer{position:fixed;left:0;top:0;width:0;height:0;overflow:visible;zoom:var(--aa-k,1);z-index:1000;pointer-events:none}
+.aa-ap-layer .ap-ghost{position:absolute;left:0;top:0;margin:0;box-sizing:border-box;will-change:transform}
+.aa-ap-layer .ap-ghost.ap-up{background:rgba(255,255,255,.97);box-shadow:0 14px 34px rgba(28,40,64,.18),0 0 0 .5px rgba(0,0,0,.06)}

@@ -9,7 +9,9 @@ the marker is gone.
 
 The tour shows while the session is at the "tour" stage (core/store.py).
 Finishing or skipping it opens the app; "Replay the tour" in the avatar menu
-starts it again.
+starts it again. Starting an application from onboarding's ranking shows
+only the step for Applications, where that application now is, so the user
+can close it and carry on with the application.
 """
 
 from __future__ import annotations
@@ -25,6 +27,7 @@ from ui.theme import page_css
 
 _JS = Path(__file__).resolve().parent / "js" / "tour.js"
 STEP = "tour_step"
+ONLY = "tour_only"  # the one tab the tour is about, or None for all of it
 
 #: (tab, element to light up, title, what it is, how to make it yours).
 STEPS = [
@@ -58,6 +61,19 @@ STEPS = [
 ]
 
 
+#: The tour when an application was just started: Applications only.
+APPLY_STEPS = [
+    ("applications", ".st-key-tab-applications .st-key-ap-main",
+     "Your application has started",
+     "It’s in Applications now, with everything else you start: saved, in progress, applied, interview.",
+     "Pick it to see what’s left to do, move it to its next stage, or add a note for later."),
+]
+
+
+def _steps() -> list[tuple[str, str, str, str, str]]:
+    return APPLY_STEPS if st.session_state.get(ONLY) == "applications" else STEPS
+
+
 def _to(i: int) -> None:
     st.session_state[STEP] = i
 
@@ -65,6 +81,7 @@ def _to(i: int) -> None:
 def _done() -> None:
     store.set_stage("app")
     st.session_state.pop(STEP, None)
+    st.session_state.pop(ONLY, None)
 
 
 def render(shown: str) -> None:
@@ -75,29 +92,34 @@ def render(shown: str) -> None:
     """
     if store.stage() != "tour":
         return
-    i = min(st.session_state.setdefault(STEP, 0), len(STEPS) - 1)
-    tab, target, title, body, tip = STEPS[i]
+    steps = _steps()
+    i = min(st.session_state.setdefault(STEP, 0), len(steps) - 1)
+    tab, target, title, body, tip = steps[i]
     if tab != shown:
         tabs.go(tab)
         return
     page_css("tour")
-    last = i == len(STEPS) - 1
+    last = i == len(steps) - 1
+    single = len(steps) == 1
     st.markdown(
         f'<div class="aa-tour-mark" data-sel="{esc(target)}" data-step="{i}"></div>', unsafe_allow_html=True
     )
     with st.container(key="tour"):
-        dots = "".join(f'<i class="{"on" if j == i else ""}"></i>' for j in range(len(STEPS)))
+        dots = "".join(f'<i class="{"on" if j == i else ""}"></i>' for j in range(len(steps)))
+        count = "" if single else f'<div class="tr-k"><span>{i + 1} of {len(steps)}</span><span class="tr-dots">{dots}</span></div>'
         html(
-            f'<div class="tr-k"><span>{i + 1} of {len(STEPS)}</span><span class="tr-dots">{dots}</span></div>'
-            f'<div class="tr-h">{esc(title)}</div><div class="tr-p">{esc(body)}</div>'
-            f'<div class="tr-tip"><b>Make it yours</b>{esc(tip)}</div>'
+            f'{count}<div class="tr-h">{esc(title)}</div><div class="tr-p">{esc(body)}</div>'
+            f'<div class="tr-tip"><b>{"What’s next" if single else "Make it yours"}</b>{esc(tip)}</div>'
         )
         with st.container(key="tour-acts"):
             if not last:
                 st.button("Skip tour", key="tour-skip", type="tertiary", on_click=_done)
             if i > 0:
                 st.button("Back", key="tour-back", on_click=_to, args=(i - 1,))
-            if last:
+            if single:
+                # Closing it leaves the user where they are, on their application.
+                st.button("Continue", key="tour-end", type="primary", on_click=_done)
+            elif last:
                 if st.button("Go to my week", key="tour-end", type="primary"):
                     _done()
                     tabs.go("home")

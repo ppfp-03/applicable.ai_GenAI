@@ -1692,8 +1692,8 @@
         {
           "document_id": "synthetic-normalized:SYN-JOB-007:normalization",
           "kind": "job",
-          "text": "Demo normalization oi50-v1 for SYN-JOB-007. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nField of study: management, business_administration.\nWork authorization: required for Germany (DE); visa sponsorship is not offered.\nRole family: Operations & Supply Chain.\nSkills: Data analysis; Creativity; Automation; Prioritisation.\nMinimum degree level: phd.\nAccepted fields of study: management, business_administration.\nMinimum experience: none.\nApplication deadline: 2026-09-25T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-24T10:55:00Z.",
-          "content_hash": "698245addbb02763506642a70ac6ac81882d9afb06fcf19f377924cb1e5e62ee",
+          "text": "Demo normalization oi50-v1 for SYN-JOB-007. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nField of study: management, business_administration.\nWork authorization: required for Germany (DE); visa sponsorship is not offered.\nRole family: Operations & Supply Chain.\nSkills: Data analysis; Creativity; Automation; Prioritisation.\nMinimum degree level: phd.\nAccepted fields of study: management, business_administration.\nMinimum experience: none.\nApplication deadline: 2026-10-31T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-24T10:55:00Z.",
+          "content_hash": "5b7c84b01cda8764c717f7fff472bab27dad803b7f3247cfe564f66d380a0d06",
           "source_ref": "normalization:oi50-v1#SYN-JOB-007"
         }
       ],
@@ -1708,7 +1708,7 @@
       ],
       "source_published_at": null,
       "source_updated_at": null,
-      "deadline_at": "2026-09-25T23:59:00Z",
+      "deadline_at": "2026-10-31T23:59:00Z",
       "first_seen_at": "2026-09-24T10:55:00Z",
       "last_seen_at": "2026-09-24T10:55:00Z",
       "active_state": "active",
@@ -1930,7 +1930,7 @@
         {
           "evidence_id": "synthetic-normalized:SYN-JOB-007:norm-deadline",
           "document_id": "synthetic-normalized:SYN-JOB-007:normalization",
-          "quote": "Application deadline: 2026-09-25T23:59:00Z.",
+          "quote": "Application deadline: 2026-10-31T23:59:00Z.",
           "field_path": "deadline_at"
         },
         {
@@ -3973,8 +3973,8 @@
         {
           "document_id": "synthetic-normalized:SYN-JOB-015:normalization",
           "kind": "job",
-          "text": "Demo normalization oi50-v1 for SYN-JOB-015. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nWork authorization: required for United Kingdom (GB); visa sponsorship is offered.\nStudent status: recent graduate.\nRole family: Markets & Trading.\nSkills: Excel; Financial modelling; Python; Pace.\nMinimum degree level: bachelor.\nAccepted fields of study: finance, economics, mathematics.\nMinimum experience: 6 months.\nApplication deadline: 2026-09-29T23:59:00Z.\nDiscovery (simulated): first seen 2026-08-26T10:55:00Z.",
-          "content_hash": "ad9d878aef67fb4660ed412d05de8d140001f44894c56481b0b4996236a3a00d",
+          "text": "Demo normalization oi50-v1 for SYN-JOB-015. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nWork authorization: required for United Kingdom (GB); visa sponsorship is offered.\nStudent status: recent graduate.\nRole family: Markets & Trading.\nSkills: Excel; Financial modelling; Python; Pace.\nMinimum degree level: bachelor.\nAccepted fields of study: finance, economics, mathematics.\nMinimum experience: 6 months.\nApplication deadline: 2026-10-31T23:59:00Z.\nDiscovery (simulated): first seen 2026-08-26T10:55:00Z.",
+          "content_hash": "1de2eb173bf4ff6d02646f08c8c162703d3e117a4118983c8959e9373ef0e77b",
           "source_ref": "normalization:oi50-v1#SYN-JOB-015"
         }
       ],
@@ -3989,7 +3989,7 @@
       ],
       "source_published_at": null,
       "source_updated_at": null,
-      "deadline_at": "2026-09-29T23:59:00Z",
+      "deadline_at": "2026-10-31T23:59:00Z",
       "first_seen_at": "2026-08-26T10:55:00Z",
       "last_seen_at": "2026-09-24T10:55:00Z",
       "active_state": "active",
@@ -4188,7 +4188,7 @@
         {
           "evidence_id": "synthetic-normalized:SYN-JOB-015:norm-deadline",
           "document_id": "synthetic-normalized:SYN-JOB-015:normalization",
-          "quote": "Application deadline: 2026-09-29T23:59:00Z.",
+          "quote": "Application deadline: 2026-10-31T23:59:00Z.",
           "field_path": "deadline_at"
         },
         {
@@ -5048,8 +5048,8 @@
         {
           "document_id": "synthetic-normalized:SYN-JOB-019:normalization",
           "kind": "job",
-          "text": "Demo normalization oi50-v1 for SYN-JOB-019. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nDegree level: at least master; a degree in progress counts.\nField of study: marketing, business_administration, management, communications.\nWork authorization: required for France (FR); visa sponsorship is offered.\nStudent status: enrolled student or recent graduate.\nRole family: Marketing & Communications.\nSkills: Data analysis; Writing; Experiment design; Digital marketing; Copywriting; Storytelling.\nMinimum degree level: master.\nAccepted fields of study: marketing, business_administration, management, communications.\nMinimum experience: none.\nApplication deadline: 2026-09-26T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-18T10:55:00Z.",
-          "content_hash": "7718f4aa5a54b8346114464f0377a1e5d40cd31eb59b076cc5ee3b9fb26d332e",
+          "text": "Demo normalization oi50-v1 for SYN-JOB-019. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nDegree level: at least master; a degree in progress counts.\nField of study: marketing, business_administration, management, communications.\nWork authorization: required for France (FR); visa sponsorship is offered.\nStudent status: enrolled student or recent graduate.\nRole family: Marketing & Communications.\nSkills: Data analysis; Writing; Experiment design; Digital marketing; Copywriting; Storytelling.\nMinimum degree level: master.\nAccepted fields of study: marketing, business_administration, management, communications.\nMinimum experience: none.\nApplication deadline: 2026-10-31T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-18T10:55:00Z.",
+          "content_hash": "25879568c1b325714b94231966248f252317e52de8a58f057746532adffabe08",
           "source_ref": "normalization:oi50-v1#SYN-JOB-019"
         }
       ],
@@ -5064,7 +5064,7 @@
       ],
       "source_published_at": null,
       "source_updated_at": null,
-      "deadline_at": "2026-09-26T23:59:00Z",
+      "deadline_at": "2026-10-31T23:59:00Z",
       "first_seen_at": "2026-09-18T10:55:00Z",
       "last_seen_at": "2026-09-24T10:55:00Z",
       "active_state": "active",
@@ -5321,7 +5321,7 @@
         {
           "evidence_id": "synthetic-normalized:SYN-JOB-019:norm-deadline",
           "document_id": "synthetic-normalized:SYN-JOB-019:normalization",
-          "quote": "Application deadline: 2026-09-26T23:59:00Z.",
+          "quote": "Application deadline: 2026-10-31T23:59:00Z.",
           "field_path": "deadline_at"
         },
         {
@@ -7099,8 +7099,8 @@
         {
           "document_id": "synthetic-normalized:SYN-JOB-026:normalization",
           "kind": "job",
-          "text": "Demo normalization oi50-v1 for SYN-JOB-026. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nStudent status: enrolled student.\nField of study: marketing, communications.\nWork authorization: required for Netherlands (NL); visa sponsorship is offered.\nRole family: Marketing & Communications.\nSkills: Data analysis; Copywriting; Digital marketing; Creativity; Prioritisation.\nMinimum degree level: master.\nAccepted fields of study: marketing, communications.\nMinimum experience: 3 months.\nApplication deadline: 2026-09-27T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-14T10:55:00Z.",
-          "content_hash": "8f1684a0e59e3f742423e47dd7fe06f38de7031ada6520cb4127f1f431d87b7e",
+          "text": "Demo normalization oi50-v1 for SYN-JOB-026. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nStudent status: enrolled student.\nField of study: marketing, communications.\nWork authorization: required for Netherlands (NL); visa sponsorship is offered.\nRole family: Marketing & Communications.\nSkills: Data analysis; Copywriting; Digital marketing; Creativity; Prioritisation.\nMinimum degree level: master.\nAccepted fields of study: marketing, communications.\nMinimum experience: 3 months.\nApplication deadline: 2026-10-31T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-14T10:55:00Z.",
+          "content_hash": "238f3907087591ba9f100774fc47509f522d961b5482b6ef9e79f8471515bd34",
           "source_ref": "normalization:oi50-v1#SYN-JOB-026"
         }
       ],
@@ -7115,7 +7115,7 @@
       ],
       "source_published_at": null,
       "source_updated_at": null,
-      "deadline_at": "2026-09-27T23:59:00Z",
+      "deadline_at": "2026-10-31T23:59:00Z",
       "first_seen_at": "2026-09-14T10:55:00Z",
       "last_seen_at": "2026-09-24T10:55:00Z",
       "active_state": "active",
@@ -7382,7 +7382,7 @@
         {
           "evidence_id": "synthetic-normalized:SYN-JOB-026:norm-deadline",
           "document_id": "synthetic-normalized:SYN-JOB-026:normalization",
-          "quote": "Application deadline: 2026-09-27T23:59:00Z.",
+          "quote": "Application deadline: 2026-10-31T23:59:00Z.",
           "field_path": "deadline_at"
         },
         {
@@ -8617,8 +8617,8 @@
         {
           "document_id": "synthetic-normalized:SYN-JOB-031:normalization",
           "kind": "job",
-          "text": "Demo normalization oi50-v1 for SYN-JOB-031. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nLanguage: Italian, CEFR:C1.\nLanguage: English, CEFR:B2.\nWork authorization: required for Italy (IT); visa sponsorship is not offered.\nStudent status: recent graduate.\nRole family: Sales & Business Development.\nSkills: Client handling; Negotiation; CRM; Clear communication; Resilience; Persuasion.\nMinimum degree level: bachelor.\nAccepted fields of study: business_administration, marketing, management.\nMinimum experience: 6 months.\nApplication deadline: 2026-09-30T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-22T10:55:00Z.",
-          "content_hash": "9d199383b209dba7e8c8539636d5f1db8a5282be9862cd3d0f83505a8d09e076",
+          "text": "Demo normalization oi50-v1 for SYN-JOB-031. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nLanguage: Italian, CEFR:C1.\nLanguage: English, CEFR:B2.\nWork authorization: required for Italy (IT); visa sponsorship is not offered.\nStudent status: recent graduate.\nRole family: Sales & Business Development.\nSkills: Client handling; Negotiation; CRM; Clear communication; Resilience; Persuasion.\nMinimum degree level: bachelor.\nAccepted fields of study: business_administration, marketing, management.\nMinimum experience: 6 months.\nApplication deadline: 2026-10-31T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-22T10:55:00Z.",
+          "content_hash": "ee9b799d88d0c7632cf6c6d48414de062dd963d94b343a5ef333216760131caf",
           "source_ref": "normalization:oi50-v1#SYN-JOB-031"
         }
       ],
@@ -8633,7 +8633,7 @@
       ],
       "source_published_at": null,
       "source_updated_at": null,
-      "deadline_at": "2026-09-30T23:59:00Z",
+      "deadline_at": "2026-10-31T23:59:00Z",
       "first_seen_at": "2026-09-22T10:55:00Z",
       "last_seen_at": "2026-09-24T10:55:00Z",
       "active_state": "active",
@@ -8874,7 +8874,7 @@
         {
           "evidence_id": "synthetic-normalized:SYN-JOB-031:norm-deadline",
           "document_id": "synthetic-normalized:SYN-JOB-031:normalization",
-          "quote": "Application deadline: 2026-09-30T23:59:00Z.",
+          "quote": "Application deadline: 2026-10-31T23:59:00Z.",
           "field_path": "deadline_at"
         },
         {
@@ -14693,8 +14693,8 @@
     "synthetic-normalized:SYN-JOB-007:normalization": {
       "document_id": "synthetic-normalized:SYN-JOB-007:normalization",
       "kind": "job",
-      "text": "Demo normalization oi50-v1 for SYN-JOB-007. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nField of study: management, business_administration.\nWork authorization: required for Germany (DE); visa sponsorship is not offered.\nRole family: Operations & Supply Chain.\nSkills: Data analysis; Creativity; Automation; Prioritisation.\nMinimum degree level: phd.\nAccepted fields of study: management, business_administration.\nMinimum experience: none.\nApplication deadline: 2026-09-25T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-24T10:55:00Z.",
-      "content_hash": "698245addbb02763506642a70ac6ac81882d9afb06fcf19f377924cb1e5e62ee",
+      "text": "Demo normalization oi50-v1 for SYN-JOB-007. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nField of study: management, business_administration.\nWork authorization: required for Germany (DE); visa sponsorship is not offered.\nRole family: Operations & Supply Chain.\nSkills: Data analysis; Creativity; Automation; Prioritisation.\nMinimum degree level: phd.\nAccepted fields of study: management, business_administration.\nMinimum experience: none.\nApplication deadline: 2026-10-31T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-24T10:55:00Z.",
+      "content_hash": "5b7c84b01cda8764c717f7fff472bab27dad803b7f3247cfe564f66d380a0d06",
       "source_ref": "normalization:oi50-v1#SYN-JOB-007"
     },
     "synthetic-normalized:SYN-JOB-008:description": {
@@ -14805,8 +14805,8 @@
     "synthetic-normalized:SYN-JOB-015:normalization": {
       "document_id": "synthetic-normalized:SYN-JOB-015:normalization",
       "kind": "job",
-      "text": "Demo normalization oi50-v1 for SYN-JOB-015. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nWork authorization: required for United Kingdom (GB); visa sponsorship is offered.\nStudent status: recent graduate.\nRole family: Markets & Trading.\nSkills: Excel; Financial modelling; Python; Pace.\nMinimum degree level: bachelor.\nAccepted fields of study: finance, economics, mathematics.\nMinimum experience: 6 months.\nApplication deadline: 2026-09-29T23:59:00Z.\nDiscovery (simulated): first seen 2026-08-26T10:55:00Z.",
-      "content_hash": "ad9d878aef67fb4660ed412d05de8d140001f44894c56481b0b4996236a3a00d",
+      "text": "Demo normalization oi50-v1 for SYN-JOB-015. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nWork authorization: required for United Kingdom (GB); visa sponsorship is offered.\nStudent status: recent graduate.\nRole family: Markets & Trading.\nSkills: Excel; Financial modelling; Python; Pace.\nMinimum degree level: bachelor.\nAccepted fields of study: finance, economics, mathematics.\nMinimum experience: 6 months.\nApplication deadline: 2026-10-31T23:59:00Z.\nDiscovery (simulated): first seen 2026-08-26T10:55:00Z.",
+      "content_hash": "1de2eb173bf4ff6d02646f08c8c162703d3e117a4118983c8959e9373ef0e77b",
       "source_ref": "normalization:oi50-v1#SYN-JOB-015"
     },
     "synthetic-normalized:SYN-JOB-016:description": {
@@ -14861,8 +14861,8 @@
     "synthetic-normalized:SYN-JOB-019:normalization": {
       "document_id": "synthetic-normalized:SYN-JOB-019:normalization",
       "kind": "job",
-      "text": "Demo normalization oi50-v1 for SYN-JOB-019. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nDegree level: at least master; a degree in progress counts.\nField of study: marketing, business_administration, management, communications.\nWork authorization: required for France (FR); visa sponsorship is offered.\nStudent status: enrolled student or recent graduate.\nRole family: Marketing & Communications.\nSkills: Data analysis; Writing; Experiment design; Digital marketing; Copywriting; Storytelling.\nMinimum degree level: master.\nAccepted fields of study: marketing, business_administration, management, communications.\nMinimum experience: none.\nApplication deadline: 2026-09-26T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-18T10:55:00Z.",
-      "content_hash": "7718f4aa5a54b8346114464f0377a1e5d40cd31eb59b076cc5ee3b9fb26d332e",
+      "text": "Demo normalization oi50-v1 for SYN-JOB-019. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nDegree level: at least master; a degree in progress counts.\nField of study: marketing, business_administration, management, communications.\nWork authorization: required for France (FR); visa sponsorship is offered.\nStudent status: enrolled student or recent graduate.\nRole family: Marketing & Communications.\nSkills: Data analysis; Writing; Experiment design; Digital marketing; Copywriting; Storytelling.\nMinimum degree level: master.\nAccepted fields of study: marketing, business_administration, management, communications.\nMinimum experience: none.\nApplication deadline: 2026-10-31T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-18T10:55:00Z.",
+      "content_hash": "25879568c1b325714b94231966248f252317e52de8a58f057746532adffabe08",
       "source_ref": "normalization:oi50-v1#SYN-JOB-019"
     },
     "synthetic-normalized:SYN-JOB-020:description": {
@@ -14959,8 +14959,8 @@
     "synthetic-normalized:SYN-JOB-026:normalization": {
       "document_id": "synthetic-normalized:SYN-JOB-026:normalization",
       "kind": "job",
-      "text": "Demo normalization oi50-v1 for SYN-JOB-026. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nStudent status: enrolled student.\nField of study: marketing, communications.\nWork authorization: required for Netherlands (NL); visa sponsorship is offered.\nRole family: Marketing & Communications.\nSkills: Data analysis; Copywriting; Digital marketing; Creativity; Prioritisation.\nMinimum degree level: master.\nAccepted fields of study: marketing, communications.\nMinimum experience: 3 months.\nApplication deadline: 2026-09-27T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-14T10:55:00Z.",
-      "content_hash": "8f1684a0e59e3f742423e47dd7fe06f38de7031ada6520cb4127f1f431d87b7e",
+      "text": "Demo normalization oi50-v1 for SYN-JOB-026. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nStudent status: enrolled student.\nField of study: marketing, communications.\nWork authorization: required for Netherlands (NL); visa sponsorship is offered.\nRole family: Marketing & Communications.\nSkills: Data analysis; Copywriting; Digital marketing; Creativity; Prioritisation.\nMinimum degree level: master.\nAccepted fields of study: marketing, communications.\nMinimum experience: 3 months.\nApplication deadline: 2026-10-31T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-14T10:55:00Z.",
+      "content_hash": "238f3907087591ba9f100774fc47509f522d961b5482b6ef9e79f8471515bd34",
       "source_ref": "normalization:oi50-v1#SYN-JOB-026"
     },
     "synthetic-normalized:SYN-JOB-027:description": {
@@ -15029,8 +15029,8 @@
     "synthetic-normalized:SYN-JOB-031:normalization": {
       "document_id": "synthetic-normalized:SYN-JOB-031:normalization",
       "kind": "job",
-      "text": "Demo normalization oi50-v1 for SYN-JOB-031. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nLanguage: Italian, CEFR:C1.\nLanguage: English, CEFR:B2.\nWork authorization: required for Italy (IT); visa sponsorship is not offered.\nStudent status: recent graduate.\nRole family: Sales & Business Development.\nSkills: Client handling; Negotiation; CRM; Clear communication; Resilience; Persuasion.\nMinimum degree level: bachelor.\nAccepted fields of study: business_administration, marketing, management.\nMinimum experience: 6 months.\nApplication deadline: 2026-09-30T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-22T10:55:00Z.",
-      "content_hash": "9d199383b209dba7e8c8539636d5f1db8a5282be9862cd3d0f83505a8d09e076",
+      "text": "Demo normalization oi50-v1 for SYN-JOB-031. Synthetic demo data: these statements were authored to make the job comparable and are not from the posting.\nLanguage: Italian, CEFR:C1.\nLanguage: English, CEFR:B2.\nWork authorization: required for Italy (IT); visa sponsorship is not offered.\nStudent status: recent graduate.\nRole family: Sales & Business Development.\nSkills: Client handling; Negotiation; CRM; Clear communication; Resilience; Persuasion.\nMinimum degree level: bachelor.\nAccepted fields of study: business_administration, marketing, management.\nMinimum experience: 6 months.\nApplication deadline: 2026-10-31T23:59:00Z.\nDiscovery (simulated): first seen 2026-09-22T10:55:00Z.",
+      "content_hash": "ee9b799d88d0c7632cf6c6d48414de062dd963d94b343a5ef333216760131caf",
       "source_ref": "normalization:oi50-v1#SYN-JOB-031"
     },
     "synthetic-normalized:SYN-JOB-032:description": {
