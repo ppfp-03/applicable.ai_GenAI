@@ -175,3 +175,31 @@ def test_client_uses_explicit_request_timeout() -> None:
 
     assert REQUEST_TIMEOUT_SECONDS == 120.0
     assert client._client.timeout == REQUEST_TIMEOUT_SECONDS
+
+
+def test_thinking_flag_is_not_sent_when_unset(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("KIMI_ENABLE_THINKING", raising=False)
+    client = kimi_with_replies(reply(VALID_REPLY))
+
+    client.extract_candidate_fields(CV_TEXT)
+
+    assert client.requests[0]["extra_body"] is None
+
+
+@pytest.mark.parametrize(("value", "flag"), [("false", False), ("0", False), ("True", True)])
+def test_thinking_flag_follows_the_environment(
+    monkeypatch: pytest.MonkeyPatch, value: str, flag: bool
+) -> None:
+    monkeypatch.setenv("KIMI_ENABLE_THINKING", value)
+    client = kimi_with_replies(reply(VALID_REPLY))
+
+    client.extract_candidate_fields(CV_TEXT)
+
+    assert client.requests[0]["extra_body"] == {"enable_thinking": flag}
+
+
+def test_unreadable_thinking_flag_fails_loudly(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("KIMI_ENABLE_THINKING", "maybe")
+
+    with pytest.raises(ValueError, match="KIMI_ENABLE_THINKING"):
+        KimiClient(api_key="test-key")

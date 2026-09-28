@@ -47,6 +47,26 @@ REQUEST_TIMEOUT_SECONDS = 120.0
 MAX_ATTEMPTS = 3
 
 
+def _thinking_body(value: Optional[str]) -> Optional[dict[str, Any]]:
+    """The request's `enable_thinking` flag, from KIMI_ENABLE_THINKING.
+
+    Unset sends nothing, so the endpoint keeps its default. Qwen models think
+    by default, which makes extraction several times slower for the same
+    output; KIMI_ENABLE_THINKING=false turns it off.
+
+    Raises:
+        ValueError: If the value is not a recognisable boolean.
+    """
+    if value is None or not value.strip():
+        return None
+    flag = value.strip().lower()
+    if flag in ("1", "true", "yes", "on"):
+        return {"enable_thinking": True}
+    if flag in ("0", "false", "no", "off"):
+        return {"enable_thinking": False}
+    raise ValueError(f"KIMI_ENABLE_THINKING must be true or false, not {value!r}.")
+
+
 class KimiClient:
     """Thin client for candidate and job extraction via the Kimi API.
 
@@ -96,6 +116,7 @@ class KimiClient:
         self._client = OpenAI(
             api_key=key, base_url=self.base_url, timeout=REQUEST_TIMEOUT_SECONDS
         )
+        self._extra_body = _thinking_body(os.environ.get("KIMI_ENABLE_THINKING"))
 
     def extract_candidate_fields(self, document_text: str) -> ExtractedFields:
         """Ask Kimi to extract candidate facts, with quotes, from CV text.
@@ -163,6 +184,7 @@ class KimiClient:
                         },
                     },
                     temperature=0.0,
+                    extra_body=self._extra_body,
                 )
             except OpenAIError as exc:
                 raise ExtractionError(
