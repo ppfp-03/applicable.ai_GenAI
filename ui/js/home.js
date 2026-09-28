@@ -161,6 +161,10 @@
     // Slot edges in stage px, measured after the dots have swollen.
     const box = d.box.getBoundingClientRect(), k0 = ratio(d.box);
     const xs = d.btns.map(b => (b.getBoundingClientRect().left - box.left) * k0);
+    // Sit exactly on the dots: centring in the box leaves the lens a few px
+    // above them, and the dash then shows twice.
+    d.lens.style.top = ((d.btns[0].getBoundingClientRect().top - box.top) * k0).toFixed(2) + 'px';
+    d.lens.style.marginTop = '0';
     const fl = Math.floor(p), t = p - fl, i = ((fl % n) + n) % n, j = (i + 1) % n;
     const [a, b] = d.lens.children;
     // Stretch leads in the direction of travel and squeezes the glass thin.

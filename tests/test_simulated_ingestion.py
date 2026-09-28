@@ -212,24 +212,18 @@ def test_explore_runs_the_event_and_labels_every_new_posting() -> None:
     assert_no_real_discovery_claim(after)
 
 
-def test_home_card_runs_the_event_and_lists_what_it_added() -> None:
+def test_home_carousel_has_no_simulated_event_card() -> None:
+    # The event is run from Explore; the carousel holds applications and questions.
+    assert {w["kind"] for w in D.week} <= {"done", "interview", "next", "question"}
     at = app()
-    # Before the event the Hong Kong question is not in the carousel.
-    at.session_state["home_card"] = [w["kind"] for w in D.week if w["kind"] != "question"].index("new")
     at.run()
-    before = page(at)
-    assert LABEL in before and "not live monitoring" in before
-    assert "Review 4 matches" not in [b.label for b in at.button]
-
-    at.button(key="uc-sim").click().run()
-    after = page(at)
-
-    assert "Review 4 matches" in [b.label for b in at.button]
-    assert f"<b>{LABEL}</b>" in after
-    assert_no_real_discovery_claim(after)
+    text = page(at)
+    assert not [b for b in at.button if b.key in ("uc-sim", "uc-new")]
+    assert "UniCreda" not in text
+    assert_no_real_discovery_claim(text)
 
 
-def test_home_hong_kong_question_waits_for_the_event_and_claims_no_role_count() -> None:
+def test_home_hong_kong_question_is_shown_and_claims_no_role_count() -> None:
     question = next(w for w in D.week if w["kind"] == "question")
     # No demo role is in Hong Kong, so the card must not claim any depend on it.
     assert not [r for r in D.roles if r.city == "Hong Kong"]
@@ -238,14 +232,8 @@ def test_home_hong_kong_question_waits_for_the_event_and_claims_no_role_count() 
 
     at = app()
     at.run()
-    assert question["title"] not in page(at)
-    assert "UniCreda" not in page(at)
-    assert_no_real_discovery_claim(page(at))
-
-    at.session_state["home_card"] = [w["kind"] for w in D.week if w["kind"] != "question"].index("new")
-    at.run()
-    at.button(key="uc-sim").click().run()
     assert question["title"] in page(at)
+    assert not store.simulated_event_ran()
 
 
 def test_matches_row_tag_names_the_simulated_event() -> None:

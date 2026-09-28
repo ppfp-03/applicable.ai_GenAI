@@ -5,10 +5,9 @@ timeline, the top matches and the applications card. The centre card of
 the carousel is a native container, so every action in it is a real widget;
 the side cards are drawn behind it and brought forward with native buttons.
 
-The new-matches card is the controlled "Simulated ingestion event" (FR-10):
-until the user runs it, the card offers to; afterwards it lists the synthetic
-postings it added, and every card showing one says so. The Hong Kong question
-belongs to the post-event scenario, so it is shown only once the event has run.
+The carousel holds applications and questions only. The controlled
+"Simulated ingestion event" (FR-10) is run from Explore, not from here; the
+top matches still label every synthetic posting it added.
 
 Each widget opens into a full view (the ⤢ button, `ui/home_expand.py`):
 the timeline into a calendar, the others into their complete lists.
@@ -45,12 +44,9 @@ SIM = d.simulated_event["label"]
 def week_item(item: dict) -> dict:
     """A carousel card as it reads under the current answers.
 
-    The new-matches card offers to run the simulated event until it has run.
     A card with a "work_auth" row shows the role's standing and its right to
     work as the canonical HC_WORK_AUTH rule decides them now.
     """
-    if item["kind"] == "new" and not store.simulated_event_ran():
-        return {**item, **item["before"]}
     if any(k == "work_auth" for k, _ in item.get("checks", [])):
         v = store.view(d.role(item["role"]))
         return {
@@ -61,26 +57,7 @@ def week_item(item: dict) -> dict:
     return item
 
 
-def new_note() -> str:
-    if not store.simulated_event_ran():
-        return "Controlled demo scenario · <b>not live monitoring</b>"
-    return f'<b>{SIM}</b> · same rules as your other <b>{store.counts()["eligible"]} eligible</b> roles'
-
-
-def shown(item: dict) -> bool:
-    """The Hong Kong question belongs to the post-event scenario, so it waits
-    until the simulated event has run."""
-    return item["kind"] != "question" or store.simulated_event_ran()
-
-
-def run_event() -> None:
-    store.run_simulated_event()
-    # Every card is shown now; keep the new-matches card in front.
-    st.session_state[CARD] = next(i for i, w in enumerate(d.week) if w["kind"] == "new")
-    st.toast(f"{SIM} · {len(store.new_matches())} synthetic postings added")
-
-
-week = [week_item(w) for w in d.week if shown(w)]
+week = [week_item(w) for w in d.week]
 N = len(week)
 
 
@@ -163,16 +140,6 @@ def body(item: dict) -> str:
             f'<div><div style="font-size:12px;color:{item["label_color"]};font-weight:620;margin-bottom:6px">'
             f'{esc(item["label"])}</div>{figure}</div>{checks(item["checks"])}</div>'
         )
-    if kind == "new":
-        if not store.simulated_event_ran():
-            return f'<div class="mm" style="margin-top:20px">{esc(d.simulated_event["disclaimer"])}</div>'
-        rows = "".join(
-            f'<div class="nrow"><span class="m2" style="background:{v.bg}">{v.mono}</span>'
-            f'<b>{esc(v.company)}</b><span class="r">{esc(v.title.replace(" Intern", " Intern"))} · {esc(v.city)}</span>'
-            f'<span class="s">{v.shown}</span></div>'
-            for v in store.new_matches()
-        )
-        return f'<div style="display:flex;flex-direction:column;gap:9px;margin-top:20px">{rows}</div>'
     return ""
 
 
@@ -182,8 +149,6 @@ def fake_buttons(item: dict) -> str:
         f'<span class="btn{" p" if p else ""}">{esc(t)}</span>' for t, p in item["buttons"]
     )
     note = f'<span class="nt">{item["note"]}</span>' if item.get("note") else ""
-    if item["kind"] == "new":
-        note = f'<span class="nt">{new_note()}</span>'
     return f'<div class="foot">{btns}{note}</div>'
 
 
@@ -222,26 +187,35 @@ with st.container(key="car"):
         st.button("Bring forward", key=key, on_click=go, args=(cur + o,))
 
     item = week[cur]
+    kind = item["kind"]
     with st.container(key="card-uc"):
-        if item["kind"] == "question":
+        # Every card fills the same slots (head, answer, result, footer) and
+        # every footer the same three (action, skip, note). Moving between
+        # cards then replaces each element in place: a card with fewer slots
+        # would leave the previous card's extra rows on screen, stale, until
+        # the whole page has rerun.
+        if kind == "question":
             html(f'<div class="ucx" data-i="{cur}">' + lead(item) + '</div><div style="margin-top:24px;font-size:12px;color:var(--t2);font-weight:560">Your answer</div>')
-            with st.container(key="hk"):
+        else:
+            html(f'<div class="ucx" data-i="{cur}">' + lead(item) + body(item) + "</div>")
+        with st.container(key="hk"):
+            choice = None
+            if kind == "question":
                 choice = st.pills("Your answer", item["options"], key="hk-choice", label_visibility="collapsed")
+            else:
+                st.empty()
+        if kind == "question":
             result = item["results"].get(choice, item["results"]["*"]) if choice else esc(item["waiting"])
             html(f'<div class="ucx"><div class="mm" style="margin-top:14px">{result}</div></div>')
         else:
-            html(f'<div class="ucx" data-i="{cur}">' + lead(item) + body(item) + "</div>")
+            st.empty()
 
         with st.container(key="ucf"):
-            kind = item["kind"]
-            if kind == "done":
-                if st.button("View application", key="uc-view"):
+            # A sent application and an interview are both applications: same buttons.
+            if kind in ("done", "interview"):
+                if st.button("View application", type="primary", key="uc-view"):
                     tabs.go("applications", id=item["role"])
-            elif kind == "interview":
-                if st.button("View application", type="primary", key="uc-prep"):
-                    tabs.go("applications", id=item["role"])
-                if st.button("Copy join link", key="uc-join"):
-                    st.toast("Join link copied")
+                st.button("Not now", key="uc-later", on_click=go, args=(cur + 1,))
             elif kind == "next":
                 if st.button("Continue application", type="primary", key="uc-cont"):
                     store.save_application(item["role"], "progress")
@@ -252,13 +226,7 @@ with st.container(key="car"):
                     store.set_answer("hk_relocate", choice)
                     st.toast("Answer saved to your profile")
                 st.button("Later", key="uc-q-later", on_click=go, args=(cur + 1,))
-            elif kind == "new" and not store.simulated_event_ran():
-                st.button(item["buttons"][0][0], type="primary", key="uc-sim", on_click=run_event)
-            elif kind == "new":
-                if st.button(f"Review {len(store.new_matches())} matches", type="primary", key="uc-new"):
-                    st.session_state[store.REVIEWED] = True
-                    tabs.go("explore", filter="new")
-            note = new_note() if kind == "new" else item.get("note") or (
+            note = item.get("note") or (
                 f'Same rules as your other <b>{store.counts()["eligible"]} eligible</b> roles'
             )
             html(f'<span class="ucn">{note}</span>')
