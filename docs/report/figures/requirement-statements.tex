@@ -1,0 +1,31 @@
+% 154 hard requirement statements extracted from 50 Greenhouse postings,
+% by how ready they are to feed a deterministic rule (84+19+17+34 = 154).
+\begin{tikzpicture}
+\begin{axis}[
+  hbarchart,
+  width=0.55\linewidth,   % plot area only; tick labels sit outside it
+  height=4.6cm,
+  xmax=95,
+  xtick={0,20,40,60,80},
+  xlabel={Requirement statements},
+  symbolic y coords={
+    Ready for deterministic rule input,
+    Ambiguous wording,
+    Incomplete wording,
+    Insufficiently explicit},
+  % Two plots (brand vs neutral), so list every tick: ytick=data only
+  % picks up the first plot's coordinates.
+  ytick={
+    Ready for deterministic rule input,
+    Ambiguous wording,
+    Incomplete wording,
+    Insufficiently explicit},
+  bar shift=0pt,
+]
+\addplot[fill=brand] coordinates {(84,Ready for deterministic rule input)};
+\addplot[fill=neutralbar] coordinates {
+  (19,Ambiguous wording)
+  (17,Incomplete wording)
+  (34,Insufficiently explicit)};
+\end{axis}
+\end{tikzpicture}
