@@ -19,7 +19,7 @@ import streamlit as st
 from core import clock, store
 from ui import calendar_page as cp
 from ui import home_expand as hx
-from ui import shell, tabs
+from ui import choice, shell, tabs
 from ui.html import esc, html
 from ui.theme import page_css
 
@@ -229,7 +229,7 @@ with main:
                           help=f"Next {'month' if view == 'Month' else 'day' if view == 'Day' else 'week'}")
             bold, light = cp.title(view, picked, first)
             html(f'<div class="cv-title"><b>{esc(bold)}</b> {light}</div>')
-            st.segmented_control("View", cp.VIEWS, key=VIEW, label_visibility="collapsed")
+            choice.segmented("View", cp.VIEWS, key=VIEW, label_visibility="collapsed")
 
         if view == "Month":
             head, markup, days = month_grid(first, picked)

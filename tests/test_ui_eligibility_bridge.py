@@ -92,6 +92,45 @@ def test_mandarin_hsk_is_informational_with_no_constraint(role_id):
     assert all(e.requirement_id != "req-language-mandarin" for e in params.entries)
 
 
+def test_fluent_and_native_requirements_are_hard_constraints_on_the_self_scale():
+    # D-046: "fluent" and "native" are SELF levels; the engine decides what fluent counts as.
+    job = {**role("nestella-strategy"), "requirements": {"languages": {"English": "fluent", "Italian": "native"}}}
+    got = {e.requirement_id: (e.constraint_id, e.parameters.scale, e.parameters.min_level)
+           for e in eligibility.parameters(job, D.profile).entries if e.constraint_id == eligibility.LANGUAGE}
+    assert got["req-language-en"] == (eligibility.LANGUAGE, "SELF", "fluent")
+    assert got["req-language-it"] == (eligibility.LANGUAGE, "SELF", "native")
+    r = {x.requirement_id: x for x in eligibility.job(job).facts.requirements}
+    assert r["req-language-en"].classification is RequirementClassification.HARD_CONSTRAINT
+
+
+@pytest.mark.parametrize("have, status", [
+    ("C1", RuleStatus.MET),         # English fluent counts as C1
+    ("C2", RuleStatus.MET),
+    ("native", RuleStatus.MET),
+    ("fluent", RuleStatus.MET),
+    ("B2", RuleStatus.CONFLICT),
+])
+def test_english_fluent_is_checked_as_c1(have, status):
+    job = {**role("oi50-001"), "requirements": {"languages": {"English": "fluent"}}}
+    profile = {**D.profile, "languages": {"English": have}}
+    assert outcome(eligibility.assess(job, profile, {"uk_work": "yes"}), eligibility.LANGUAGE).status is status
+
+
+def test_an_unmapped_fluent_is_not_met_by_a_cefr_level():
+    # D-046: French fluent stays on the SELF scale, so a CEFR level cannot be compared.
+    job = {**role("oi50-028"), "requirements": {"languages": {"French": "fluent"}}}
+    for have, status in [("C2", RuleStatus.UNKNOWN), ("fluent", RuleStatus.MET), ("native", RuleStatus.MET)]:
+        profile = {**D.profile, "languages": {**D.profile["languages"], "French": have}}
+        assert outcome(eligibility.assess(job, profile, {"uk_work": "yes"}), eligibility.LANGUAGE).status is status
+
+
+def test_english_fluent_is_no_longer_an_unchecked_limitation():
+    v = store.view(D.role("oi50-001"), {"uk_work": "yes"})
+    assert v.limitations == []
+    [lang] = [c for c in v.criteria if c.id == "language"]
+    assert (lang.status, lang.value) == ("met", "English C1")
+
+
 def test_business_maps_to_business_administration():
     [entry] = [e for e in eligibility.parameters(role("bolton-strategy"), D.profile).entries
                if e.constraint_id == eligibility.FIELD]
@@ -269,8 +308,8 @@ def test_tiles_and_standing_render_the_engine_unchanged(ans):
 def test_limitations_never_affect_the_standing():
     for r in D.roles:
         v = store.view(r, {"uk_work": "yes"})
-        unchecked = any(lvl not in ("A1", "A2", "B1", "B2", "C1", "C2")
-                        for lvl in r.raw["requirements"].get("languages", {}).values())
+        unchecked = any(not eligibility.canonical_language(name, lvl)
+                        for name, lvl in r.raw["requirements"].get("languages", {}).items())
         assert bool(v.limitations) == unchecked, r.id
         assert all(c.status != "not_met" for c in v.criteria if c.id == "language")
 

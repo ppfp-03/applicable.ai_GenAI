@@ -13,7 +13,7 @@ import streamlit as st
 
 from core import store
 from ui import tabs
-from ui.html import MARK, html
+from ui.html import html, lockup
 from ui.theme import page_css
 
 page_css("welcome")
@@ -29,7 +29,7 @@ html(
 )
 
 with st.container(key="wtop"):
-    html(f'<div class="brand">{MARK}Applicable.ai</div>')
+    html(f'<div class="brand">{lockup()}</div>')
 
 
 def to(name: str) -> None:

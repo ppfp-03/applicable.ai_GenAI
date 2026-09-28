@@ -29,6 +29,7 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass, field
+from datetime import timezone
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Optional
@@ -36,6 +37,7 @@ from typing import Any, Optional
 import streamlit as st
 
 from core import eligibility, eligibility_view, ranking, rules
+from core import matches as matches_core
 from oi.contracts import AnswerState, AnswerType, CandidateProfile
 from oi.intelligence.eligibility.catalogue import LANGUAGE_CONSTRAINT_ID, language_level_key
 
@@ -723,6 +725,11 @@ def available() -> list[RoleDef]:
 # ───────────────────────── Derived views ─────────────────────────
 
 
+def checked_language(name: str, level: str) -> bool:
+    """Whether a fixed rule checks this language requirement (CEFR, fluent, native)."""
+    return eligibility.canonical_language(name, level) is not None
+
+
 def view(role: RoleDef, ans: Optional[dict] = None) -> RoleView:
     """Check and score one role under `ans` (default: the current answers)."""
     d = data()
@@ -782,6 +789,54 @@ def _reviewed_safe() -> bool:
         return False
 
 
+# ───────────────────────── The one Matches ranking ─────────────────────────
+
+#: Recent unified rankings, keyed by everything they read; oldest dropped first.
+_MATCHES: dict[str, "matches_core.Matches"] = {}
+_MAX_MATCHES = 8
+
+
+def matches() -> "matches_core.Matches":
+    """The one ranked Matches population (core/matches.py) under the current
+    answers, confirmed preferences and CV: curated roles and synthetic postings,
+    each posting once, one formula (D-051). Outside onboarding, every screen
+    that shows a role's Priority score reads it here."""
+    from core import clock  # clock reads the store
+
+    d = data()
+    cv = candidate()
+    roles = [r.raw for r in available()]
+    now = clock.now()
+    key = json.dumps({
+        "candidate": eligibility.candidate_key(d.profile, answers()),
+        "preferences": preferences(),
+        "cv": [s.value for s in cv.skills] if cv else None,
+        "roles": [r["id"] for r in roles],
+        "now": now.isoformat(),
+    }, sort_keys=True, default=str)
+    if key not in _MATCHES:
+        if len(_MATCHES) >= _MAX_MATCHES:
+            _MATCHES.pop(next(iter(_MATCHES)))
+        _MATCHES[key] = matches_core.build(roles, d.profile, answers(), preferences(), cv,
+                                           now if now.tzinfo else now.replace(tzinfo=timezone.utc))
+    return _MATCHES[key]
+
+
+def priority(role_id: str) -> Optional[int]:
+    """A role's raw Priority score (0-100) as the Matches ranking gives it, or
+    None when it is not ranked (excluded). A curated copy of a synthetic posting
+    reads that posting's score: one posting, one number."""
+    found = matches().get(role_id)
+    return found.shown if found else None
+
+
+def ordering(role_id: str) -> float:
+    """Where a role sorts in the Matches ranking: its raw Priority score, 15
+    lower while it is to verify; unranked roles sort last."""
+    found = matches().get(role_id)
+    return found.ordering if found and found.ordering is not None else float("-inf")
+
+
 def top_matches() -> list[RoleView]:
     """The dashboard strip: ranked roles in the cities the user asked for,
     today's new ones included, so nothing good hides behind a review step."""
@@ -812,6 +867,11 @@ def counts(choice: Any = "current", as_of: Optional[str] = None) -> dict[str, in
         as_of: As in `views`.
     """
     ans = answers() if choice == "current" else {**answers(), "uk_work": choice}
+    return tally(ans, as_of)
+
+
+def tally(ans: dict, as_of: Optional[str] = None) -> dict[str, int]:
+    """Eligible / to verify / excluded among the roles available under `ans`."""
     out = {"eligible": 0, "verify": 0, "excluded": 0}
     for v in views(ans, as_of):
         out[v.standing] += 1
@@ -820,7 +880,37 @@ def counts(choice: Any = "current", as_of: Optional[str] = None) -> dict[str, in
 
 def uk_roles() -> list[RoleView]:
     """The available roles in the UK, the ones the UK question can settle."""
-    return [v for v in views() if v.country == "GB"]
+    return country_roles("GB")
+
+
+def country_roles(country: str, as_of: Optional[str] = None) -> list[RoleView]:
+    """The available roles in `country`, the ones its work question can settle."""
+    return [v for v in views(as_of=as_of) if v.country == country]
+
+
+def answers_with(country: str, choice: Optional[str]) -> dict:
+    """The answers as they would be after answering "Can you work in
+    <country> without visa sponsorship?" with `choice` (set_work_answer).
+    Nothing is saved: previews run the same rules on it."""
+    facts = eligibility.answer_declaration(choice, eligibility.declared(declaration(), country))
+    out = {**answers(), WORK_AUTH: _with_country(declaration(), country, facts)}
+    if country == "GB":
+        out["uk_work"] = eligibility.work_answer(facts)
+    return out
+
+
+def pending_work_question(roles: list[RoleView]) -> Optional[str]:
+    """The country whose "Can you work in <country> without visa sponsorship?"
+    still decides the most of `roles` (ranked): their permission check is
+    open and the declaration does not settle the country. Ties go to the
+    country of the higher ranked role. None when no such question is left."""
+    decl = declaration()
+    n: dict[str, int] = {}
+    for v in roles:
+        if v.criterion("permission").status == "check" and \
+                eligibility.work_answer(eligibility.declared(decl, v.country)) == "unsure":
+            n[v.country] = n.get(v.country, 0) + 1
+    return max(n, key=n.get) if n else None  # dicts keep rank order: the first maximum wins
 
 
 def movement(before: dict, after: dict, n: int = 5, as_of: Optional[str] = None) -> dict[str, str]:
@@ -866,5 +956,7 @@ def save_application(role_id: str, stage: str = "progress") -> None:
 
 
 def nav_counts() -> dict[str, int]:
-    """Badges for the top bar."""
-    return {"matches": counts()["eligible"], "applications": len(st.session_state.get(APPS, []))}
+    """Badges for the top bar. Matches counts the eligible roles the Matches
+    page ranks (the one population, core/matches.py)."""
+    eligible = sum(o.status == "eligible" for o in matches().ordered)
+    return {"matches": eligible, "applications": len(st.session_state.get(APPS, []))}

@@ -455,8 +455,12 @@ def test_a_declared_uk_answer_is_not_reset_to_unknown_in_step_4() -> None:
     for authorized, uk in ((["GB"], "yes"), (["GB", "CH"], "yes")):
         at = at_step("4", authorized)
         assert at.session_state[store.ANSWERS]["uk_work"] == uk
-        assert "Your UK work authorization is already declared" in page(at)
-        assert at.button(key="next").label == "View shortlist"
+
+
+def test_with_nothing_left_to_ask_step_4_says_so() -> None:
+    at = at_step("4", ["EU", *OTHERS])
+    assert "Your work authorization is already declared" in page(at)
+    assert at.button(key="next").label == "View shortlist"
 
 
 def test_none_of_these_leaves_the_uk_to_step_5() -> None:
@@ -485,17 +489,41 @@ def test_a_left_out_uk_is_asked_in_step_5_and_the_answer_is_saved() -> None:
 
 
 def test_a_known_uk_answer_is_not_asked_again() -> None:
-    at = at_step("4", ["GB"])
+    # Every platform country declared: the shortlist waits on no answer.
+    at = at_step("4", ["EU", *OTHERS])
     at.button(key="next").click().run()
     assert at.session_state["ob_step"] == "6"  # step 5 skipped
-    assert "Declared by you" in page(at)
-    assert "text-decoration:line-through\">Unknown" not in page(at)
 
     at.button(key="back").click().run()
     assert at.session_state["ob_step"] == "4"
 
     at.button(key="oo-st5").click().run()
     assert at.session_state["ob_step"] == "6"
+
+
+def test_a_known_uk_still_leaves_step_5_the_question_the_shortlist_waits_on() -> None:
+    # The UK is declared, but a shortlisted role elsewhere still needs an answer.
+    at = at_step("4", ["GB"])
+    assert at.button(key="next").label == "Answer 1 question"
+    at.button(key="next").click().run()
+    assert at.session_state["ob_step"] == "5"
+    country = at.session_state["ob_ask"]
+    assert country != "GB"
+    assert f"Can you work in {store.country_name(country)} without visa sponsorship?" in page(at)
+    assert at.session_state["ob_uk"] == "unsure"  # prefilled from the profile, never "Yes" by default
+    at.button(key="oo-o6yes").click().run()
+    at.button(key="next").click().run()
+    assert not at.exception
+    assert at.session_state["ob_step"] == "6"
+    assert facts(declared(at), country) == (True, False)
+    assert facts(declared(at), "GB") == (True, False)  # the rest is untouched
+    assert "Recalculated" not in page(at)
+
+    # Back to step 5: the answer given there opens again, to be changed.
+    at.button(key="back").click().run()
+    assert at.session_state["ob_step"] == "5"
+    assert at.session_state["ob_ask"] == country
+    assert at.session_state["ob_uk"] == "yes"
 
 
 def test_an_unsettled_uk_is_still_asked_in_step_5() -> None:

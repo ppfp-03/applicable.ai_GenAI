@@ -15,6 +15,7 @@ from __future__ import annotations
 import base64
 import re
 from html import escape
+from pathlib import Path
 
 import streamlit as st
 
@@ -60,10 +61,28 @@ def md_icon(svg: str, alt: str = "") -> str:
 
 # ───────────────────────── Icons, verbatim from the mockups ─────────────────────────
 
-MARK = (
-    '<span class="mark"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 11 7 3l4 8M4.6 8h4.8" '
-    'stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+#: The brand icon alone (static/applicable-mark.svg), sized to fill the 28px .mark box.
+MARK_SVG = (
+    '<svg width="28" height="28" viewBox="0 0 100 100" style="display:block">'
+    '<rect width="100" height="100" rx="22.14" fill="#E1663B"/><path fill="#F3EDE3" d="M29.96 84.32L17.75 84.32'
+    "A6.79 6.79 0 0 1 11.67 74.52L34.96 27.59A16.79 16.79 0 0 1 65.04 27.59L88.33 74.52A6.79 6.79 0 0 1 82.25 84.32"
+    "L70.04 84.32A6.43 6.43 0 0 1 64.27 80.72L57.37 66.6A0.71 0.71 0 0 1 58.01 65.57L62.72 65.57A1.43 1.43 0 0 0 "
+    "63.99 63.49L51.48 39.27A1.66 1.66 0 0 0 48.52 39.27L36.01 63.49A1.43 1.43 0 0 0 37.28 65.57L41.99 65.57"
+    'A0.71 0.71 0 0 1 42.63 66.6L35.73 80.72A6.43 6.43 0 0 1 29.96 84.32Z"/></svg>'
 )
+MARK = f'<span class="mark">{MARK_SVG}</span>'
+_LOCKUP_FILE = Path(__file__).resolve().parent.parent / "static" / "applicable-lockup.svg"
+
+
+def lockup() -> str:
+    """The tile + wordmark lockup, inlined at 34px tall (the tile matches the old 28px mark).
+
+    Read on every render, not at import: Streamlit only reloads changed .py
+    files, so a cached copy would keep showing a replaced SVG.
+    """
+    return _LOCKUP_FILE.read_text().replace(
+        'width="242" height="48"', 'width="171" height="34" style="display:block"', 1
+    )
 SEARCH = (
     '<svg width="15" height="15" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5" stroke="#3A3A3C" '
     'stroke-width="1.6" fill="none"/><path d="M10.5 10.5 14 14" stroke="#3A3A3C" stroke-width="1.6" '

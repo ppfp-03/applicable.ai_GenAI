@@ -24,7 +24,7 @@ from typing import Callable
 import streamlit as st
 
 from core import clock, store
-from ui import tabs
+from ui import choice, tabs
 from ui.html import esc, html, logo
 from ui.theme import dialog_css
 
@@ -128,10 +128,10 @@ def shift_month(first: date, n: int) -> date:
 def sort_matches(views: list, by: str | None) -> list:
     """Top matches by score (the default), by closing date or by city."""
     if by == "Closing soon":
-        return sorted(views, key=lambda v: (v.closes, -v.shown))
+        return sorted(views, key=lambda v: (v.closes, -(store.priority(v.id) or -1)))
     if by == "City":
-        return sorted(views, key=lambda v: (v.city, -v.shown))
-    return sorted(views, key=lambda v: -v.shown)
+        return sorted(views, key=lambda v: (v.city, -(store.priority(v.id) or -1)))
+    return sorted(views, key=lambda v: -(store.priority(v.id) or -1))
 
 
 def by_stage(applications: list[dict]) -> dict[str, list[dict]]:
@@ -272,8 +272,8 @@ def calendar_view(ns: str, go_card: Callable[[int], None]) -> None:
             st.button("Today", key=f"{ns}-today", on_click=_pick, args=(ns, today))
             st.button("", icon=":material/chevron_right:", key=f"{ns}-next", on_click=_nav, args=(ns, 1),
                       help="Next week" if week else "Next month")
-        st.segmented_control("View", ["Month", "Week"], key=MODE.format(ns), default="Month",
-                             label_visibility="collapsed")
+        choice.segmented("View", ["Month", "Week"], key=MODE.format(ns), default="Month",
+                         label_visibility="collapsed")
 
     grid, side = st.columns([5, 2], gap="medium")
     with grid:
@@ -336,7 +336,7 @@ def matches(tops: list, card: Callable[[object], str]) -> None:
     dialog_css("home_expand")
     with st.container(key="hx-mbar"):
         html(f'<div class="hx-sub"><b>{len(tops)} roles</b> in your cities · same rules for every role</div>')
-        st.segmented_control("Sort by", SORTS, key=SORT, default=SORTS[0], label_visibility="collapsed")
+        choice.segmented("Sort by", SORTS, key=SORT, default=SORTS[0], label_visibility="collapsed")
     views = sort_matches(tops, st.session_state.get(SORT))
     with st.container(key="hx-mg"):
         html(f'<div class="hx-mt">{"".join(card(v) for v in views)}</div>')
@@ -354,7 +354,8 @@ def applications_board() -> None:
     """Every application on a board, one column per stage."""
     dialog_css("home_expand")
     apps = store.applications()
-    html(f'<div class="hx-sub"><b>{len(apps)} applications</b> · from saved to interview</div>')
+    with st.container(key="hx-board"):  # marks the sheet for its flip-in (home_expand.css)
+        html(f'<div class="hx-sub"><b>{len(apps)} applications</b> · from saved to interview</div>')
     for col, (stage, rows) in zip(st.columns(len(BOARD)), by_stage(apps).items()):
         color, label, _ = STAGE[stage]
         with col:

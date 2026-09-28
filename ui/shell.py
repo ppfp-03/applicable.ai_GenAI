@@ -16,7 +16,7 @@ from typing import Iterator
 import streamlit as st
 
 from ui import tabs
-from ui.html import BELL, MARK, SEARCH, html, md_icon
+from ui.html import BELL, SEARCH, html, lockup, md_icon
 
 #: Four blurred glows, positioned as on the mockups' 1600 x 1000 stage.
 _GLOW = (
@@ -46,7 +46,7 @@ def background() -> None:
 
 def brand() -> None:
     """The Applicable.ai lockup."""
-    html(f'<div class="brand">{MARK}Applicable.ai</div>')
+    html(f'<div class="brand">{lockup()}</div>')
 
 
 def topbar(active: str, counts: dict[str, int] | None = None) -> None:

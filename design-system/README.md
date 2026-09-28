@@ -96,9 +96,9 @@ La pagina è per il ~90% neutra calda. Il colore significa sempre qualcosa.
 
 ## Logo
 
-- `assets/Logos/applicable-mark.svg`: tessera mandarino con spunta `ink` su un tratto di evidenziatore. Favicon, avatar, sidebar compatta.
+- `assets/Logos/applicable-mark.svg`: tessera arancione `#E1663B` con la "A" in crema `#F3EDE3`. Favicon, avatar, sidebar compatta.
 - `applicable-lockup.svg` su fondi chiari, `applicable-lockup-on-dark.svg` su fondi scuri. Altezza minima 24px; spazio libero = metà dell'altezza della tessera.
-- Non ricolorare la tessera, non separare la spunta dall'evidenziatore, non usare il logo come decorazione.
+- Non ricolorare la tessera né la "A", non usare il logo come decorazione.
 
 ## Componenti
 

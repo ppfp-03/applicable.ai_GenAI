@@ -5,7 +5,7 @@ eligibility` (assess_eligibility), the same engine the pipeline uses. This
 module only translates, and decides nothing:
 
 - the demo profile and the user's answers become one CandidateProfile: the
-  degree, graduation month, field, CEFR languages, student status and months
+  degree, graduation month, field, languages, student status and months
   of experience become `eligibility_answers`; the user's answers become
   `declarations.work_authorizations`. Citizenship is not copied over: it is
   not a declaration, and it never implies work authorisation. Every
@@ -27,6 +27,7 @@ The mapping, requirement by requirement:
 | degree_level          | HC_DEGREE_LEVEL, hard, mandatory; see below        |
 | fields (+ related_ok) | HC_FIELD_OF_STUDY, hard, mandatory; FIELDS         |
 | languages, CEFR level | HC_LANGUAGE, hard, mandatory; one per language     |
+| or fluent / native    |   (SELF scale; the engine maps fluent, D-046)      |
 | languages, other      | informational, no constraint: never a hard gate    |
 | experience_min        | HC_MIN_EXPERIENCE, hard, mandatory; min_months     |
 
@@ -124,6 +125,8 @@ LANGUAGES = {
     "Dutch": "nl",
 }
 _CEFR = ("A1", "A2", "B1", "B2", "C1", "C2")
+#: The SELF-scale levels (D-046). What "fluent" counts as is the engine's rule.
+_SELF = ("fluent", "native")
 
 _DEGREE_LABEL = {"bachelor": "Bachelor's", "master": "Master's", "phd": "PhD"}
 
@@ -154,19 +157,19 @@ def _month_end(ym: str) -> date:
 
 
 def canonical_language(name: str, level: Optional[str]) -> Optional[str]:
-    """The catalogue code for a language at a CEFR level, else None.
+    """The catalogue code for a language at a CEFR or SELF level, else None.
 
     None means the requirement or fact is outside canonical eligibility (for
     example Mandarin at an HSK level).
     """
-    if name not in LANGUAGES or level not in (*_CEFR, "native"):
+    if name not in LANGUAGES or level not in (*_CEFR, *_SELF):
         return None
     return LANGUAGES[name]
 
 
 def level_code(level: str) -> str:
-    """A CEFR level or "native" as the catalogue's "<SCALE>:<LEVEL>" value."""
-    return "SELF:native" if level == "native" else f"CEFR:{level}"
+    """A CEFR level, "fluent" or "native" as the catalogue's "<SCALE>:<LEVEL>" value."""
+    return f"SELF:{level}" if level in _SELF else f"CEFR:{level}"
 
 
 def in_progress_policy(graduation: Optional[str], start: Optional[str]) -> str:
@@ -455,12 +458,13 @@ def _requirements(role: Mapping[str, Any]) -> list[dict]:
         })
     for name, level in req.get("languages", {}).items():
         code = canonical_language(name, level)
-        if code and level in _CEFR:
+        if code:
+            scale, min_level = level_code(level).split(":")
             out.append({
                 "requirement_id": f"req-language-{code}", "text": f"{name} {level}",
                 "classification": "hard_constraint", "modality": "mandatory", "constraint_id": LANGUAGE,
-                "parameters": {"kind": "language", "language": code, "scale": "CEFR",
-                               "min_level": level},
+                "parameters": {"kind": "language", "language": code, "scale": scale,
+                               "min_level": min_level},
             })
         else:
             # Stated as required, but no supported rule can check it: it

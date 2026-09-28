@@ -26,10 +26,11 @@ d = store.data()
 page_css("role")
 
 role_id = st.query_params.get("id") or st.session_state.get("role_id") or "deutsch-shanghai"
-# An OI-50 synthetic job has its own canonical page; it is not a demo role.
-if synthetic.is_synthetic(role_id) and any(j.job_id == role_id for j in synthetic.jobs()):
-    st.session_state["role_id"] = role_id
-    synthetic_ui.role_page(role_id)
+# A synthetic demo posting has its own page, with the same hierarchy.
+posting = synthetic_ui.posting_id(role_id)
+if posting and store.matches().get(posting):
+    st.session_state["role_id"] = posting
+    synthetic_ui.role_page(posting)
     st.stop()
 try:
     role = d.role(role_id)
@@ -37,6 +38,8 @@ except KeyError:
     role = d.role("deutsch-shanghai")
 st.session_state["role_id"] = role.id
 v = store.view(role)
+#: The role in the one Matches ranking: its Priority score and four factors.
+ranked = store.matches().get(role.id)
 
 attention = sorted(
     [c for c in v.criteria if c.status != "met"], key=lambda c: 0 if c.status == "not_met" else 1
@@ -127,10 +130,10 @@ def month(ym: str) -> str:
     return f"{MONTHS[int(m) - 1]} {year}"
 
 
-def cefr_asks() -> dict[str, str]:
-    """Languages the posting asks at a CEFR level (the ones a fixed rule checks)."""
+def checked_asks() -> dict[str, str]:
+    """Languages the posting asks at a level a fixed rule checks (CEFR, fluent, native)."""
     return {lang: lvl for lang, lvl in role.requirements.get("languages", {}).items()
-            if lvl in ("A1", "A2", "B1", "B2", "C1", "C2")}
+            if store.checked_language(lang, lvl)}
 
 
 def they_ask(c) -> str:
@@ -155,7 +158,7 @@ def they_ask(c) -> str:
             return "No field requirement"
         return "Degree in " + ", ".join(fields) + (" or a related field" if req.get("related_ok") else "")
     if c.id == "language":
-        asks = cefr_asks()
+        asks = checked_asks()
         return " · ".join(f"{lang} {lvl}" for lang, lvl in asks.items()) or "No language level to check"
     n = req.get("experience_min", 0)
     return f"At least {n} internship{'s' if n != 1 else ''}" if n else "No experience requirement"
@@ -184,14 +187,18 @@ def you_have(c) -> tuple[str, str]:
     if c.id == "language":
         certs = store.answers().get("languages") or {}
         have = {**p.get("languages", {}), **certs}
-        asks = cefr_asks() or have
+        asks = checked_asks() or have
         src = "YOU" if any(lang in certs for lang in asks) else "CV"
         return " · ".join(f"{lang} {have.get(lang, 'not stated')}" for lang in asks), src
     return f"{p.get('experience_months', 0)} months · {p.get('internships', 0)} internships", "CV"
 
 
 def details(c) -> str:
-    """Under an open row: the posting's own words when we have them, and how the rule decided."""
+    """Under an open row: the posting's own words when we have them, and how the rule decided.
+
+    The rule's reason is shown in words; its ID, version and answer keys stay
+    in the audit trace (`c.rule`), never on screen.
+    """
     quote = role.get("posting", {}).get(c.id)
     posting = (
         f'<div class="q">{esc(quote["quote"])} <span class="srct">JOB</span> {esc(quote["line"])}</div>'
@@ -200,9 +207,13 @@ def details(c) -> str:
     )
     return (
         f'<div class="dt"><div class="lb">From the job posting</div>{posting}'
-        f'<div class="lb">How it was decided</div><div class="how">{esc(c.detail)} '
-        f'<code>{esc(c.rule)}</code></div></div>'
+        f'<div class="lb">How it was decided</div><div class="how">{esc(readable(c))}</div></div>'
     )
+
+
+def readable(c) -> str:
+    """The rule's reason with no internal identifier left in it."""
+    return synthetic.readable(c.detail, "HC_LANGUAGE" if c.id == "language" else "")
 
 
 def row(c, is_open: bool) -> str:
@@ -234,9 +245,12 @@ def action(c) -> None:
             work_question()
     elif c.id == "language":
         with st.popover("Add certificate", type="primary", key="cert"):
-            lang = next(iter(cefr_asks()), "English")
+            have = {**d.profile.get("languages", {}), **(store.answers().get("languages") or {})}
+            asks = checked_asks()
+            lang = next((x for x in asks if x not in have), next(iter(asks), "English"))
             up = st.file_uploader(f"{lang} certificate (PDF)", type=["pdf", "png", "jpg"], key="cert-file")
-            level = st.selectbox("Level on the certificate", ["B2", "C1", "C2"], index=1)
+            # "fluent" and "native" too: a posting asking French fluent is not met by a CEFR level (D-046).
+            level = st.selectbox("Level on the certificate", ["B2", "C1", "C2", "fluent", "native"], index=1)
             if st.button("Check again with this certificate", type="primary", disabled=up is None):
                 store.set_answer("languages", {**(store.answers().get("languages") or {}), lang: level})
                 st.session_state["flash"] = f"Certificate added · {lang} = {level} · checked again"
@@ -332,11 +346,18 @@ with st.container(key="main"):
         cls, chip = CHIP[v.standing]
         html(
             f'<div class="pan"><div class="kk">This role</div><h3>{esc(role.company)}<span class="chip {cls}">{chip}</span></h3></div>'
-            f'<div class="hero2"><div class="sc">{v.shown}<small> /100 priority</small></div>'
-            f'<div class="cl">{esc(clock.closes_line(role)[0])}</div></div>'
         )
-        html(f'<div class="box">{parts.factor_rows(v)}</div>')
-        html(f'<div class="gate box">{parts.gate(v)}</div>')
+        if ranked is not None and ranked.shown is not None:
+            html(
+                f'<div class="hero2"><div class="sc">{ranked.shown}<small> /100 priority</small></div>'
+                f'<div class="cl">{esc(clock.closes_line(role)[0])}</div></div>'
+            )
+            html(f'<div class="box">{parts.unified_factor_rows(ranked)}</div>')
+        else:
+            html('<div class="box" style="font-size:12.5px;color:var(--t2)">Not ranked · a fixed rule excludes this role. '
+                 "Ranking never changes eligibility.</div>")
+        note = parts.verify_note(ranked) if ranked is not None and ranked.shown is not None else ""
+        html(f'<div class="gate box">{parts.gate(v)}</div>' + (f'<div class="vnote">{esc(note)}</div>' if note else ""))
         with st.container(key="pan-acts"):
             if HAS_APP:
                 # Already applying: "Start application" would move it back to In progress.

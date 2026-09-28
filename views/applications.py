@@ -84,7 +84,7 @@ def card(a: dict) -> str:
         f'<div style="min-width:0"><div class="t">{esc(r.title)}</div><div class="m">{esc(r.company)} · {esc(r.city)}</div></div></div>'
         f'<div class="n">{esc(a["note"])}</div>{prog}'
         f'<div class="f"><span class="{"u" if hot and a["stage"] in ("saved", "progress") else ""}">{esc(foot)}</span>'
-        f"<span>Score {v.shown}</span></div></div>"
+        f"<span>Score {parts.priority_text(v.id)}</span></div></div>"
     )
 
 
@@ -126,7 +126,7 @@ with st.container(key="ap-main"):
         html(
             f'<div class="pan"><div class="kk"><i style="background:{stage_color}"></i>{STAGE_NAME[a["stage"]]} · {esc(r.company)}</div>'
             f'<h3>{esc(r.title)}</h3></div>'
-            f'<div class="big2">{logo(r.mono, r.bg, 46, 16, 12)}<div><div class="tt">{v.shown}<span style="font-size:13px;color:var(--t3);font-weight:560"> /100 priority</span></div>'
+            f'<div class="big2">{logo(r.mono, r.bg, 46, 16, 12)}<div><div class="tt">{parts.priority_text(v.id)}<span style="font-size:13px;color:var(--t3);font-weight:560"> /100 priority</span></div>'
             f'<div class="mm">{esc(r.city)} · {esc(r.mode)} · {esc(clock.closes_line(r)[0])}</div></div></div>'
         )
         items = CHECKLIST[a["stage"]]
