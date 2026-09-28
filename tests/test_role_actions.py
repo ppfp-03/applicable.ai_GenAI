@@ -178,9 +178,10 @@ def test_a_met_requirement_opens_on_a_tap_and_closes_again():
     at.button(key="ov-rqh-location").click().run()
     assert not at.exception
     after = text(at).split("Based in Singapore")[1]
-    assert "How it was decided" in after and "HC_LOCATION" in after
+    # Opened: the rule's reason in words; its ID and version stay internal.
+    assert "How it was decided" in after and "HC_LOCATION" not in after and "v0." not in after
     at.button(key="ov-rqh-location").click().run()
-    assert "HC_LOCATION" not in text(at).split("Based in Singapore")[1]
+    assert "How it was decided" not in text(at).split("Based in Singapore")[1]
 
 
 def test_every_role_page_renders():

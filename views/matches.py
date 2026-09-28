@@ -1,20 +1,20 @@
 """Matches — the ranked list and why each role sits where it does
 (05_Ranking.html).
 
-Left: what happened before ranking, the top five, and one role a rule
-removed however well it matched. Right: the selected role's score, its
-four factor scores, and the rule that says ranking never changes eligibility.
-How the factors combine into the score (weights, formula) is proprietary and
-never drawn here.
+One population: curated roles and synthetic demo postings, ranked together by
+the same formula (core/matches.py, D-051). Left: what happened before ranking,
+the top five, the rest of the ranked roles, and one role a rule removed however
+well it matched. Right: the selected role's Priority score, its four factor
+scores, and the rule that says ranking never changes eligibility. A role to
+verify is ordered 15 points lower; its Priority score is never changed.
 """
 
 from __future__ import annotations
 
 import streamlit as st
 
-from core import ranking, store
+from core import store
 from ui import parts, shell, tabs
-from ui import synthetic as synthetic_ui
 from ui.html import LOCK, esc, hit, html, logo
 from ui.theme import page_css
 
@@ -24,31 +24,74 @@ page_css("matches")
 SEL = "matches_sel"
 st.session_state.setdefault(SEL, 0)
 
-counts = store.counts()
-top = store.ranked()[:5]
-ranked_n = counts["eligible"] + counts["verify"]
-checked = sum(counts.values())
+m = store.matches()
+ordered = list(m.ordered)
+top = ordered[:5]
+rest = ordered[5:]
+n_eligible = sum(o.standing == "eligible" for o in ordered)
+n_verify = sum(o.standing == "verify" for o in ordered)
+n_excluded = len(m.excluded)
+ranked_n = len(ordered)
+checked = len(m.population)
 if st.session_state[SEL] >= len(top):
     st.session_state[SEL] = 0
 
+#: Synthetic postings have no logo colour of their own.
+GREY = "#8E8E93"
 
-def factor_rows(v) -> str:
-    """Four rows: factor, its own 0-100 score and note -- no points, no weights."""
-    rows = []
-    for n, k in enumerate(ranking.FACTORS):
-        score, note = v.factors[k]
-        rows.append(
-            f'<div class="kci"><span class="sw" style="background:{parts.COL[n]}"></span>'
-            f'<span class="nm">{ranking.FACTOR_NAMES[k]}</span>'
-            f'<span class="pt"><b>{score}</b><span>/100</span></span>'
-            f'<span class="kw">{esc(note)}</span></div>'
-        )
-    return "".join(rows)
+
+def mono(o) -> str:
+    if o.kind == "curated":
+        r = d.role(o.role_id)
+        return logo(r.mono, r.bg, 38, 13)
+    return logo(store.initials(o.company), GREY, 38, 13)
+
+
+def meta(o) -> str:
+    mode = d.role(o.role_id).mode if o.kind == "curated" else ""
+    return " · ".join(esc(x) for x in (o.company, o.city, mode) if x)
+
+
+def why(o) -> str:
+    """The factor that adds the most points, and the next one."""
+    from core.matches import FACTOR_NAMES, FACTORS
+
+    best = sorted(range(4), key=lambda i: -o.parts[i])[:2]
+    return " · ".join(f"{FACTOR_NAMES[FACTORS[i]]} {int(o.factor(FACTORS[i]) + 0.5)}" for i in best)
+
+
+def row(o, rank: int, selected: bool) -> str:
+    cls, text = parts.unified_tag(o)
+    return (
+        f'<div class="k-row tile{" sel" if selected else ""}">'
+        f'<span class="k-rank">{rank}</span>'
+        f'<div class="k-job">{mono(o)}<div><div class="k-jt">{esc(o.title)}</div>'
+        f'<div class="k-jm">{meta(o)}</div></div></div>'
+        f'<div><div class="k-why1">{esc(why(o))}</div><div class="k-tags"><span class="chip {cls}">{esc(text)}</span></div></div>'
+        f"{parts.eligibility_dot(o)}"
+        f'<div class="k-sc"><div class="k-cb">{parts.unified_bars(o)}</div><b>{o.shown}</b></div></div>'
+    )
+
+
+def gate(o) -> str:
+    """The RULE line: the curated wording for curated roles, the engine's counts otherwise."""
+    if o.kind == "curated":
+        return parts.gate(store.view(d.role(o.role_id)))
+    checks = [x for x in o.result.outcomes if x.status.value != "not_applicable"]
+    met = sum(x.status.value == "met" for x in checks)
+    if o.standing == "eligible":
+        return (f'<span class="ci">{parts.CK}</span><div><div style="font-weight:600"><span class="srct" '
+                f'style="margin-right:6px">RULE</span>Eligible under checked rules · {met} of {len(checks)}</div>'
+                '<div class="s2">Ranking orders eligible roles. It never changes eligibility.</div></div>')
+    return (f'<span class="ci a">{parts.WN}</span><div><div style="font-weight:600"><span class="srct" '
+            f'style="margin-right:6px">RULE</span>To verify · {met} of {len(checks)} rules pass</div>'
+            '<div class="s2">Ranking never changes eligibility.</div></div>')
+
 
 shell.topbar("matches", store.nav_counts())
 with shell.header(
     "Your matches",
-    f"<b>{ranked_n} roles</b> ranked · {counts['eligible']} eligible, {counts['verify']} to verify · "
+    f"<b>{ranked_n} roles</b> ranked · {n_eligible} eligible, {n_verify} to verify · "
     f"updated today {d.updated}",
 ):
     if st.button("Adjust preferences", key="adj"):
@@ -56,18 +99,18 @@ with shell.header(
 
 with st.container(key="mt-main"):
     with st.container(key="col"):
-        # Before ranking: what the rules did to the catalogue.
+        # Before ranking: what the rules did to every role.
         with st.container(key="mt-strip"):
             html(
                 '<div class="strip gl"><div class="s-in">'
                 f'<div class="s-t">Before ranking<span>{checked} roles checked · '
                 '<span class="lnk">1 question can verify more ›</span></span></div>'
-                f'<div class="s-bar"><i style="flex:{counts["eligible"]};background:#30A14E"></i>'
-                f'<i style="flex:{counts["verify"]};background:#E3A03A"></i>'
-                f'<i style="flex:{counts["excluded"]};background:repeating-linear-gradient(135deg,#F3C9C5 0 3px,#FBEAE8 3px 6px)"></i></div>'
-                f'<div class="s-br"><div class="a" style="flex:{ranked_n}">{ranked_n} ranked · {counts["eligible"]} eligible, '
-                f'{counts["verify"]} to verify</div><div style="width:3px"></div>'
-                f'<div class="x2" style="flex:{counts["excluded"]}">{counts["excluded"]} excluded · conflict</div></div></div></div>'
+                f'<div class="s-bar"><i style="flex:{n_eligible};background:#30A14E"></i>'
+                f'<i style="flex:{n_verify};background:#E3A03A"></i>'
+                f'<i style="flex:{n_excluded};background:repeating-linear-gradient(135deg,#F3C9C5 0 3px,#FBEAE8 3px 6px)"></i></div>'
+                f'<div class="s-br"><div class="a" style="flex:{ranked_n}">{ranked_n} ranked · {n_eligible} eligible, '
+                f'{n_verify} to verify</div><div style="width:3px"></div>'
+                f'<div class="x2" style="flex:{n_excluded}">{n_excluded} excluded · conflict</div></div></div></div>'
             )
             if st.button("1 question can verify more", key="q-link"):
                 tabs.go("question")
@@ -85,18 +128,17 @@ with st.container(key="mt-main"):
                 "<span>Eligibility</span><span>Priority score</span></div>"
             )
             with st.container(key="klist"):
-                for i, v in enumerate(top):
-                    cls, text = parts.tag(v)
-                    row = (
-                        f'<div class="k-row tile{" sel" if i == st.session_state[SEL] else ""}">'
-                        f'<span class="k-rank">{i + 1}</span>'
-                        f'<div class="k-job">{logo(v.mono, v.bg, 38, 13)}<div><div class="k-jt">{esc(v.title)}</div>'
-                        f'<div class="k-jm">{esc(v.company)} · {esc(v.city)} · {esc(v.mode)}</div></div></div>'
-                        f'<div><div class="k-why1">{esc(v.why)}</div><div class="k-tags"><span class="chip {cls}">{esc(text)}</span></div></div>'
-                        f"{parts.eligibility_dot(v)}"
-                        f'<div class="k-sc"><div class="k-cb">{parts.bars(v)}</div><b>{v.shown}</b></div></div>'
-                    )
-                    hit(f"row-{i}", row, f"Select {v.company}", on_click=st.session_state.__setitem__, args=(SEL, i))
+                for i, o in enumerate(top):
+                    hit(f"row-{i}", row(o, i + 1, i == st.session_state[SEL]), f"Select {o.company}",
+                        on_click=st.session_state.__setitem__, args=(SEL, i))
+
+        # The rest of the ranked roles, in the same order and the same form.
+        if rest:
+            with st.expander(f"More ranked roles ({len(rest)})"):
+                with st.container(key="klist-more"):
+                    for i, o in enumerate(rest, start=6):
+                        if hit(f"more-{i}", row(o, i, False), f"Open {o.company}"):
+                            tabs.go("role", id=o.role_id)
 
         # A high match that a rule removed.
         gone = next((v for v in store.excluded() if v.get("semantic")), None)
@@ -115,31 +157,33 @@ with st.container(key="mt-main"):
                 tabs.go("role", id=gone.id)
 
     # The selected role, taken apart.
-    v = top[st.session_state[SEL]]
-    i = st.session_state[SEL]
-    cls, text = parts.tag(v)
     with st.container(key="pan-r"):
-        html(
-            f'<div class="pan"><div class="kk">#{i + 1} · {esc(v.company)} · {esc(v.city)}</div>'
-            f'<h3>{"Why this is your top match" if i == 0 else f"Why it ranks #{i + 1}"}</h3></div>'
-        )
-        html(
-            f'<div class="hero2"><div class="n">{v.shown}<small> /100</small></div>'
-            f'<div class="c">Priority score<br>{esc(text)}</div></div><div class="kstack">{parts.bars(v)}</div>'
-        )
-        html(f'<div class="box">{factor_rows(v)}</div>')
-        with st.container(key="end-r"):
-            html(f'<div class="gate box">{parts.gate(v)}</div>')
-        with st.container(key="mt-foot"):
-            if st.button("Open role", key="mt-open"):
-                tabs.go("role", id=v.id)
-            app = parts.application_for(v.id)
-            applied = app is not None and app["stage"] in ("applied", "interview")
-            if st.button("View application" if applied else "Start application", type="primary", key="go"):
-                if not applied:
-                    store.save_application(v.id)
-                tabs.go("applications", id=v.id)
-
-# The OI-50 synthetic catalogue: its own list under the curated one, checked by
-# the canonical engine and ranked by the production pipeline, never mixed in.
-synthetic_ui.matches_section()
+        if not top:
+            html('<div class="pan"><div class="kk">No ranked roles</div><h3>Nothing to rank yet</h3></div>')
+        else:
+            i = st.session_state[SEL]
+            o = top[i]
+            cls, text = parts.unified_tag(o)
+            html(
+                f'<div class="pan"><div class="kk">#{i + 1} · {esc(o.company)} · {esc(o.city)}</div>'
+                f'<h3>{"Why this is your top match" if i == 0 else f"Why it ranks #{i + 1}"}</h3></div>'
+            )
+            html(
+                f'<div class="hero2"><div class="n">{o.shown}<small> /100</small></div>'
+                f'<div class="c">Priority score<br>{esc(text)}</div></div><div class="kstack">{parts.unified_bars(o)}</div>'
+            )
+            html(f'<div class="box">{parts.unified_factor_rows(o)}</div>')
+            with st.container(key="end-r"):
+                note = parts.verify_note(o)
+                html(f'<div class="gate box">{gate(o)}</div>'
+                     + (f'<div class="vnote">{esc(note)}</div>' if note else ""))
+            with st.container(key="mt-foot"):
+                if st.button("Open role", key="mt-open"):
+                    tabs.go("role", id=o.role_id)
+                if o.kind == "curated":
+                    app = parts.application_for(o.role_id)
+                    applied = app is not None and app["stage"] in ("applied", "interview")
+                    if st.button("View application" if applied else "Start application", type="primary", key="go"):
+                        if not applied:
+                            store.save_application(o.role_id)
+                        tabs.go("applications", id=o.role_id)

@@ -108,9 +108,9 @@ def card(v) -> str:
         why = ("! " if v.get("highlight_kind") == "gap" else "✓ ") + v.highlight
     return (
         f'<div class="mc tile{" sel" if sel else ""}{" x2" if v.standing == "excluded" else ""}">'
-        f'<div class="h">{logo(v.mono, v.bg, 36, 13)}<div class="sc">{v.shown if v.standing != "excluded" else "—"}<small>{small}</small></div></div>'
+        f'<div class="h">{logo(v.mono, v.bg, 36, 13)}<div class="sc">{parts.priority_text(v.id) if v.standing != "excluded" else "—"}<small>{small}</small></div></div>'
         f'<div class="t">{esc(v.title)}</div><div class="m">{esc(v.company)} · {esc(v.city)}</div>'
-        f'<div class="why">{esc(why)}</div><div class="b" style="margin-top:auto"><i style="width:{v.shown if v.standing != "excluded" else 0}%"></i></div>'
+        f'<div class="why">{esc(why)}</div><div class="b" style="margin-top:auto"><i style="width:{parts.priority_width(v.id) if v.standing != "excluded" else 0}%"></i></div>'
         + (f'<div class="f"><span>{SIM}</span></div></div>' if store.is_simulated(v) else
            f'<div class="f"><span class="{"u" if hot else ""}">{esc(close)}</span><span>Demo data</span></div></div>')
     )
@@ -159,9 +159,9 @@ with st.container(key="ex-main"):
                      f'{esc(d.simulated_event["disclaimer"])}</div>')
             if v.standing != "excluded":
                 html(
-                    f'<div><div class="hero2"><div class="n">{v.shown}<small> /100</small></div>'
+                    f'<div><div class="hero2"><div class="n">{parts.priority_text(v.id)}<small> /100</small></div>'
                     f'<div class="c">Priority score<br>{esc(clock.closes_line(v)[0])}</div></div>'
-                    f'<div class="kstack">{parts.bars(v)}</div></div>'
+                    f'<div class="kstack">{parts.unified_bars(store.matches().get(v.id)) if store.priority(v.id) is not None else ""}</div></div>'
                 )
             rows = "".join(
                 f'<div class="ck">{check_icon(c.status)}{esc(c.name)}<span class="s">{esc(c.value)}</span></div>'
