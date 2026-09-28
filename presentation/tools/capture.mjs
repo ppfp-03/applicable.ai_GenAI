@@ -59,8 +59,9 @@ if (mode === 'stills') {
   const duration = await page.evaluate(() => window.Applicable.player.duration);
   const from = opt('from', 0), to = opt('to', duration);
   let i = 0;
+  // Files are named by absolute frame number, so several captures can split one film.
   for (let f = Math.round(from * fps); f < Math.round(to * fps); f++, i++) {
-    const name = String(i).padStart(5, '0');
+    const name = String(f).padStart(5, '0');
     if (sub === 1) await shoot(f / fps, join(outDir, name + '.png'));
     // Sub-frames centred on the frame time across a 180° shutter (half the frame interval).
     else for (let k = 0; k < sub; k++) await shoot(f / fps + ((k + 0.5) / sub - 0.5) * (0.5 / fps), join(outDir, `${name}_${k}.png`));
