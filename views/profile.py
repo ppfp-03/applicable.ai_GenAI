@@ -27,6 +27,7 @@ status = st.session_state[store.SECTIONS]
 values = st.session_state[store.VALUES]
 sections = d.sections
 CUR = "profile_cur"
+FIX = "profile_fix"  # section whose values the user marked as incorrect
 st.session_state.setdefault(CUR, next((i for i, s in enumerate(sections) if s.get("focus_first")), 0))
 CONSENT_AT = next(i for i, s in enumerate(sections) if s["id"] == store.CONSENT_SECTION)
 consent = store.consent_given()
@@ -42,9 +43,15 @@ def chip(st_: str) -> str:
     return f'<span class="chip {c}">{t}</span>'
 
 
+def mark_incorrect(sid: str) -> None:
+    status[sid] = "rev"
+    st.session_state[FIX] = sid
+
+
 def confirm(i: int) -> None:
     s = sections[i]
     status[s["id"]] = "ok"
+    st.session_state.pop(FIX, None)
     if s["id"] == store.CONSENT_SECTION:
         store.give_consent()
     nxt = next((j for j, x in enumerate(sections) if status[x["id"]] != "ok"), None)
@@ -128,8 +135,12 @@ with st.container(key="pf-main"):
             f'<div class="pan"><div class="kk">Section {cur + 1} of {len(sections)} · Candidate profile</div>'
             f'<h3>{esc(s["name"])}{chip(status[sid])}</h3></div>'
         )
-        html('<div class="lab">Extracted values<span>Tap a value to correct it</span></div>')
-        with st.container(key="vals"):
+        # "Mark as incorrect" points at the values to correct instead of a toast.
+        fix = st.session_state.get(FIX) == sid and status[sid] != "ok"
+        html(
+            f'<div class="lab{" fix" if fix else ""}">Extracted values<span>Tap a value to correct it</span></div>'
+        )
+        with st.container(key="vals-fix" if fix else "vals"):
             for j, (label, _) in enumerate(s["vals"]):
                 val = values[sid][label]
                 focus = s.get("focus_first") and j == 0 and status[sid] != "ok"
@@ -143,6 +154,7 @@ with st.container(key="pf-main"):
                         if new != val:
                             values[sid][label] = new
                             status[sid] = "rev"
+                            st.session_state.pop(FIX, None)
                             st.rerun()
         html(f'<div class="lab">Source evidence<span>{esc(s["qs"])}</span></div>')
         with st.container(key="qbox"):
@@ -170,9 +182,8 @@ with st.container(key="pf-main"):
         )
         with st.container(key="pf-foot"):
             # Consent is given or not: there is nothing to correct.
-            if sid != store.CONSENT_SECTION and st.button("Mark as incorrect", key="bad"):
-                status[sid] = "rev"
-                st.toast("Correct the values above")
+            if sid != store.CONSENT_SECTION:
+                st.button("Mark as incorrect", key="bad", on_click=mark_incorrect, args=(sid,))
             ok = status[sid] == "ok"
             st.button(
                 "Confirmed" if ok else s.get("cta", "Confirm section"),
